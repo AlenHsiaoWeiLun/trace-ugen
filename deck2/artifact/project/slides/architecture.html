@@ -1,0 +1,35 @@
+<section id="architecture" data-transition="fade" style="background:#ECE7DE;color:#15161A;font-family:'Inter', Arial, sans-serif;padding:112px 128px 160px">
+<p style="position:absolute;left:128px;top:112px;width:800px;font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;letter-spacing:4px;text-transform:uppercase;color:#8A5A10">System</p>
+<h2 style="position:absolute;left:124px;top:160px;width:1660px;font-family:'Instrument Serif', Georgia, serif;font-size:84px;font-weight:400;line-height:1.02;color:#15161A">How VESTIGE works.</h2>
+<div style="position:absolute;left:128px;top:320px;width:1664px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:24px">
+<div style="display:flex;flex-direction:column;gap:12px;background:#F6F2EA;border:1px solid #D2CBBE;border-radius:10px;padding:22px">
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;color:#8A5A10">1 · SOURCES</p>
+<p style="font-size:25px;line-height:1.4;color:#15161A">Authorized cameras (RTSP)<br>Owner check-ins<br>Alarm I/O · radio</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;background:#15161A;border-radius:10px;padding:22px">
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;color:#E0A33B">2 · PERCEIVE</p>
+<p style="font-size:25px;line-height:1.4;color:#ECE6DA">YOLO + ByteTrack<br>Whisper on voice<br>VLM on demand<br><span style="color:#A8A296">ASUS UGen300</span></p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;background:#F6F2EA;border:1px solid #D2CBBE;border-radius:10px;padding:22px">
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;color:#8A5A10">3 · REMEMBER</p>
+<p style="font-size:25px;line-height:1.4;color:#15161A">Objects · tracks · zones<br>Events · relations<br>Evidence + provenance</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;background:#F6F2EA;border:1px solid #D2CBBE;border-radius:10px;padding:22px">
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;color:#8A5A10">4 · INVESTIGATE</p>
+<p style="font-size:25px;line-height:1.4;color:#15161A">Agent with tools:<br>query · timeline ·<br>evidence · associate</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;background:#F6F2EA;border:1px solid #D2CBBE;border-radius:10px;padding:22px">
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;color:#8A5A10">5 · ANSWER</p>
+<p style="font-size:25px;line-height:1.4;color:#15161A">Search · timeline<br>Evidence viewer<br>Webhook / API</p>
+</div>
+</div>
+<div style="position:absolute;left:128px;top:650px;width:1664px;height:2px;background:#15161A"></div>
+<p style="position:absolute;left:128px;top:680px;width:1664px;font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;color:#8A5A10">⟲ VERIFY · IncidentLab replays stored events under controlled corruptions → failure cases → better thresholds</p>
+<div style="position:absolute;left:128px;top:760px;width:1664px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:40px">
+<p style="font-size:25px;line-height:1.45;color:#3A3833"><b style="color:#15161A">Facts come from tools.</b> The LLM plans queries and writes explanations; timestamps, places and frames come only from the memory store.</p>
+<p style="font-size:25px;line-height:1.45;color:#3A3833"><b style="color:#15161A">Cheap always, expensive rarely.</b> Detection runs on every frame; the VLM wakes only for an event that needs a second look.</p>
+<p style="font-size:25px;line-height:1.45;color:#3A3833"><b style="color:#15161A">One modular monolith.</b> Python/FastAPI, SQLite + media store, a web client; 2D zones now, 3D-ready schema.</p>
+</div>
+<p style="position:absolute;right:128px;bottom:56px;width:80px;text-align:right;font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;color:#8C877E">10</p>
+<aside>Five stages, one memory store. The agent is grounded: it can only call tools that read observations, so it cannot invent timestamps or frames. IncidentLab is a loop around perception, not a separate product.</aside>
+</section>

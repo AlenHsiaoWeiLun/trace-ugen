@@ -1,0 +1,19 @@
+<section id="appx-hardware" data-transition="fade" style="background:#ECE7DE;color:#15161A;font-family:'Inter', Arial, sans-serif;padding:96px 128px 140px">
+<p style="position:absolute;left:128px;top:96px;width:900px;font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;letter-spacing:4px;text-transform:uppercase;color:#8A5A10">Appendix A · Hardware integration</p>
+<h2 style="position:absolute;left:124px;top:140px;width:1660px;font-family:'Instrument Serif', Georgia, serif;font-size:64px;font-weight:400;line-height:1.05;color:#15161A">How the engine maps onto the UGen300.</h2>
+<table style="position:absolute;left:128px;top:250px;width:1664px;font-family:'Inter', Arial, sans-serif;font-size:24px;color:#15161A">
+<tr><th style="width:22%;text-align:left;font-size:24px;color:#55524C">Stage</th><th style="width:40%;text-align:left;font-size:24px;color:#55524C">On the UGen300 (HailoRT 5)</th><th style="width:38%;text-align:left;font-size:24px;color:#55524C">On the host CPU</th></tr>
+<tr><td>Detection</td><td>YOLO HEF, NMS on chip, create_infer_model</td><td>Letterbox, ByteTrack, zone rules</td></tr>
+<tr><td>Speech</td><td>genai.Speech2Text (Whisper-Base)</td><td>Voice-activity gate, keyword routing</td></tr>
+<tr><td>Second opinion</td><td>genai.VLM (Qwen2-VL-2B, 336×336 frames)</td><td>Masked, overlay-free keyframe; guardrail</td></tr>
+<tr><td>Questions</td><td>genai.LLM (1.5B)</td><td>Retrieval; citations attached by code</td></tr>
+<tr><td>Scheduling</td><td>One VDevice, group_id "TRACE"</td><td>Detection priority; VLM requests queued</td></tr>
+</table>
+<div style="position:absolute;left:128px;top:690px;width:1664px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:40px">
+<p style="font-size:24px;line-height:1.45;color:#3A3833"><b style="color:#15161A">Measured finding.</b> Qwen2-VL answered our train-at-platform check correctly only on the clean frame; drawn boxes broke it. The VLM now always sees the masked, unannotated frame.</p>
+<p style="font-size:24px;line-height:1.45;color:#3A3833"><b style="color:#15161A">Memory budget.</b> YOLO, Whisper-Base, Qwen2-VL-2B and a 1.5B LLM must share 8 GB; Stage II week 1 measures residency and switching cost.</p>
+<p style="font-size:24px;line-height:1.45;color:#3A3833"><b style="color:#15161A">Not yet verified on hardware:</b> USB throughput, power under load, multi-model contention. Laptop numbers are labelled as such.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:40px;width:1560px;font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;color:#8C877E">Code: traceai/hailo.py, traceai/perception.py · API per hailo-ai/hailo-apps · details in docs/hailo_port.md</p>
+<p style="position:absolute;right:128px;bottom:40px;width:80px;text-align:right;font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;color:#8C877E">A1</p>
+</section>

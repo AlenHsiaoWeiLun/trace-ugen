@@ -1,0 +1,67 @@
+{
+  "method": "reference = YOLO11n detections on clean frame (conf>=0.5); recall at IoU>=0.5 after corruption (conf>=0.25); occlusion graded on hidden boxes only; not human ground truth",
+  "model": "yolo11n.pt @960",
+  "frames_per_clip": 8,
+  "results": {
+    "station": {
+      "low_light": {
+        "recalled": 163,
+        "reference": 200,
+        "rate": 0.815
+      },
+      "motion_blur": {
+        "recalled": 187,
+        "reference": 200,
+        "rate": 0.935
+      },
+      "noise": {
+        "recalled": 186,
+        "reference": 200,
+        "rate": 0.93
+      },
+      "low_res": {
+        "recalled": 198,
+        "reference": 200,
+        "rate": 0.99
+      },
+      "occlusion": {
+        "recalled": 85,
+        "reference": 117,
+        "rate": 0.726
+      }
+    },
+    "road": {
+      "low_light": {
+        "recalled": 86,
+        "reference": 103,
+        "rate": 0.835
+      },
+      "motion_blur": {
+        "recalled": 59,
+        "reference": 103,
+        "rate": 0.573
+      },
+      "noise": {
+        "recalled": 61,
+        "reference": 103,
+        "rate": 0.592
+      },
+      "low_res": {
+        "recalled": 101,
+        "reference": 103,
+        "rate": 0.981
+      },
+      "occlusion": {
+        "recalled": 16,
+        "reference": 55,
+        "rate": 0.291
+      }
+    }
+  },
+  "example": [
+    [
+      "pexels_37737804.mp4",
+      28
+    ]
+  ]
+}

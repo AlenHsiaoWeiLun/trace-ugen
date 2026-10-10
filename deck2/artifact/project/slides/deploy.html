@@ -1,0 +1,21 @@
+<section id="deploy" data-transition="fade" style="background:#0E0F12;color:#ECE6DA;font-family:'Inter', Arial, sans-serif;padding:112px 128px 160px">
+<p style="position:absolute;left:128px;top:112px;width:900px;font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;letter-spacing:4px;text-transform:uppercase;color:#E0A33B">Hardware · Battlefield Lightning</p>
+<h2 style="position:absolute;left:124px;top:160px;width:1660px;font-family:'Instrument Serif', Georgia, serif;font-size:84px;font-weight:400;line-height:1.02;color:#F2ECE1">Designed for real-world deployment.</h2>
+<img src="/_blob/d995ffa448db48ffbf33c0020e8fdde2" alt="ASUS UGen300 USB AI accelerator" style="position:absolute;left:96px;top:310px;width:420px;height:320px;object-fit:contain;mix-blend-mode:lighten">
+<p style="position:absolute;left:128px;top:640px;width:400px;font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.45;color:#A8A296">ASUS UGen300 · Hailo-10H<br>40 TOPS INT4 · 8 GB · 2.5 W</p>
+<table style="position:absolute;left:560px;top:310px;width:1232px;font-family:'Inter', Arial, sans-serif;font-size:24px;color:#ECE6DA">
+<tr><th style="width:22%;text-align:left;font-size:24px;color:#A8A296">Role</th><th style="width:19%;text-align:left;font-size:24px;color:#A8A296">Model</th><th style="width:22%;font-size:24px;color:#A8A296">Hailo-10H, published</th><th style="width:22%;font-size:24px;color:#A8A296">Laptop, measured</th><th style="width:15%;font-size:24px;color:#E0A33B">On UGen300</th></tr>
+<tr><td>Detect, every frame</td><td>YOLO11n / v8s</td><td>302 / 166 FPS</td><td>47 ms / frame</td><td>Stage II</td></tr>
+<tr><td>Listen, on voice</td><td>Whisper</td><td>25 tok/s (Base)</td><td>1.6 s / 8.7 s call</td><td>Stage II</td></tr>
+<tr><td>Verify, per event</td><td>Qwen2-VL-2B</td><td>7 tok/s, 1 s TTFT</td><td>2.8 s / event</td><td>Stage II</td></tr>
+<tr><td>Answer, on question</td><td>1.5B LLM</td><td>7.4 tok/s</td><td>2–4 s / answer</td><td>Stage II</td></tr>
+</table>
+<div style="position:absolute;left:560px;top:670px;width:1232px;display:grid;grid-template-columns:1fr 1fr;gap:40px">
+<p style="font-size:25px;line-height:1.4;color:#C9C3B8"><b style="color:#F2ECE1">Why Lightning, not Thunderstorm.</b> The workload is event-driven: cheap detection always, 2B-class models rarely. It fits one 2.5 W stick; a 290 W GPU would mostly idle.</p>
+<p style="font-size:25px;line-height:1.4;color:#C9C3B8"><b style="color:#F2ECE1">One chip, shared.</b> All models share one HailoRT VDevice. Target: 8 cameras at 15 fps ≈ 40% of published YOLO11n capacity.</p>
+</div>
+<p style="position:absolute;left:128px;top:880px;width:1664px;font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;color:#E0A33B;border:2px solid #E0A33B;border-radius:6px;padding:10px 16px">Not yet measured on a UGen300 — USB throughput, power and multi-model contention are the first Stage II tests.</p>
+<p style="position:absolute;left:128px;bottom:40px;width:1560px;font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.3;color:#6F6B64">Published: Hailo Model Zoo v5.4 (PCIe) and GenAI Zoo. Laptop: Apple M4 Pro, same models and input sizes.</p>
+<p style="position:absolute;right:128px;bottom:40px;width:80px;text-align:right;font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;color:#6F6B64">12</p>
+<aside>Three columns keep the evidence honest: what Hailo publishes, what our prototype measured on a laptop, and what we will measure on the UGen300 itself.</aside>
+</section>
