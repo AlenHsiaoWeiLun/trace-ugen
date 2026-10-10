@@ -1,0 +1,26 @@
+# Taipei Bridge "scooter waterfall" footage (Wikimedia Commons, CC BY-SA 4.0) and a Taiwan
+# street clip (Pexels License). Each camera is its own zone; no scripted signals.
+scenario: road
+start_time: "2026-10-10T08:12:00"
+site:
+  name: "Taipei Bridge approach (public footage)"
+  zones:
+    - {id: R1, name: "Ramp east", x: 0.05, y: 0.1, w: 0.42, h: 0.38, cameras: [CAM-R1]}
+    - {id: R2, name: "Ramp lane", x: 0.53, y: 0.1, w: 0.42, h: 0.38, cameras: [CAM-R2]}
+    - {id: R3, name: "Intersection", x: 0.05, y: 0.56, w: 0.9, h: 0.36, cameras: [CAM-R3]}
+  adjacency: []
+detector:
+  backend: ultralytics
+  weights: models/yolo11n.pt
+  imgsz: 960
+  conf: 0.3
+  process_fps: 15
+rules:
+  weave_swings: 3
+  weave_std: 0.25
+  min_duration: 2.0
+cameras:
+  - {sensor: CAM-R1, zone: R1, video: data/videos/bridge_06.webm, offset_s: 0}
+  - {sensor: CAM-R2, zone: R2, video: data/videos/bridge_07.webm, offset_s: 20}
+  - {sensor: CAM-R3, zone: R3, video: data/videos/pexels_4740223.mp4, offset_s: 75}
+fusion: {window_s: 10, max_hops: 0}

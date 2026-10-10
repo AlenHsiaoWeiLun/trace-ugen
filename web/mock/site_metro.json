@@ -1,0 +1,10 @@
+{
+  "name": "Demo Station",
+  "zones": [
+    {"id": "A", "name": "Concourse", "x": 0.06, "y": 0.10, "w": 0.34, "h": 0.28, "cameras": ["CAM-01", "CAM-02"]},
+    {"id": "B", "name": "Gate Line", "x": 0.48, "y": 0.12, "w": 0.38, "h": 0.25, "cameras": ["CAM-03", "CAM-04"]},
+    {"id": "C", "name": "Exit C", "x": 0.51, "y": 0.50, "w": 0.34, "h": 0.30, "cameras": ["CAM-07"]},
+    {"id": "D", "name": "Platform 2", "x": 0.08, "y": 0.55, "w": 0.34, "h": 0.28, "cameras": ["CAM-09"]}
+  ],
+  "adjacency": [["A", "B"], ["B", "C"], ["A", "D"], ["D", "C"]]
+}

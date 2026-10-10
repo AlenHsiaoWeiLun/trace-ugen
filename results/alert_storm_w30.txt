@@ -1,0 +1,12 @@
+20 seeds, window=30.0s hops=1
+  signals                 408.700 ± 17.833
+  incidents               167.500 ± 7.586
+  high_cards                9.400 ± 2.131
+  medium_cards             17.800 ± 4.094
+  high_card_reduction       0.977 ± 0.005
+  gt_incidents              6.000 ± 0.000
+  incident_recall           0.992 ± 0.036
+  false_high_cards          3.100 ± 1.841
+  pairwise_precision        0.139 ± 0.035
+  pairwise_recall           0.831 ± 0.108
+  pairwise_f1               0.238 ± 0.054

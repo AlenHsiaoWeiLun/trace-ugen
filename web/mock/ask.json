@@ -1,0 +1,6 @@
+{
+  "answer": "Yes - at 17:36:15 camera CAM-07 saw exit C congestion [SIG-1033], part of [INC-1007]. RADIO-1 also reported people running toward Exit C [SIG-1034].",
+  "citations": ["INC-1007", "SIG-1033", "SIG-1034"],
+  "model": "Qwen2-VL-2B-Instruct",
+  "ms": 1830
+}

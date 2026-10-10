@@ -1,0 +1,407 @@
+{
+  "scenario": "metro",
+  "site": {
+    "name": "Demo Station (stitched stock footage)",
+    "zones": [
+      {
+        "id": "A",
+        "name": "Concourse",
+        "x": 0.05,
+        "y": 0.08,
+        "w": 0.42,
+        "h": 0.36,
+        "cameras": [
+          "CAM-01"
+        ]
+      },
+      {
+        "id": "B",
+        "name": "Platform 2",
+        "x": 0.53,
+        "y": 0.08,
+        "w": 0.42,
+        "h": 0.36,
+        "cameras": [
+          "CAM-03",
+          "DET-B2"
+        ]
+      },
+      {
+        "id": "C",
+        "name": "Exit C",
+        "x": 0.53,
+        "y": 0.56,
+        "w": 0.42,
+        "h": 0.36,
+        "cameras": [
+          "CAM-05"
+        ]
+      },
+      {
+        "id": "D",
+        "name": "Platform 1",
+        "x": 0.05,
+        "y": 0.56,
+        "w": 0.42,
+        "h": 0.36,
+        "cameras": [
+          "CAM-07"
+        ]
+      }
+    ],
+    "adjacency": [
+      [
+        "A",
+        "B"
+      ],
+      [
+        "B",
+        "C"
+      ],
+      [
+        "A",
+        "D"
+      ]
+    ]
+  },
+  "raw_signals": 6,
+  "pipeline": {
+    "device": "mps (Apple M4 Pro)",
+    "detector": "yolo11n (auto)",
+    "fps": 19.9,
+    "asr": "whisper tiny.en",
+    "vlm": "Qwen2-VL-2B-Instruct",
+    "target": "ASUS UGen300 / Hailo-10H",
+    "frames_off_box": 0,
+    "retention_h": 24,
+    "stage_ms": {
+      "detect": 49.41,
+      "track": 0.66,
+      "rules": 0.19,
+      "asr": 1588.52,
+      "fusion": 0.08,
+      "evidence": 11961.13,
+      "vlm": 2627.52
+    },
+    "wall_s": 101.3
+  },
+  "incidents": [
+    {
+      "id": "INC-M-0001",
+      "scenario": "metro",
+      "title": "Alarm corroborated by staff report",
+      "status": "pending",
+      "priority": "high",
+      "score": 0.794,
+      "start_ts": "2026-10-10T17:36:07",
+      "end_ts": "2026-10-10T17:36:15",
+      "zones": [
+        "B",
+        "C"
+      ],
+      "sensors": [
+        "DET-B2",
+        "CAM-03",
+        "CAM-05",
+        "RADIO-1"
+      ],
+      "n_signals": 5,
+      "keyframe": "/media/metro/INC-M-0001.jpg",
+      "summary": "Platform emergency intercom pressed at DET-B2 (zone B) [SIG-M0002]; 8 s later, a staff radio call on RADIO-1 reported: \"Control, this is platform 2. A group of people are running toward exit C, someone may be injured. Requesting backup.\" [SIG-M0003]. Camera snapshots at alarm time show people counts of 14 at CAM-03 [SIG-M0004], 12 at CAM-05 [SIG-M0005], 13 at CAM-05 [SIG-M0006]. Scene check (Qwen2-VL-2B-Instruct): \"A woman in a black skirt is walking through a subway station, while other passengers are waiting for their trains.\"",
+      "clip": "/media/metro/INC-M-0001.mp4",
+      "signals": [
+        {
+          "id": "SIG-M0002",
+          "source": "detector",
+          "sensor": "DET-B2",
+          "zone": "B",
+          "ts": "2026-10-10T17:36:07",
+          "kind": "detector_alarm",
+          "confidence": 0.75,
+          "detail": "platform emergency intercom pressed",
+          "thumb": null,
+          "transcript": null,
+          "features": {}
+        },
+        {
+          "id": "SIG-M0004",
+          "source": "camera",
+          "sensor": "CAM-03",
+          "zone": "B",
+          "ts": "2026-10-10T17:36:07",
+          "kind": "scene_check",
+          "confidence": 0.35,
+          "detail": "14 people visible when DET-B2 fired",
+          "thumb": "/media/metro/SIG-M0004.jpg",
+          "transcript": null,
+          "features": {}
+        },
+        {
+          "id": "SIG-M0005",
+          "source": "camera",
+          "sensor": "CAM-05",
+          "zone": "C",
+          "ts": "2026-10-10T17:36:07",
+          "kind": "scene_check",
+          "confidence": 0.35,
+          "detail": "12 people visible when DET-B2 fired",
+          "thumb": "/media/metro/SIG-M0005.jpg",
+          "transcript": null,
+          "features": {}
+        },
+        {
+          "id": "SIG-M0003",
+          "source": "radio",
+          "sensor": "RADIO-1",
+          "zone": "C",
+          "ts": "2026-10-10T17:36:15",
+          "kind": "staff_report",
+          "confidence": 0.85,
+          "detail": "keywords: injured, running",
+          "thumb": null,
+          "transcript": "Control, this is platform 2. A group of people are running toward exit C, someone may be injured. Requesting backup.",
+          "features": {}
+        },
+        {
+          "id": "SIG-M0006",
+          "source": "camera",
+          "sensor": "CAM-05",
+          "zone": "C",
+          "ts": "2026-10-10T17:36:15",
+          "kind": "scene_check",
+          "confidence": 0.35,
+          "detail": "13 people visible when RADIO-1 fired",
+          "thumb": "/media/metro/SIG-M0006.jpg",
+          "transcript": null,
+          "features": {}
+        }
+      ],
+      "features": {},
+      "review": {
+        "decision": null,
+        "reviewer": null,
+        "note": null,
+        "ts": null
+      },
+      "audit": [
+        {
+          "ts": "2026-10-10T17:36:07",
+          "actor": "system",
+          "action": "opened by DET-B2 detector_alarm"
+        },
+        {
+          "ts": "2026-10-10T17:36:15",
+          "actor": "system",
+          "action": "incident created from 5 signals, 4 sensors, score 0.79"
+        }
+      ],
+      "latency_ms": 50.3,
+      "vlm": {
+        "model": "Qwen2-VL-2B-Instruct",
+        "description": "A woman in a black skirt is walking through a subway station, while other passengers are waiting for their trains.",
+        "second_opinion": null,
+        "ms": 2777
+      },
+      "sop": [
+        "Open the linked camera clips and confirm what is visible in each zone.",
+        "Call back the reporting staff member on the radio channel to confirm location and injuries.",
+        "If injury or threat is confirmed, notify station master and request emergency services.",
+        "Consider holding trains / announcing alternate exits for the affected zones."
+      ],
+      "release_s": 15.5
+    },
+    {
+      "id": "INC-M-0002",
+      "scenario": "metro",
+      "title": "Crowd surge \u2014 likely routine train arrival",
+      "status": "pending",
+      "priority": "low",
+      "score": 0.4,
+      "start_ts": "2026-10-10T17:38:15",
+      "end_ts": "2026-10-10T17:38:15",
+      "zones": [
+        "D"
+      ],
+      "sensors": [
+        "CAM-07"
+      ],
+      "n_signals": 1,
+      "keyframe": "/media/metro/INC-M-0002.jpg",
+      "summary": "CAM-07 measured a crowd density surge in zone D, people count 7 -> 11 within 6 s [SIG-M0001]. Scene check (Qwen2-VL-2B-Instruct): \"People are standing on a train platform, waiting for a train.\"",
+      "clip": "/media/metro/INC-M-0002.mp4",
+      "signals": [
+        {
+          "id": "SIG-M0001",
+          "source": "camera",
+          "sensor": "CAM-07",
+          "zone": "D",
+          "ts": "2026-10-10T17:38:15",
+          "kind": "crowd_surge",
+          "confidence": 0.7,
+          "detail": "people count 7 -> 11 within 6 s",
+          "thumb": "/media/metro/SIG-M0001.jpg",
+          "transcript": null,
+          "features": {
+            "people_before": 7.0,
+            "people_after": 11.0
+          }
+        }
+      ],
+      "features": {
+        "people_before": 7.0,
+        "people_after": 11.0
+      },
+      "review": {
+        "decision": null,
+        "reviewer": null,
+        "note": null,
+        "ts": null
+      },
+      "audit": [
+        {
+          "ts": "2026-10-10T17:38:15",
+          "actor": "system",
+          "action": "opened by CAM-07 crowd_surge"
+        },
+        {
+          "ts": "2026-10-10T17:38:15",
+          "actor": "system",
+          "action": "incident created from 1 signals, 1 sensors, score 0.40"
+        },
+        {
+          "ts": "2026-10-10T17:38:15",
+          "actor": "vlm",
+          "action": "second opinion: train at platform with passengers boarding/alighting"
+        }
+      ],
+      "latency_ms": 50.3,
+      "vlm": {
+        "model": "Qwen2-VL-2B-Instruct",
+        "description": "People are standing on a train platform, waiting for a train.",
+        "second_opinion": {
+          "question": "Look at this station camera image. Is a train stopped at the platform with passengers getting on or off? Answer yes or no first, then give a short reason.",
+          "answer": "Yes.",
+          "benign": true
+        },
+        "ms": 2478
+      },
+      "sop": [
+        "Glance at the clip; if passengers are boarding/alighting normally, dismiss."
+      ],
+      "release_s": 135.1
+    }
+  ],
+  "signals": [
+    {
+      "id": "SIG-M0002",
+      "source": "detector",
+      "sensor": "DET-B2",
+      "zone": "B",
+      "ts": "2026-10-10T17:36:07",
+      "kind": "detector_alarm",
+      "confidence": 0.75,
+      "detail": "platform emergency intercom pressed",
+      "scenario": "metro",
+      "thumb": null,
+      "transcript": null,
+      "features": {},
+      "video": null,
+      "frame": null,
+      "bbox": null,
+      "incident": "INC-M-0001"
+    },
+    {
+      "id": "SIG-M0004",
+      "source": "camera",
+      "sensor": "CAM-03",
+      "zone": "B",
+      "ts": "2026-10-10T17:36:07",
+      "kind": "scene_check",
+      "confidence": 0.35,
+      "detail": "14 people visible when DET-B2 fired",
+      "scenario": "metro",
+      "thumb": "/media/metro/SIG-M0004.jpg",
+      "transcript": null,
+      "features": {},
+      "video": "data/videos/pexels_37737804.mp4",
+      "frame": 210,
+      "bbox": null,
+      "incident": "INC-M-0001"
+    },
+    {
+      "id": "SIG-M0005",
+      "source": "camera",
+      "sensor": "CAM-05",
+      "zone": "C",
+      "ts": "2026-10-10T17:36:07",
+      "kind": "scene_check",
+      "confidence": 0.35,
+      "detail": "12 people visible when DET-B2 fired",
+      "scenario": "metro",
+      "thumb": "/media/metro/SIG-M0005.jpg",
+      "transcript": null,
+      "features": {},
+      "video": "data/videos/pexels_25786069.mp4",
+      "frame": 50,
+      "bbox": null,
+      "incident": "INC-M-0001"
+    },
+    {
+      "id": "SIG-M0003",
+      "source": "radio",
+      "sensor": "RADIO-1",
+      "zone": "C",
+      "ts": "2026-10-10T17:36:15",
+      "kind": "staff_report",
+      "confidence": 0.85,
+      "detail": "keywords: injured, running",
+      "scenario": "metro",
+      "thumb": null,
+      "transcript": "Control, this is platform 2. A group of people are running toward exit C, someone may be injured. Requesting backup.",
+      "features": {},
+      "video": null,
+      "frame": null,
+      "bbox": null,
+      "incident": "INC-M-0001"
+    },
+    {
+      "id": "SIG-M0006",
+      "source": "camera",
+      "sensor": "CAM-05",
+      "zone": "C",
+      "ts": "2026-10-10T17:36:15",
+      "kind": "scene_check",
+      "confidence": 0.35,
+      "detail": "13 people visible when RADIO-1 fired",
+      "scenario": "metro",
+      "thumb": "/media/metro/SIG-M0006.jpg",
+      "transcript": null,
+      "features": {},
+      "video": "data/videos/pexels_25786069.mp4",
+      "frame": 250,
+      "bbox": null,
+      "incident": "INC-M-0001"
+    },
+    {
+      "id": "SIG-M0001",
+      "source": "camera",
+      "sensor": "CAM-07",
+      "zone": "D",
+      "ts": "2026-10-10T17:38:15",
+      "kind": "crowd_surge",
+      "confidence": 0.7,
+      "detail": "people count 7 -> 11 within 6 s",
+      "scenario": "metro",
+      "thumb": "/media/metro/SIG-M0001.jpg",
+      "transcript": null,
+      "features": {
+        "people_before": 7.0,
+        "people_after": 11.0
+      },
+      "video": "data/videos/pexels_35767994.mp4",
+      "frame": 602,
+      "bbox": null,
+      "incident": "INC-M-0002"
+    }
+  ]
+}

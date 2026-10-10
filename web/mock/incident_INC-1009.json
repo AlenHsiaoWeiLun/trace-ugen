@@ -1,0 +1,36 @@
+{
+  "id": "INC-1009",
+  "scenario": "metro",
+  "title": "Reflections triggered crowd motion alert",
+  "status": "dismissed",
+  "priority": "low",
+  "score": 0.34,
+  "start_ts": "2026-10-10T17:08:14",
+  "end_ts": "2026-10-10T17:08:22",
+  "zones": ["A"],
+  "sensors": ["CAM-01"],
+  "summary": "A moving reflection on the concourse glass wall produced a low-confidence motion cluster [SIG-1009]. The event was dismissed after review because no human tracks crossed the detector line.",
+  "sop": [
+    "Check the glass-wall camera view for repeated reflection artifacts.",
+    "Leave dismissed unless a second sensor confirms human movement."
+  ],
+  "vlm": {
+    "model": "Qwen2-VL-2B-Instruct",
+    "description": "The concourse appears calm and the bright motion is consistent with a reflection on glass.",
+    "second_opinion": {"question": "Is there a benign explanation for the motion cluster?", "answer": "Yes, the motion aligns with a reflected light patch rather than a person track.", "benign": true},
+    "ms": 1972
+  },
+  "keyframe": "/media/metro/INC-1009.jpg",
+  "clip": null,
+  "signals": [
+    {"id": "SIG-1009", "source": "camera", "sensor": "CAM-01", "zone": "A", "ts": "2026-10-10T17:08:14", "kind": "motion_cluster", "confidence": 0.34, "detail": "single low-confidence optical-flow cluster near glass wall", "thumb": null, "transcript": null}
+  ],
+  "features": {},
+  "review": {"decision": "dismissed", "reviewer": "operator-1", "note": "Reflection only; no person track.", "ts": "2026-10-10T17:09:03"},
+  "audit": [
+    {"ts": "2026-10-10T17:08:22", "actor": "system", "action": "incident created from 1 signal"},
+    {"ts": "2026-10-10T17:08:23", "actor": "vlm", "action": "priority downgraded after benign scene explanation"},
+    {"ts": "2026-10-10T17:09:03", "actor": "operator-1", "action": "dismissed incident: Reflection only; no person track."}
+  ],
+  "latency_ms": 501
+}

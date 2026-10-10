@@ -1,0 +1,717 @@
+[
+ {
+  "track_id": 5,
+  "features": {
+   "duration_s": 2.933333333333333,
+   "lateral_std_w": 0.046625444818105106,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 1.7174691067705956,
+   "heading_dot_flow": 0.9999964912418787,
+   "displacement_w": 5.037909379860413,
+   "track_id": 5.0
+  }
+ },
+ {
+  "track_id": 24,
+  "features": {
+   "duration_s": 3.333333333333333,
+   "lateral_std_w": 0.038726898471202614,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 1.114374270270415,
+   "heading_dot_flow": 0.9999533017814524,
+   "displacement_w": 3.7145809009013826,
+   "track_id": 24.0
+  }
+ },
+ {
+  "track_id": 16,
+  "features": {
+   "duration_s": 4.0,
+   "lateral_std_w": 0.058709910379226585,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 1.4956686241597288,
+   "heading_dot_flow": 0.9999546547675133,
+   "displacement_w": 5.982674496638915,
+   "track_id": 16.0
+  }
+ },
+ {
+  "track_id": 106,
+  "features": {
+   "duration_s": 2.0,
+   "lateral_std_w": 0.05155596289064648,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 1.1202598155305914,
+   "heading_dot_flow": 0.9999465624957898,
+   "displacement_w": 2.240519631061183,
+   "track_id": 106.0
+  }
+ },
+ {
+  "track_id": 102,
+  "features": {
+   "duration_s": 2.8666666666666667,
+   "lateral_std_w": 0.10771619685666282,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 1.8715992958258871,
+   "heading_dot_flow": 0.9985012347542594,
+   "displacement_w": 5.365251314700877,
+   "track_id": 102.0
+  }
+ },
+ {
+  "track_id": 140,
+  "features": {
+   "duration_s": 2.4000000000000004,
+   "lateral_std_w": 0.09464868350699342,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 1.5201945254930898,
+   "heading_dot_flow": 0.9999746803405382,
+   "displacement_w": 3.648466861183416,
+   "track_id": 140.0
+  }
+ },
+ {
+  "track_id": 151,
+  "features": {
+   "duration_s": 2.7333333333333334,
+   "lateral_std_w": 0.11620204094047575,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 0.1669378314289572,
+   "heading_dot_flow": 0.2910403059160984,
+   "displacement_w": 0.4562967392391497,
+   "track_id": 151.0
+  }
+ },
+ {
+  "track_id": 161,
+  "features": {
+   "duration_s": 2.466666666666667,
+   "lateral_std_w": 0.023944826351952914,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 0.20481734161406825,
+   "heading_dot_flow": 0.9700919785434688,
+   "displacement_w": 0.5052161093147017,
+   "track_id": 161.0
+  }
+ },
+ {
+  "track_id": 171,
+  "features": {
+   "duration_s": 2.2,
+   "lateral_std_w": 0.04287467441725252,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 0.6934938568176384,
+   "heading_dot_flow": 0.9998490289212169,
+   "displacement_w": 1.5256864849988048,
+   "track_id": 171.0
+  }
+ },
+ {
+  "track_id": 187,
+  "features": {
+   "duration_s": 2.8,
+   "lateral_std_w": 0.021599126450744067,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 0.416676242860835,
+   "heading_dot_flow": 0.9956858355144524,
+   "displacement_w": 1.166693480010338,
+   "track_id": 187.0
+  }
+ },
+ {
+  "track_id": 107,
+  "features": {
+   "duration_s": 2.999999999999999,
+   "lateral_std_w": 0.13425825926458754,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 0.9680786925433787,
+   "heading_dot_flow": 0.9906231943498475,
+   "displacement_w": 2.9042360776301352,
+   "track_id": 107.0
+  }
+ },
+ {
+  "track_id": 211,
+  "features": {
+   "duration_s": 2.8,
+   "lateral_std_w": 0.1832193799375608,
+   "swings": 1.0,
+   "weaving_index": 0.1832193799375608,
+   "speed_wps": 1.140380442762175,
+   "heading_dot_flow": 0.9875021627445262,
+   "displacement_w": 3.19306523973409,
+   "track_id": 211.0
+  }
+ },
+ {
+  "track_id": 225,
+  "features": {
+   "duration_s": 2.533333333333334,
+   "lateral_std_w": 0.06861417325545405,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 1.2189162349167189,
+   "heading_dot_flow": 0.9958291429965365,
+   "displacement_w": 3.087921128455689,
+   "track_id": 225.0
+  }
+ },
+ {
+  "track_id": 272,
+  "features": {
+   "duration_s": 2.200000000000001,
+   "lateral_std_w": 0.29762218648627675,
+   "swings": 1.0,
+   "weaving_index": 0.29762218648627675,
+   "speed_wps": 1.367316093447135,
+   "heading_dot_flow": 0.9764975862221071,
+   "displacement_w": 3.008095405583698,
+   "track_id": 272.0
+  }
+ },
+ {
+  "track_id": 276,
+  "features": {
+   "duration_s": 2.1999999999999993,
+   "lateral_std_w": 0.11862710342306924,
+   "swings": 1.0,
+   "weaving_index": 0.11862710342306924,
+   "speed_wps": 0.2293276172198788,
+   "heading_dot_flow": 0.4820315040246797,
+   "displacement_w": 0.5045207578837332,
+   "track_id": 276.0
+  }
+ },
+ {
+  "track_id": 303,
+  "features": {
+   "duration_s": 2.0,
+   "lateral_std_w": 0.029559895555236408,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 1.068989426772659,
+   "heading_dot_flow": 0.9998776816592234,
+   "displacement_w": 2.137978853545318,
+   "track_id": 303.0
+  }
+ },
+ {
+  "track_id": 297,
+  "features": {
+   "duration_s": 3.666666666666668,
+   "lateral_std_w": 0.07566451295891545,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 0.717273159147843,
+   "heading_dot_flow": 0.9937768389655842,
+   "displacement_w": 2.6300015835420916,
+   "track_id": 297.0
+  }
+ },
+ {
+  "track_id": 339,
+  "features": {
+   "duration_s": 2.799999999999999,
+   "lateral_std_w": 0.0781063767834201,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 0.7746278396571831,
+   "heading_dot_flow": 0.9999704811677039,
+   "displacement_w": 2.168957951040112,
+   "track_id": 339.0
+  }
+ },
+ {
+  "track_id": 8,
+  "features": {
+   "duration_s": 2.933333333333333,
+   "lateral_std_w": 0.2605437188894199,
+   "swings": 3.0,
+   "weaving_index": 0.7816311566682597,
+   "speed_wps": 1.744175477402198,
+   "heading_dot_flow": 0.9856831293323264,
+   "displacement_w": 5.116248067046447,
+   "track_id": 8.0
+  }
+ },
+ {
+  "track_id": 36,
+  "features": {
+   "duration_s": 2.1999999999999997,
+   "lateral_std_w": 0.05697002915126035,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 1.5212634609819728,
+   "heading_dot_flow": 0.9999999950606411,
+   "displacement_w": 3.34677961416034,
+   "track_id": 36.0
+  }
+ },
+ {
+  "track_id": 39,
+  "features": {
+   "duration_s": 2.2666666666666666,
+   "lateral_std_w": 0.02309179214024809,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 1.7689780158737998,
+   "heading_dot_flow": 0.9999418272091323,
+   "displacement_w": 4.009683502647279,
+   "track_id": 39.0
+  }
+ },
+ {
+  "track_id": 81,
+  "features": {
+   "duration_s": 2.666666666666666,
+   "lateral_std_w": 0.04540339596632752,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 1.3841956573837455,
+   "heading_dot_flow": 0.9988425358205131,
+   "displacement_w": 3.691188419689987,
+   "track_id": 81.0
+  }
+ },
+ {
+  "track_id": 94,
+  "features": {
+   "duration_s": 2.466666666666667,
+   "lateral_std_w": 0.028716167210073508,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 1.7625111718855515,
+   "heading_dot_flow": 0.9994269582689321,
+   "displacement_w": 4.347527557317694,
+   "track_id": 94.0
+  }
+ },
+ {
+  "track_id": 117,
+  "features": {
+   "duration_s": 2.133333333333333,
+   "lateral_std_w": 0.027751139278795432,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 1.7888182604344092,
+   "heading_dot_flow": 0.9992824715077286,
+   "displacement_w": 3.816145622260072,
+   "track_id": 117.0
+  }
+ },
+ {
+  "track_id": 126,
+  "features": {
+   "duration_s": 3.1333333333333346,
+   "lateral_std_w": 0.02308935415506154,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 1.2700761711784259,
+   "heading_dot_flow": 0.9997705087832339,
+   "displacement_w": 3.979572003025736,
+   "track_id": 126.0
+  }
+ },
+ {
+  "track_id": 142,
+  "features": {
+   "duration_s": 3.6000000000000014,
+   "lateral_std_w": 0.028912176590758867,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 1.2640088219402403,
+   "heading_dot_flow": 0.9979224169838521,
+   "displacement_w": 4.550431758984867,
+   "track_id": 142.0
+  }
+ },
+ {
+  "track_id": 159,
+  "features": {
+   "duration_s": 2.0666666666666664,
+   "lateral_std_w": 0.01446277654976778,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 1.61653195754352,
+   "heading_dot_flow": 0.9999445442764285,
+   "displacement_w": 3.3408327122566077,
+   "track_id": 159.0
+  }
+ },
+ {
+  "track_id": 164,
+  "features": {
+   "duration_s": 2.7333333333333343,
+   "lateral_std_w": 0.018436380137494462,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 1.3672880532995808,
+   "heading_dot_flow": 0.996146699387204,
+   "displacement_w": 3.7372540123521887,
+   "track_id": 164.0
+  }
+ },
+ {
+  "track_id": 180,
+  "features": {
+   "duration_s": 2.799999999999999,
+   "lateral_std_w": 0.04133290261511416,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 1.5289791103233439,
+   "heading_dot_flow": 0.9880227727296074,
+   "displacement_w": 4.281141508905361,
+   "track_id": 180.0
+  }
+ },
+ {
+  "track_id": 206,
+  "features": {
+   "duration_s": 2.6000000000000014,
+   "lateral_std_w": 0.05150593080904225,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 1.5075381497068308,
+   "heading_dot_flow": 0.9999999292968924,
+   "displacement_w": 3.919599189237762,
+   "track_id": 206.0
+  }
+ },
+ {
+  "track_id": 212,
+  "features": {
+   "duration_s": 3.666666666666666,
+   "lateral_std_w": 0.06873881782607448,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 1.7505992756745257,
+   "heading_dot_flow": 0.9999049284484931,
+   "displacement_w": 6.418864010806593,
+   "track_id": 212.0
+  }
+ },
+ {
+  "track_id": 250,
+  "features": {
+   "duration_s": 2.4666666666666686,
+   "lateral_std_w": 0.016776451477379897,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 1.8875072156297037,
+   "heading_dot_flow": 0.9999707809158176,
+   "displacement_w": 4.655851131886606,
+   "track_id": 250.0
+  }
+ },
+ {
+  "track_id": 278,
+  "features": {
+   "duration_s": 2.400000000000002,
+   "lateral_std_w": 0.0273346397726889,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 1.7824546558075829,
+   "heading_dot_flow": 0.9999820165317689,
+   "displacement_w": 4.277891173938203,
+   "track_id": 278.0
+  }
+ },
+ {
+  "track_id": 300,
+  "features": {
+   "duration_s": 3.0666666666666664,
+   "lateral_std_w": 0.04563014047250862,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 1.3415589151718315,
+   "heading_dot_flow": 0.9999942084768687,
+   "displacement_w": 4.1141140065269495,
+   "track_id": 300.0
+  }
+ },
+ {
+  "track_id": 340,
+  "features": {
+   "duration_s": 2.8666666666666636,
+   "lateral_std_w": 0.14972284995351273,
+   "swings": 1.0,
+   "weaving_index": 0.14972284995351273,
+   "speed_wps": 1.2613886122929419,
+   "heading_dot_flow": 0.9903798664166399,
+   "displacement_w": 3.615980688573096,
+   "track_id": 340.0
+  }
+ },
+ {
+  "track_id": 343,
+  "features": {
+   "duration_s": 3.2666666666666657,
+   "lateral_std_w": 0.013161056997522607,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 1.3127094030314461,
+   "heading_dot_flow": 0.9999999890808897,
+   "displacement_w": 4.288184049902723,
+   "track_id": 343.0
+  }
+ },
+ {
+  "track_id": 357,
+  "features": {
+   "duration_s": 3.666666666666668,
+   "lateral_std_w": 0.04590750586270564,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 1.915088351414921,
+   "heading_dot_flow": 0.9999695214518405,
+   "displacement_w": 7.021990621854713,
+   "track_id": 357.0
+  }
+ },
+ {
+  "track_id": 306,
+  "features": {
+   "duration_s": 6.933333333333334,
+   "lateral_std_w": 0.051918600763046226,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 0.04502415601233394,
+   "heading_dot_flow": 0.9183580069164702,
+   "displacement_w": 0.31216748168551534,
+   "track_id": 306.0
+  }
+ },
+ {
+  "track_id": 368,
+  "features": {
+   "duration_s": 5.066666666666666,
+   "lateral_std_w": 0.01617225311278862,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 1.20910487312472,
+   "heading_dot_flow": 0.9998733872958827,
+   "displacement_w": 6.126131357165248,
+   "track_id": 368.0
+  }
+ },
+ {
+  "track_id": 429,
+  "features": {
+   "duration_s": 3.866666666666667,
+   "lateral_std_w": 0.01847225940145265,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 0.8596184844851102,
+   "heading_dot_flow": 0.9888131381386394,
+   "displacement_w": 3.323858140009093,
+   "track_id": 429.0
+  }
+ },
+ {
+  "track_id": 387,
+  "features": {
+   "duration_s": 6.866666666666667,
+   "lateral_std_w": 0.09293868489212513,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 0.8805839008160443,
+   "heading_dot_flow": 0.999162385994557,
+   "displacement_w": 6.046676118936838,
+   "track_id": 387.0
+  }
+ },
+ {
+  "track_id": 479,
+  "features": {
+   "duration_s": 2.599999999999998,
+   "lateral_std_w": 0.02136470692838916,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 0.8367436469058709,
+   "heading_dot_flow": 0.9998757354036034,
+   "displacement_w": 2.1755334819552625,
+   "track_id": 479.0
+  }
+ },
+ {
+  "track_id": 438,
+  "features": {
+   "duration_s": 7.733333333333331,
+   "lateral_std_w": 0.09895834045073919,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 0.6051839540716484,
+   "heading_dot_flow": 0.9979884364806563,
+   "displacement_w": 4.680089244820746,
+   "track_id": 438.0
+  }
+ },
+ {
+  "track_id": 483,
+  "features": {
+   "duration_s": 6.133333333333329,
+   "lateral_std_w": 0.07144573376238347,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 0.5516173648226321,
+   "heading_dot_flow": 0.9991275393498775,
+   "displacement_w": 3.3832531709121416,
+   "track_id": 483.0
+  }
+ },
+ {
+  "track_id": 532,
+  "features": {
+   "duration_s": 4.133333333333333,
+   "lateral_std_w": 0.07843312379081818,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 0.5331433903479335,
+   "heading_dot_flow": 0.9989132487380219,
+   "displacement_w": 2.2036593467714582,
+   "track_id": 532.0
+  }
+ },
+ {
+  "track_id": 512,
+  "features": {
+   "duration_s": 7.533333333333331,
+   "lateral_std_w": 0.08446570658085727,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 0.538095582455695,
+   "heading_dot_flow": 0.9992531036417176,
+   "displacement_w": 4.0536533878329015,
+   "track_id": 512.0
+  }
+ },
+ {
+  "track_id": 550,
+  "features": {
+   "duration_s": 3.6000000000000014,
+   "lateral_std_w": 0.01516759343576962,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 0.21819196880787198,
+   "heading_dot_flow": 0.9977637082288295,
+   "displacement_w": 0.7854910877083394,
+   "track_id": 550.0
+  }
+ },
+ {
+  "track_id": 547,
+  "features": {
+   "duration_s": 7.066666666666663,
+   "lateral_std_w": 0.06832804668334258,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 0.35306882407646895,
+   "heading_dot_flow": 0.9978395977037531,
+   "displacement_w": 2.495019690140379,
+   "track_id": 547.0
+  }
+ },
+ {
+  "track_id": 34,
+  "features": {
+   "duration_s": 3.6799999999999997,
+   "lateral_std_w": 0.00753674697650967,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 0.01853413644545106,
+   "heading_dot_flow": 0.9972969043978773,
+   "displacement_w": 0.0682056221192599,
+   "track_id": 34.0
+  }
+ },
+ {
+  "track_id": 47,
+  "features": {
+   "duration_s": 2.7199999999999998,
+   "lateral_std_w": 0.0060241455586126855,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 0.01859797180858531,
+   "heading_dot_flow": 0.6961990065120368,
+   "displacement_w": 0.05058648331935204,
+   "track_id": 47.0
+  }
+ },
+ {
+  "track_id": 1,
+  "features": {
+   "duration_s": 10.32,
+   "lateral_std_w": 0.010977752264437372,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 0.02592505243975385,
+   "heading_dot_flow": 0.9982290823974025,
+   "displacement_w": 0.2675465411782597,
+   "track_id": 1.0
+  }
+ },
+ {
+  "track_id": 2,
+  "features": {
+   "duration_s": 10.32,
+   "lateral_std_w": 0.007186598985507767,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 0.01944409643356414,
+   "heading_dot_flow": 0.9999553359948973,
+   "displacement_w": 0.20066307519438192,
+   "track_id": 2.0
+  }
+ },
+ {
+  "track_id": 3,
+  "features": {
+   "duration_s": 10.32,
+   "lateral_std_w": 0.010759527353223247,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 0.01753659980435163,
+   "heading_dot_flow": 0.9898645402375773,
+   "displacement_w": 0.18097770998090884,
+   "track_id": 3.0
+  }
+ },
+ {
+  "track_id": 5,
+  "features": {
+   "duration_s": 10.32,
+   "lateral_std_w": 0.00729223442529644,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 0.02469702604630034,
+   "heading_dot_flow": 0.9958014166731158,
+   "displacement_w": 0.2548733087978195,
+   "track_id": 5.0
+  }
+ },
+ {
+  "track_id": 20,
+  "features": {
+   "duration_s": 8.72,
+   "lateral_std_w": 0.025741591798604004,
+   "swings": 0.0,
+   "weaving_index": 0.0,
+   "speed_wps": 0.022670565869889543,
+   "heading_dot_flow": 0.9385521253524862,
+   "displacement_w": 0.1976873343854368,
+   "track_id": 20.0
+  }
+ }
+]

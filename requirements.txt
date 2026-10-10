@@ -1,0 +1,11 @@
+ultralytics>=8.4
+opencv-python>=4.9
+numpy>=1.26
+pyyaml>=6
+faster-whisper>=1.1
+fastapi>=0.110
+uvicorn>=0.29
+transformers>=4.46   # Qwen2-VL on laptop (optional: --vlm)
+torch>=2.3
+pytest>=8
+# On the UGen300: HailoRT 5.x + hailo_platform wheel from the Hailo Developer Zone

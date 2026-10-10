@@ -1,0 +1,35 @@
+{
+  "id": "INC-1008",
+  "scenario": "metro",
+  "title": "Person down near platform edge",
+  "status": "pending",
+  "priority": "critical",
+  "score": 0.91,
+  "start_ts": "2026-10-10T17:31:22",
+  "end_ts": "2026-10-10T17:31:40",
+  "zones": ["D"],
+  "sensors": ["CAM-09", "DET-02"],
+  "summary": "Pose detector observed a person transition from standing to prone near the platform edge marker [SIG-1040]. No recovery motion was detected for 14 s [SIG-1041], and zone D density remained low enough for direct staff access.",
+  "sop": [
+    "Dispatch nearest platform staff to zone D with medical kit.",
+    "Hold approaching train if the person remains near the edge marker.",
+    "Confirm whether emergency services are required before dismissing."
+  ],
+  "vlm": {
+    "model": "Qwen2-VL-2B-Instruct",
+    "description": "A person appears low to the ground near the platform boundary while nearby foot traffic is sparse.",
+    "second_opinion": null,
+    "ms": 2044
+  },
+  "keyframe": "/media/metro/INC-1008.jpg",
+  "clip": null,
+  "signals": [
+    {"id": "SIG-1040", "source": "camera", "sensor": "CAM-09", "zone": "D", "ts": "2026-10-10T17:31:22", "kind": "fall_detected", "confidence": 0.88, "detail": "vertical pose height collapsed from 152 px to 42 px", "thumb": "/media/metro/SIG-1040.jpg", "transcript": null},
+    {"id": "SIG-1041", "source": "detector", "sensor": "DET-02", "zone": "D", "ts": "2026-10-10T17:31:29", "kind": "person_down", "confidence": 0.93, "detail": "prone posture persisted for 7.4 s", "thumb": null, "transcript": null},
+    {"id": "SIG-1042", "source": "radio", "sensor": "RADIO-1", "zone": "D", "ts": "2026-10-10T17:31:38", "kind": "staff_report", "confidence": 0.86, "detail": "keywords: platform, assistance", "thumb": null, "transcript": "Dispatch medical assistance to platform two, north end."}
+  ],
+  "features": {},
+  "review": {"decision": null, "reviewer": null, "note": null, "ts": null},
+  "audit": [{"ts": "2026-10-10T17:31:40", "actor": "system", "action": "incident created from 3 signals"}],
+  "latency_ms": 684
+}

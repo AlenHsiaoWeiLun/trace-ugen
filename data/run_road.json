@@ -1,0 +1,192 @@
+{
+  "scenario": "road",
+  "site": {
+    "name": "Taipei Bridge approach (public footage)",
+    "zones": [
+      {
+        "id": "R1",
+        "name": "Ramp east",
+        "x": 0.05,
+        "y": 0.1,
+        "w": 0.42,
+        "h": 0.38,
+        "cameras": [
+          "CAM-R1"
+        ]
+      },
+      {
+        "id": "R2",
+        "name": "Ramp lane",
+        "x": 0.53,
+        "y": 0.1,
+        "w": 0.42,
+        "h": 0.38,
+        "cameras": [
+          "CAM-R2"
+        ]
+      },
+      {
+        "id": "R3",
+        "name": "Intersection",
+        "x": 0.05,
+        "y": 0.56,
+        "w": 0.9,
+        "h": 0.36,
+        "cameras": [
+          "CAM-R3"
+        ]
+      }
+    ],
+    "adjacency": []
+  },
+  "raw_signals": 1,
+  "pipeline": {
+    "device": "mps (Apple M4 Pro)",
+    "detector": "yolo11n (auto)",
+    "fps": 18.1,
+    "asr": null,
+    "vlm": "Qwen2-VL-2B-Instruct",
+    "target": "ASUS UGen300 / Hailo-10H",
+    "frames_off_box": 0,
+    "retention_h": 24,
+    "stage_ms": {
+      "detect": 54.65,
+      "track": 0.5,
+      "rules": 0.02,
+      "fusion": 0.04,
+      "evidence": 2382.02,
+      "vlm": 4111.35
+    },
+    "wall_s": 78.8
+  },
+  "incidents": [
+    {
+      "id": "INC-R-0001",
+      "scenario": "road",
+      "title": "Repeated lateral deviation",
+      "status": "pending",
+      "priority": "low",
+      "score": 0.418,
+      "start_ts": "2026-10-10T08:12:21",
+      "end_ts": "2026-10-10T08:12:21",
+      "zones": [
+        "R2"
+      ],
+      "sensors": [
+        "CAM-R2"
+      ],
+      "n_signals": 1,
+      "keyframe": "/media/road/INC-R-0001.jpg",
+      "summary": "CAM-R2 flagged repeated lateral deviation: motorcycle track 8: 3 lateral swings, std 0.26 vehicle widths over 2.9 s [SIG-R0001]. The system does not infer the cause (impairment, distraction or avoidance). Scene check (Qwen2-VL-2B-Instruct): \"The motorcycle in the center of the image is surrounded by a large group of people on scooters, creating a dense and busy traffic scene.\"",
+      "clip": "/media/road/INC-R-0001.mp4",
+      "signals": [
+        {
+          "id": "SIG-R0001",
+          "source": "camera",
+          "sensor": "CAM-R2",
+          "zone": "R2",
+          "ts": "2026-10-10T08:12:21",
+          "kind": "lateral_weaving",
+          "confidence": 0.718,
+          "detail": "motorcycle track 8: 3 lateral swings, std 0.26 vehicle widths over 2.9 s",
+          "thumb": "/media/road/SIG-R0001.jpg",
+          "transcript": null,
+          "features": {
+            "duration_s": 2.933333333333333,
+            "lateral_std_w": 0.2605437188894199,
+            "swings": 3.0,
+            "weaving_index": 0.7816311566682597,
+            "speed_wps": 1.744175477402198,
+            "heading_dot_flow": 0.9856831293323264,
+            "displacement_w": 5.116248067046447,
+            "track_id": 8.0
+          }
+        }
+      ],
+      "features": {
+        "duration_s": 2.933,
+        "lateral_std_w": 0.261,
+        "swings": 3.0,
+        "weaving_index": 0.782,
+        "speed_wps": 1.744,
+        "heading_dot_flow": 0.986,
+        "displacement_w": 5.116,
+        "track_id": 8.0
+      },
+      "review": {
+        "decision": null,
+        "reviewer": null,
+        "note": null,
+        "ts": null
+      },
+      "audit": [
+        {
+          "ts": "2026-10-10T08:12:21",
+          "actor": "system",
+          "action": "opened by CAM-R2 lateral_weaving"
+        },
+        {
+          "ts": "2026-10-10T08:12:21",
+          "actor": "system",
+          "action": "incident created from 1 signals, 1 sensors, score 0.42"
+        },
+        {
+          "ts": "2026-10-10T08:12:21",
+          "actor": "vlm",
+          "action": "second opinion: no benign explanation found"
+        }
+      ],
+      "latency_ms": 55.2,
+      "vlm": {
+        "model": "Qwen2-VL-2B-Instruct",
+        "description": "The motorcycle in the center of the image is surrounded by a large group of people on scooters, creating a dense and busy traffic scene.",
+        "second_opinion": {
+          "question": "Look at the motorcycle in the center of this image. Is there an obstacle, pedestrian, parked or stopped vehicle directly in front of it that it may be avoiding? Answer yes or no first, then give a short reason.",
+          "answer": "No",
+          "benign": false
+        },
+        "ms": 4111
+      },
+      "sop": [
+        "Review the clip and trajectory; check for obstacles or road works that explain the motion.",
+        "If the pattern persists, forward the clip to the traffic unit for follow-up.",
+        "Never treat the flag as evidence of impairment."
+      ],
+      "release_s": 21.4
+    }
+  ],
+  "signals": [
+    {
+      "id": "SIG-R0001",
+      "source": "camera",
+      "sensor": "CAM-R2",
+      "zone": "R2",
+      "ts": "2026-10-10T08:12:21",
+      "kind": "lateral_weaving",
+      "confidence": 0.718,
+      "detail": "motorcycle track 8: 3 lateral swings, std 0.26 vehicle widths over 2.9 s",
+      "scenario": "road",
+      "thumb": "/media/road/SIG-R0001.jpg",
+      "transcript": null,
+      "features": {
+        "duration_s": 2.933333333333333,
+        "lateral_std_w": 0.2605437188894199,
+        "swings": 3.0,
+        "weaving_index": 0.7816311566682597,
+        "speed_wps": 1.744175477402198,
+        "heading_dot_flow": 0.9856831293323264,
+        "displacement_w": 5.116248067046447,
+        "track_id": 8.0
+      },
+      "video": "data/videos/bridge_07.webm",
+      "frame": 84,
+      "bbox": [
+        -56.89918899536133,
+        537.4712524414062,
+        244.4815673828125,
+        1043.1201171875
+      ],
+      "incident": "INC-R-0001"
+    }
+  ]
+}

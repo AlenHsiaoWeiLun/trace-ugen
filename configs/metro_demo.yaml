@@ -1,0 +1,36 @@
+# Virtual station assembled from openly licensed stock clips (see ATTRIBUTION.md).
+# Camera clips come from different real stations; detector alarm and radio call are scripted.
+scenario: metro
+start_time: "2026-10-10T17:36:00"
+site:
+  name: "Demo Station (stitched stock footage)"
+  zones:
+    - {id: A, name: "Concourse", x: 0.05, y: 0.08, w: 0.42, h: 0.36, cameras: [CAM-01]}
+    - {id: B, name: "Platform 2", x: 0.53, y: 0.08, w: 0.42, h: 0.36, cameras: [CAM-03, DET-B2]}
+    - {id: C, name: "Exit C", x: 0.53, y: 0.56, w: 0.42, h: 0.36, cameras: [CAM-05]}
+    - {id: D, name: "Platform 1", x: 0.05, y: 0.56, w: 0.42, h: 0.36, cameras: [CAM-07]}
+  adjacency: [[A, B], [B, C], [A, D]]
+detector:
+  backend: ultralytics      # "hailo" + hef: models/yolov8s_h10.hef on the UGen300
+  weights: models/yolo11n.pt
+  imgsz: 960
+  conf: 0.3
+  process_fps: 15
+rules:
+  surge_window: 6.0
+  surge_ratio: 1.5
+  surge_min_delta: 4
+  run_speed: 1.4
+  run_min_people: 3
+cameras:
+  - {sensor: CAM-03, zone: B, video: data/videos/pexels_37737804.mp4, offset_s: 0}
+  - {sensor: CAM-05, zone: C, video: data/videos/pexels_25786069.mp4, offset_s: 5}
+  - {sensor: CAM-01, zone: A, video: data/videos/pexels_34647618.mp4, offset_s: 60}
+  - {sensor: CAM-07, zone: D, video: data/videos/pexels_35767994.mp4, offset_s: 110, max_seconds: 40}
+detectors:
+  - {sensor: DET-B2, zone: B, at_s: 7, confidence: 0.75, detail: "platform emergency intercom pressed"}
+radio:
+  - {sensor: RADIO-1, zone: B, audio: data/audio/radio_platform2.wav, at_s: 15}
+zone_keywords: {"concourse": A, "platform two": B, "platform 2": B, "exit c": C, "exit see": C, "platform one": D, "platform 1": D}
+asr: {model: tiny.en}
+fusion: {window_s: 30, max_hops: 1}

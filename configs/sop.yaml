@@ -1,0 +1,29 @@
+# Illustrative response checklists, written for the prototype from generic station-operations
+# practice (not an official Taipei Metro procedure). Operators can edit these per site.
+metro:
+  "Alarm corroborated by staff report":
+    - Open the linked camera clips and confirm what is visible in each zone.
+    - Call back the reporting staff member on the radio channel to confirm location and injuries.
+    - If injury or threat is confirmed, notify station master and request emergency services.
+    - Consider holding trains / announcing alternate exits for the affected zones.
+  "Possible multi-zone disturbance":
+    - Review clips from all linked cameras in time order.
+    - Dispatch the nearest staff member to the first zone that fired.
+    - Escalate to station master if the disturbance is confirmed.
+  "Crowd surge — likely routine train arrival":
+    - Glance at the clip; if passengers are boarding/alighting normally, dismiss.
+  "Crowd density surge":
+    - Check platform occupancy against the train schedule.
+    - If no train explains it, send staff to manage the queue.
+  default:
+    - Review the evidence clip.
+    - Decide: confirm, escalate, or dismiss with a note.
+road:
+  "Repeated lateral deviation":
+    - Review the clip and trajectory; check for obstacles or road works that explain the motion.
+    - If the pattern persists, forward the clip to the traffic unit for follow-up.
+    - Never treat the flag as evidence of impairment.
+  "Lateral deviation — possible avoidance maneuver":
+    - Confirm the obstacle in the clip and dismiss if it explains the motion.
+  default:
+    - Review the evidence clip.

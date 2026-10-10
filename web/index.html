@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TRACE Operator Console</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="wordmark">TRACE</div>
+          <div class="subtitle">Incident Intelligence · Edge</div>
+        </div>
+        <nav class="scenario-tabs" aria-label="Scenario filter">
+          <button class="tab active" data-scenario="all">All</button>
+          <button class="tab" data-scenario="metro">Metro</button>
+          <button class="tab" data-scenario="road">Road</button>
+        </nav>
+        <div class="pipeline-chip mono" id="pipelineChip">
+          <span class="live-dot"></span>
+          <span>Pipeline initializing</span>
+        </div>
+        <time class="clock mono" id="clock">--:--:--</time>
+      </header>
+
+      <section class="kpis" aria-label="Incident KPIs">
+        <article class="kpi">
+          <span>Raw signals</span>
+          <strong class="mono" id="kpiSignals">--</strong>
+        </article>
+        <article class="kpi">
+          <span>Incidents</span>
+          <strong class="mono" id="kpiIncidents">--</strong>
+        </article>
+        <article class="kpi reduction-kpi">
+          <div class="kpi-row">
+            <span>Alert reduction</span>
+            <span class="comparison">Raw signals -> Incidents</span>
+          </div>
+          <div class="reduction-line">
+            <strong class="mono" id="kpiReduction">--%</strong>
+            <svg class="sparkline" id="kpiSparkline" viewBox="0 0 164 48" aria-label="Signals versus incidents history"></svg>
+          </div>
+        </article>
+        <article class="kpi">
+          <span>Pending review</span>
+          <strong class="mono" id="kpiPending">--</strong>
+        </article>
+        <article class="kpi privacy-kpi">
+          <span><i data-lucide="shield-check"></i>Privacy</span>
+          <strong class="mono" id="privacyBadge">--</strong>
+        </article>
+      </section>
+
+      <section class="pipeline-readout" aria-label="Edge pipeline latency">
+        <div class="pipeline-readout-title">Edge pipeline (ms)</div>
+        <div class="stage-bars" id="stageBars"></div>
+      </section>
+
+      <main class="console-grid">
+        <aside class="panel queue-panel">
+          <div class="panel-head">
+            <div>
+              <h1>Incident Queue</h1>
+              <p id="queueCount">Awaiting feed</p>
+            </div>
+            <select id="statusFilter" aria-label="Status filter">
+              <option value="all">All status</option>
+              <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="escalated">Escalated</option>
+              <option value="dismissed">Dismissed</option>
+            </select>
+          </div>
+          <div class="queue-list" id="queueList"></div>
+        </aside>
+
+        <section class="panel detail-panel" id="detailPanel">
+          <div class="empty-state">Select an incident to inspect evidence.</div>
+        </section>
+
+        <aside class="right-stack">
+          <section class="panel map-panel">
+            <div class="panel-head compact">
+              <div>
+                <h2>Site Map</h2>
+                <p id="siteName">Scenario layout</p>
+              </div>
+            </div>
+            <div class="map-wrap" id="mapWrap"></div>
+          </section>
+
+          <section class="panel sop-panel" id="sopPanel">
+            <div class="panel-head compact">
+              <div>
+                <h2><i data-lucide="list-checks"></i>Recommended steps</h2>
+                <p id="sopCount">No incident selected</p>
+              </div>
+            </div>
+            <ol class="sop-list" id="sopList"></ol>
+          </section>
+
+          <section class="panel review-panel">
+            <div class="panel-head compact">
+              <div>
+                <h2>Review</h2>
+                <p>operator-1</p>
+              </div>
+            </div>
+            <div class="review-actions">
+              <button class="action confirm" data-review="confirmed"><span>Confirm</span><kbd>C</kbd></button>
+              <button class="action escalate" data-review="escalated"><span>Escalate</span><kbd>E</kbd></button>
+              <button class="action dismiss" data-review="dismissed"><span>Dismiss</span><kbd>D</kbd></button>
+            </div>
+            <textarea id="reviewNote" placeholder="Add review note"></textarea>
+          </section>
+
+          <section class="panel audit-panel">
+            <div class="panel-head compact">
+              <div>
+                <h2>Audit Log</h2>
+                <p id="auditCount">No event selected</p>
+              </div>
+            </div>
+            <ol class="audit-list" id="auditList"></ol>
+          </section>
+        </aside>
+      </main>
+
+      <footer>Decision support only — a human reviews every incident. No identity recognition.</footer>
+    </div>
+    <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

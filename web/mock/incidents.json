@@ -1,0 +1,72 @@
+[
+  {
+    "id": "INC-1007",
+    "scenario": "metro",
+    "title": "Possible multi-zone disturbance",
+    "status": "pending",
+    "priority": "high",
+    "score": 0.86,
+    "start_ts": "2026-10-10T17:36:08",
+    "end_ts": "2026-10-10T17:36:41",
+    "zones": ["B", "C"],
+    "sensors": ["CAM-03", "CAM-07", "RADIO-1"],
+    "n_signals": 6,
+    "keyframe": "/media/metro/INC-1007.jpg"
+  },
+  {
+    "id": "INC-1008",
+    "scenario": "metro",
+    "title": "Person down near platform edge",
+    "status": "pending",
+    "priority": "critical",
+    "score": 0.91,
+    "start_ts": "2026-10-10T17:31:22",
+    "end_ts": "2026-10-10T17:31:40",
+    "zones": ["D"],
+    "sensors": ["CAM-09", "DET-02"],
+    "n_signals": 3,
+    "keyframe": "/media/metro/INC-1008.jpg"
+  },
+  {
+    "id": "INC-2001",
+    "scenario": "road",
+    "title": "Scooter repeated lateral deviation",
+    "status": "pending",
+    "priority": "high",
+    "score": 0.82,
+    "start_ts": "2026-10-10T17:28:06",
+    "end_ts": "2026-10-10T17:28:35",
+    "zones": ["R2", "R3"],
+    "sensors": ["CAM-R2", "DET-R1"],
+    "n_signals": 4,
+    "keyframe": "/media/road/INC-2001.jpg"
+  },
+  {
+    "id": "INC-2002",
+    "scenario": "road",
+    "title": "Wrong-way vehicle entering service lane",
+    "status": "escalated",
+    "priority": "critical",
+    "score": 0.94,
+    "start_ts": "2026-10-10T17:17:51",
+    "end_ts": "2026-10-10T17:18:07",
+    "zones": ["R4"],
+    "sensors": ["CAM-R4", "DET-R3"],
+    "n_signals": 3,
+    "keyframe": "/media/road/INC-2002.jpg"
+  },
+  {
+    "id": "INC-1009",
+    "scenario": "metro",
+    "title": "Reflections triggered crowd motion alert",
+    "status": "dismissed",
+    "priority": "low",
+    "score": 0.34,
+    "start_ts": "2026-10-10T17:08:14",
+    "end_ts": "2026-10-10T17:08:22",
+    "zones": ["A"],
+    "sensors": ["CAM-01"],
+    "n_signals": 1,
+    "keyframe": "/media/metro/INC-1009.jpg"
+  }
+]

@@ -1,0 +1,41 @@
+{
+  "id": "INC-1007",
+  "scenario": "metro",
+  "title": "Possible multi-zone disturbance",
+  "status": "pending",
+  "priority": "high",
+  "score": 0.86,
+  "start_ts": "2026-10-10T17:36:08",
+  "end_ts": "2026-10-10T17:36:41",
+  "zones": ["B", "C"],
+  "sensors": ["CAM-03", "CAM-07", "RADIO-1"],
+  "summary": "Crowd density in zone B rose 3.1x within 6 s [SIG-1031], followed by rapid dispersal toward exit C [SIG-1033]. A staff radio report 9 s later mentions people running from platform two [SIG-1034]. No identity recognition was used.",
+  "sop": [
+    "Open camera clips for zones B and C and confirm current crowd flow.",
+    "Call back RADIO-1 staff and ask whether Exit C needs temporary metering.",
+    "Keep platform announcements calm and route passengers to alternate exits if congestion persists."
+  ],
+  "vlm": {
+    "model": "Qwen2-VL-2B-Instruct",
+    "description": "Passengers are moving quickly near a gate line while others queue at an exit corridor.",
+    "second_opinion": {"question": "Is there a clear benign explanation for the rapid movement?", "answer": "No; the frame shows fast movement and congestion but no obvious scheduled event signage.", "benign": false},
+    "ms": 2186
+  },
+  "keyframe": "/media/metro/INC-1007.jpg",
+  "clip": "/media/metro/INC-1007.mp4",
+  "signals": [
+    {"id": "SIG-1031", "source": "camera", "sensor": "CAM-03", "zone": "B", "ts": "2026-10-10T17:36:08", "kind": "crowd_surge", "confidence": 0.81, "detail": "people count 6 -> 19 in 6.0 s", "thumb": "/media/metro/SIG-1031.jpg", "transcript": null},
+    {"id": "SIG-1032", "source": "detector", "sensor": "DET-01", "zone": "B", "ts": "2026-10-10T17:36:11", "kind": "rapid_motion", "confidence": 0.77, "detail": "17 tracks moving above 2.2 m/s toward east gate", "thumb": null, "transcript": null},
+    {"id": "SIG-1033", "source": "camera", "sensor": "CAM-07", "zone": "C", "ts": "2026-10-10T17:36:15", "kind": "exit_congestion", "confidence": 0.84, "detail": "exit C occupancy crossed 88% of safe operating threshold", "thumb": "/media/metro/SIG-1033.jpg", "transcript": null},
+    {"id": "SIG-1034", "source": "radio", "sensor": "RADIO-1", "zone": "C", "ts": "2026-10-10T17:36:17", "kind": "staff_report", "confidence": 0.9, "detail": "keywords: crowd, running, platform two", "thumb": null, "transcript": "Control, this is platform two, people are running toward exit C."},
+    {"id": "SIG-1036", "source": "camera", "sensor": "CAM-07", "zone": "C", "ts": "2026-10-10T17:36:19", "kind": "scene_check", "confidence": 0.61, "detail": "automatic snapshot requested after staff radio report", "thumb": "/media/metro/SIG-1036.jpg", "transcript": null},
+    {"id": "SIG-1035", "source": "detector", "sensor": "DET-04", "zone": "C", "ts": "2026-10-10T17:36:29", "kind": "density_release", "confidence": 0.72, "detail": "flow normalizing after staff intervention", "thumb": null, "transcript": null}
+  ],
+  "features": {},
+  "review": {"decision": null, "reviewer": null, "note": null, "ts": null},
+  "audit": [
+    {"ts": "2026-10-10T17:36:41", "actor": "system", "action": "incident created from 5 signals"},
+    {"ts": "2026-10-10T17:36:42", "actor": "edge-summarizer", "action": "on-device summary generated in 812 ms"}
+  ],
+  "latency_ms": 812
+}

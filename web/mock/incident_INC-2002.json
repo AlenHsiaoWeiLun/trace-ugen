@@ -1,0 +1,38 @@
+{
+  "id": "INC-2002",
+  "scenario": "road",
+  "title": "Wrong-way vehicle entering service lane",
+  "status": "escalated",
+  "priority": "critical",
+  "score": 0.94,
+  "start_ts": "2026-10-10T17:17:51",
+  "end_ts": "2026-10-10T17:18:07",
+  "zones": ["R4"],
+  "sensors": ["CAM-R4", "DET-R3"],
+  "summary": "Vehicle heading was opposite the signed service-lane direction for 16 s [SIG-2011]. The edge detector escalated the incident after confirming sustained wrong-way movement across two consecutive framesets [SIG-2013].",
+  "sop": [
+    "Notify road control and request service-lane intervention.",
+    "Keep camera R4 pinned until the vehicle exits or turns around.",
+    "Preserve clip for post-incident review."
+  ],
+  "vlm": {
+    "model": "Qwen2-VL-2B-Instruct",
+    "description": "A vehicle is positioned against the expected service-lane direction with no obvious traffic marshal visible.",
+    "second_opinion": {"question": "Could road works explain the direction?", "answer": "No clear road-work signage or marshal is visible in the snapshot.", "benign": false},
+    "ms": 2261
+  },
+  "keyframe": "/media/road/INC-2002.jpg",
+  "clip": null,
+  "signals": [
+    {"id": "SIG-2011", "source": "camera", "sensor": "CAM-R4", "zone": "R4", "ts": "2026-10-10T17:17:51", "kind": "wrong_way_entry", "confidence": 0.92, "detail": "vehicle entered service lane from south exit", "thumb": "/media/road/SIG-2011.jpg", "transcript": null},
+    {"id": "SIG-2012", "source": "detector", "sensor": "DET-R3", "zone": "R4", "ts": "2026-10-10T17:17:57", "kind": "heading_mismatch", "confidence": 0.95, "detail": "heading vector 167 deg opposite lane direction", "thumb": null, "transcript": null},
+    {"id": "SIG-2013", "source": "detector", "sensor": "DET-R3", "zone": "R4", "ts": "2026-10-10T17:18:05", "kind": "sustained_violation", "confidence": 0.94, "detail": "wrong-way motion persisted for 14.1 s", "thumb": null, "transcript": null}
+  ],
+  "features": {"heading_error_deg": 167, "wrong_way_duration_s": 14.1, "vehicle_speed_kph": 22.6},
+  "review": {"decision": "escalated", "reviewer": "operator-1", "note": "Notify road control for service-lane intervention.", "ts": "2026-10-10T17:18:11"},
+  "audit": [
+    {"ts": "2026-10-10T17:18:07", "actor": "system", "action": "incident created from 3 signals"},
+    {"ts": "2026-10-10T17:18:11", "actor": "operator-1", "action": "escalated incident: Notify road control for service-lane intervention."}
+  ],
+  "latency_ms": 641
+}

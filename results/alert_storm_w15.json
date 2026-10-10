@@ -1,0 +1,316 @@
+{
+  "config": {
+    "seeds": 20,
+    "window": 15.0,
+    "hops": 1,
+    "out": "results/alert_storm_w15.json"
+  },
+  "aggregate": {
+    "signals": {
+      "mean": 408.7,
+      "std": 17.832834883999794
+    },
+    "incidents": {
+      "mean": 252.85,
+      "std": 10.937435714096791
+    },
+    "high_cards": {
+      "mean": 6.85,
+      "std": 1.2359207094308275
+    },
+    "medium_cards": {
+      "mean": 11.85,
+      "std": 3.0540956108150903
+    },
+    "high_card_reduction": {
+      "mean": 0.9832846259390648,
+      "std": 0.0026628260958198747
+    },
+    "gt_incidents": {
+      "mean": 6,
+      "std": 0.0
+    },
+    "incident_recall": {
+      "mean": 0.9083333333333333,
+      "std": 0.1114924013354971
+    },
+    "false_high_cards": {
+      "mean": 0.5,
+      "std": 0.5
+    },
+    "pairwise_precision": {
+      "mean": 0.269906266755574,
+      "std": 0.06463192424717158
+    },
+    "pairwise_recall": {
+      "mean": 0.7159437082713067,
+      "std": 0.14226016902909486
+    },
+    "pairwise_f1": {
+      "mean": 0.3888682642766797,
+      "std": 0.08151388782111825
+    }
+  },
+  "runs": [
+    {
+      "signals": 417,
+      "incidents": 258,
+      "high_cards": 9,
+      "medium_cards": 9,
+      "high_card_reduction": 0.9784172661870504,
+      "gt_incidents": 6,
+      "incident_recall": 0.8333333333333334,
+      "false_high_cards": 1,
+      "pairwise_precision": 0.22350230414746544,
+      "pairwise_recall": 0.7293233082706767,
+      "pairwise_f1": 0.34215167548500885
+    },
+    {
+      "signals": 411,
+      "incidents": 243,
+      "high_cards": 7,
+      "medium_cards": 11,
+      "high_card_reduction": 0.9829683698296837,
+      "gt_incidents": 6,
+      "incident_recall": 1.0,
+      "false_high_cards": 0,
+      "pairwise_precision": 0.289532293986637,
+      "pairwise_recall": 0.8552631578947368,
+      "pairwise_f1": 0.43261231281198004
+    },
+    {
+      "signals": 389,
+      "incidents": 242,
+      "high_cards": 8,
+      "medium_cards": 17,
+      "high_card_reduction": 0.9794344473007712,
+      "gt_incidents": 6,
+      "incident_recall": 0.8333333333333334,
+      "false_high_cards": 0,
+      "pairwise_precision": 0.29283489096573206,
+      "pairwise_recall": 0.5802469135802469,
+      "pairwise_f1": 0.38923395445134573
+    },
+    {
+      "signals": 420,
+      "incidents": 254,
+      "high_cards": 8,
+      "medium_cards": 5,
+      "high_card_reduction": 0.9809523809523809,
+      "gt_incidents": 6,
+      "incident_recall": 1.0,
+      "false_high_cards": 1,
+      "pairwise_precision": 0.2615658362989324,
+      "pairwise_recall": 0.8909090909090909,
+      "pairwise_f1": 0.4044016506189821
+    },
+    {
+      "signals": 388,
+      "incidents": 241,
+      "high_cards": 6,
+      "medium_cards": 8,
+      "high_card_reduction": 0.9845360824742269,
+      "gt_incidents": 6,
+      "incident_recall": 0.6666666666666666,
+      "false_high_cards": 1,
+      "pairwise_precision": 0.23197492163009403,
+      "pairwise_recall": 0.556390977443609,
+      "pairwise_f1": 0.3274336283185841
+    },
+    {
+      "signals": 399,
+      "incidents": 257,
+      "high_cards": 6,
+      "medium_cards": 14,
+      "high_card_reduction": 0.9849624060150376,
+      "gt_incidents": 6,
+      "incident_recall": 0.8333333333333334,
+      "false_high_cards": 0,
+      "pairwise_precision": 0.3163265306122449,
+      "pairwise_recall": 0.6838235294117647,
+      "pairwise_f1": 0.43255813953488376
+    },
+    {
+      "signals": 403,
+      "incidents": 258,
+      "high_cards": 6,
+      "medium_cards": 14,
+      "high_card_reduction": 0.9851116625310173,
+      "gt_incidents": 6,
+      "incident_recall": 1.0,
+      "false_high_cards": 1,
+      "pairwise_precision": 0.2012779552715655,
+      "pairwise_recall": 0.6428571428571429,
+      "pairwise_f1": 0.30656934306569344
+    },
+    {
+      "signals": 401,
+      "incidents": 262,
+      "high_cards": 6,
+      "medium_cards": 14,
+      "high_card_reduction": 0.9850374064837906,
+      "gt_incidents": 6,
+      "incident_recall": 0.6666666666666666,
+      "false_high_cards": 1,
+      "pairwise_precision": 0.271523178807947,
+      "pairwise_recall": 0.5578231292517006,
+      "pairwise_f1": 0.3652561247216035
+    },
+    {
+      "signals": 430,
+      "incidents": 248,
+      "high_cards": 8,
+      "medium_cards": 11,
+      "high_card_reduction": 0.9813953488372094,
+      "gt_incidents": 6,
+      "incident_recall": 1.0,
+      "false_high_cards": 1,
+      "pairwise_precision": 0.2412280701754386,
+      "pairwise_recall": 0.8270676691729323,
+      "pairwise_f1": 0.37351443123938877
+    },
+    {
+      "signals": 416,
+      "incidents": 259,
+      "high_cards": 5,
+      "medium_cards": 13,
+      "high_card_reduction": 0.9879807692307693,
+      "gt_incidents": 6,
+      "incident_recall": 0.8333333333333334,
+      "false_high_cards": 0,
+      "pairwise_precision": 0.350109409190372,
+      "pairwise_recall": 0.8556149732620321,
+      "pairwise_f1": 0.49689440993788825
+    },
+    {
+      "signals": 437,
+      "incidents": 241,
+      "high_cards": 9,
+      "medium_cards": 15,
+      "high_card_reduction": 0.9794050343249427,
+      "gt_incidents": 6,
+      "incident_recall": 1.0,
+      "false_high_cards": 1,
+      "pairwise_precision": 0.19120458891013384,
+      "pairwise_recall": 0.4830917874396135,
+      "pairwise_f1": 0.273972602739726
+    },
+    {
+      "signals": 424,
+      "incidents": 242,
+      "high_cards": 7,
+      "medium_cards": 13,
+      "high_card_reduction": 0.9834905660377359,
+      "gt_incidents": 6,
+      "incident_recall": 1.0,
+      "false_high_cards": 1,
+      "pairwise_precision": 0.2294455066921606,
+      "pairwise_recall": 0.8275862068965517,
+      "pairwise_f1": 0.3592814371257485
+    },
+    {
+      "signals": 434,
+      "incidents": 276,
+      "high_cards": 7,
+      "medium_cards": 13,
+      "high_card_reduction": 0.9838709677419355,
+      "gt_incidents": 6,
+      "incident_recall": 1.0,
+      "false_high_cards": 0,
+      "pairwise_precision": 0.14868804664723032,
+      "pairwise_recall": 0.3893129770992366,
+      "pairwise_f1": 0.2151898734177215
+    },
+    {
+      "signals": 384,
+      "incidents": 238,
+      "high_cards": 6,
+      "medium_cards": 12,
+      "high_card_reduction": 0.984375,
+      "gt_incidents": 6,
+      "incident_recall": 0.8333333333333334,
+      "false_high_cards": 0,
+      "pairwise_precision": 0.20919540229885059,
+      "pairwise_recall": 0.8053097345132744,
+      "pairwise_f1": 0.33211678832116787
+    },
+    {
+      "signals": 404,
+      "incidents": 251,
+      "high_cards": 5,
+      "medium_cards": 12,
+      "high_card_reduction": 0.9876237623762376,
+      "gt_incidents": 6,
+      "incident_recall": 0.8333333333333334,
+      "false_high_cards": 0,
+      "pairwise_precision": 0.2923076923076923,
+      "pairwise_recall": 0.8382352941176471,
+      "pairwise_f1": 0.4334600760456274
+    },
+    {
+      "signals": 363,
+      "incidents": 235,
+      "high_cards": 5,
+      "medium_cards": 17,
+      "high_card_reduction": 0.9862258953168044,
+      "gt_incidents": 6,
+      "incident_recall": 0.8333333333333334,
+      "false_high_cards": 0,
+      "pairwise_precision": 0.273972602739726,
+      "pairwise_recall": 0.7476635514018691,
+      "pairwise_f1": 0.4010025062656642
+    },
+    {
+      "signals": 424,
+      "incidents": 269,
+      "high_cards": 8,
+      "medium_cards": 10,
+      "high_card_reduction": 0.9811320754716981,
+      "gt_incidents": 6,
+      "incident_recall": 1.0,
+      "false_high_cards": 0,
+      "pairwise_precision": 0.30346820809248554,
+      "pairwise_recall": 0.7394366197183099,
+      "pairwise_f1": 0.430327868852459
+    },
+    {
+      "signals": 409,
+      "incidents": 265,
+      "high_cards": 6,
+      "medium_cards": 13,
+      "high_card_reduction": 0.9853300733496333,
+      "gt_incidents": 6,
+      "incident_recall": 1.0,
+      "false_high_cards": 0,
+      "pairwise_precision": 0.38095238095238093,
+      "pairwise_recall": 0.7861271676300579,
+      "pairwise_f1": 0.5132075471698113
+    },
+    {
+      "signals": 413,
+      "incidents": 259,
+      "high_cards": 7,
+      "medium_cards": 8,
+      "high_card_reduction": 0.9830508474576272,
+      "gt_incidents": 6,
+      "incident_recall": 1.0,
+      "false_high_cards": 1,
+      "pairwise_precision": 0.42676767676767674,
+      "pairwise_recall": 0.9037433155080213,
+      "pairwise_f1": 0.5797598627787306
+    },
+    {
+      "signals": 408,
+      "incidents": 259,
+      "high_cards": 8,
+      "medium_cards": 8,
+      "high_card_reduction": 0.9803921568627451,
+      "gt_incidents": 6,
+      "incident_recall": 1.0,
+      "false_high_cards": 1,
+      "pairwise_precision": 0.2622478386167147,
+      "pairwise_recall": 0.6190476190476191,
+      "pairwise_f1": 0.368421052631579
+    }
+  ]
+}
