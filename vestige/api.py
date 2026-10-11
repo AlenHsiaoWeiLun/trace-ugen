@@ -25,7 +25,7 @@ from .ingest import process_source
 
 ROOT = db.ROOT
 APP = ROOT / "app"
-ALLOWED = {"demo": {"campus", "metro", "construction", "bench-road", "bench-station"}}
+ALLOWED = {"demo": {"campus", "metro", "construction", "road", "bench-road", "bench-station"}}
 USER = "demo"
 
 app = FastAPI(title="VESTIGE")
@@ -121,6 +121,7 @@ SUGGESTIONS = {
     "metro": ["What happened before the emergency alert?", "Why was this incident flagged?", "Show me the evidence"],
     "construction": ["What safety alerts happened today?", "Why was the 07:58 alert flagged?",
                      "Show me everything at the pour area"],
+    "road": ["Any erratic riding on the bridge?", "Why was the 08:12 alert flagged?", "What happened before it?"],
 }
 
 
@@ -256,7 +257,7 @@ def ask(ws: str, body: Question):
 
 
 # Sites a user sees as one product (benchmarks are engineering-only).
-SITES = ["construction", "campus", "metro"]
+SITES = ["construction", "road", "campus", "metro"]
 
 
 @app.post("/api/ask")
@@ -300,8 +301,16 @@ def alerts():
 
 @app.get("/api/suggestions")
 def suggestions():
-    return {"examples": ["What safety alerts happened today?", "What happened to my bicycle?",
-                         "What happened before the platform alarm?"],
+    c = conn()
+    sites = []
+    for w in SITES:
+        r = db.row(c.execute("SELECT id, name, kind FROM workspaces WHERE id=?", (w,)).fetchone())
+        if r:
+            r["cameras"] = c.execute("SELECT COUNT(*) FROM sources WHERE workspace_id=? AND kind='camera'", (w,)).fetchone()[0]
+            r["example"] = (SUGGESTIONS.get(r["kind"]) or [""])[0]
+            sites.append(r)
+    return {"examples": ["What safety alerts happened today?", "Any erratic riding on the bridge?",
+                         "What happened to my bicycle?"], "sites": sites,
             "by_site": {w: SUGGESTIONS.get(w, []) for w in SITES}}
 
 
@@ -504,7 +513,23 @@ def media(path: str):
 
 @app.get("/")
 def index():
-    return FileResponse(APP / "index.html")
+    """Serve the app with every module URL versioned by its file time, so browsers never mix old and new modules."""
+    page = APP / "index.html"
+    if page.exists():
+        import json as _json
+        import re as _re
+        from fastapi.responses import HTMLResponse
+        html = page.read_text()
+        ver = {f"/{p.relative_to(APP).as_posix()}": f"/{p.relative_to(APP).as_posix()}?v={int(p.stat().st_mtime)}"
+               for p in APP.rglob("*.js") if "vendor" not in p.parts}
+        m = _re.search(r'<script type="importmap">\s*(\{.*?\})\s*</script>', html, _re.S)
+        if m:
+            imap = _json.loads(m.group(1))
+            imap["imports"].update(ver)
+            html = html.replace(m.group(1), _json.dumps(imap))
+        html = html.replace('src="/app.js"', f'src="{ver.get("/app.js", "/app.js")}"')
+        return HTMLResponse(html, headers={"Cache-Control": "no-store"})
+    return {"service": "VESTIGE", "try": ["/api/alerts", "POST /api/ask {\"question\": \"What happened to my bicycle?\"}"]}
 
 
 app.mount("/", StaticFiles(directory=APP, check_dir=False), name="app")

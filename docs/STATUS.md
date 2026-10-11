@@ -24,6 +24,7 @@ done without hardware/credentials · **PLANNED** designed, not built.
 | Investigate | Human review (confirm / uncertain / reject) + audit | TESTED | `test_review_is_audited` |
 | Scenarios | Campus bicycle disappearance | TESTED | object history test |
 | Scenarios | Metro incident investigation (TRACE replay) | TESTED | gap + timestamp tests |
+| Scenarios | Road erratic riding (lateral weaving, cause not inferred) | TESTED | TRACE replay imported as the road site; routing test |
 | Scenarios | Construction worker–vehicle proximity | IMPLEMENTED | image-space only; COCO "truck" for machinery |
 | Scenarios | Construction machinery-specific model | PLANNED | needs site data (pilot under discussion with WanZe) |
 | IncidentLab | 6 perturbations × 3 levels, seeded | TESTED | `tests/test_incidentlab.py` |
@@ -46,7 +47,6 @@ done without hardware/credentials · **PLANNED** designed, not built.
 | Road blur 56 % → 89 %, noise 56 % → 92 % (TTA) | public-video evaluation | same |
 | Low-light enhancement −11 pp | public-video evaluation | same |
 | 409 → 9.4 high cards/h, 99 % recall | synthetic benchmark | `results/alert_storm_w30.json` |
-| 29 % road occlusion (Phase 1 pilot) | public-video evaluation, earlier frame sample | `results/incidentlab_pilot.json`; re-run gives 33 % on 24 frames |
 | YOLOv11n 302 FPS / v11s 142 FPS on Hailo-10H | vendor-published | Hailo Model Zoo v5.4 |
 | Query latency 1.6–3 ms | measured, laptop | `/api/metrics` |
 

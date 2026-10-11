@@ -42,7 +42,7 @@ GenAI is implemented in `traceai/hailo.py`:
 
 For VLM, `HailoVLMCaptioner.caption()` converts the privacy-masked, overlay-free keyframe BGR to RGB, letterboxes it to `336x336`, and sends one image plus one targeted prompt. `traceai/verify.py` calls VLM only after fusion; it may downgrade camera-only incidents but cannot override alarms or radio.
 
-`traceai/ask.py` is constrained to structured event-log text. Planned Hailo path: Qwen2.5-1.5B-Instruct through the same VDevice; current code accepts injected `.chat()`/`.model_id`.
+The VESTIGE agent (`vestige/agent.py`) composes answers only from memory lookups. Planned Hailo path: Qwen2.5-1.5B-Instruct through the same VDevice; current code accepts injected `.chat()`/`.model_id`.
 
 ## Scheduling budget
 

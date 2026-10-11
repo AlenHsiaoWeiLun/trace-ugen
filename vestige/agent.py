@@ -20,7 +20,7 @@ from . import db, memory
 
 INTENTS = ("object_fate", "events_list", "event_before", "event_why", "place", "evidence", "search")
 
-OBJECT_WORDS = r"\b(bike|bicycle|scooter|backpack|bag|equipment|tool|object|b-\d+)\b"
+OBJECT_WORDS = r"\b(bike|bicycle|backpack|bag|equipment|tool|object|b-\d+)\b"
 PLACE_WORDS = r"\b(near|at|around|in)\s+(?P<place>[a-z0-9 ]{3,30})"
 
 
@@ -88,6 +88,8 @@ def plan(question: str, workspace_kind: str) -> tuple[str, dict]:
         return "event_why", {}
     if re.search(r"\b(before|lead(ing)? up|prior to)\b", q) or re.search(r"what happened (in|at) the (station|site)", q):
         return "event_before", {}
+    if re.search(r"\b(weav\w*|swerv\w*|erratic|drunk|impaired)\b", q):
+        return "events_list", {}
     if re.search(OBJECT_WORDS, q) or re.search(r"\b(where|who moved|last seen|my )\b", q):
         m = re.search(OBJECT_WORDS, q)
         return "object_fate", {"object": m.group(1) if m else ""}
@@ -116,7 +118,8 @@ def _llm_intent(question: str) -> str | None:
 # Which place a question is about, when the user hasn't picked one. Keyword evidence first; if nothing matches,
 # every candidate workspace is asked and the answer with the most cited evidence wins.
 ROUTE_WORDS = {
-    "campus": r"\b(bikes?|bicycles?|scooters?|racks?|parking|parked|underpass|riverside|stolen|my)\b",
+    "campus": r"\b(bikes?|bicycles?|racks?|parking|parked|underpass|riverside|stolen|my)\b",
+    "road": r"\b(road|bridge|traffic|driv\w*|riders?|motorcycles?|scooters?|weav\w*|swerv\w*|drunk|impaired|lanes?|erratic)\b",
     "metro": r"\b(metro|station|platform|trains?|intercom|radio|passengers?|commuters?|exit|emergency alert|alarm)\b",
     "construction": r"\b(construction|site|workers?|trucks?|mixer|crane|excavator|pour|haul|safety|hazard|helmet|machinery)\b",
 }
@@ -296,8 +299,13 @@ def _events_list(conn, ws, ans: Answer, ents):
     lc = ans.cite(memory.get_evidence(conn, longest["evidence_id"]) if longest.get("evidence_id") else None,
                   "OBSERVED", longest["ts_start"], longest["title"])
     ld = (longest.get("metrics") or {}).get("duration_s")
-    review = f" {'All ' + str(open_n) if open_n == len(evs) else open_n} still need review." if open_n else " All reviewed."
-    if all(e["kind"] == "worker_vehicle_proximity" for e in evs):
+    review = (" It still needs review." if open_n == len(evs) == 1 else
+              f" {'All ' + str(open_n) if open_n == len(evs) else open_n} still need review." if open_n else " All reviewed.")
+    if all(e["kind"] == "lateral_weaving" for e in evs):
+        ans.headline = (f"{len(evs)} rider{'s' if len(evs) != 1 else ''} weaving across the lane — "
+                        f"{(longest.get('metrics') or {}).get('swings', '?')} sideways swings in {ld} s at {hhmm(longest['ts_start'])} {lc}. "
+                        "The cause is not inferred." + review)
+    elif all(e["kind"] == "worker_vehicle_proximity" for e in evs):
         ans.headline = (f"{len(evs)} time{'s' if len(evs) != 1 else ''} a worker was inside a truck's hazard zone"
                         + (f" — the longest for {ld:.0f} s at {hhmm(longest['ts_start'])} {lc}." if ld else f" {lc}.") + review)
     else:
@@ -378,6 +386,10 @@ def _plain(detail: str) -> tuple[str, str]:
     m = re.match(r"(\d+) people visible when (\S+) fired", detail)
     if m:
         return f"{m.group(1)} people on camera", f"Counted when {m.group(2)} fired."
+    m = re.match(r"(\w+) track (\d+): (\d+) lateral swings, std ([\d.]+) vehicle widths over ([\d.]+) s", detail)
+    if m:
+        return (f"{m.group(1).capitalize()} swings sideways {m.group(3)} times in {float(m.group(5)):.0f} s",
+                f"{m.group(1)} track #{m.group(2)} · lateral spread {m.group(4)} vehicle widths · cause not inferred.")
     if detail.startswith('"'):
         return "Staff radio call", detail
     return detail[:1].upper() + detail[1:], ""
@@ -410,6 +422,10 @@ def _event_why(conn, ws, ans: Answer, ents):
         ans.headline = f"Flagged because {m.get('n_signals', '?')} separate signals pointed to the same place and time {c}."
         if vlm:
             ans.sentences.append(f"The on-device VLM was asked: \"{vlm['question']}\" and answered \"{vlm['answer']}\".")
+    elif ev["kind"] == "lateral_weaving":
+        ans.headline = (f"Flagged because a motorcycle swung sideways {m.get('swings', '?')} times in {m.get('duration_s', '?')} s "
+                        f"{c}. VESTIGE does not judge why — impairment, distraction or avoiding something look the same.")
+        ans.sentences.append(ans.headline)
     else:
         ans.sentences.append(f"{ev['title']}: {ev['kind'].replace('_', ' ')} {c}.")
         ans.headline = (f"Flagged because a parked bicycle left its position {c}. Movement alone is not theft."

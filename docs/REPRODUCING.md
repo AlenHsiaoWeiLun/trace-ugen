@@ -82,7 +82,6 @@ flow writes and then cleans temporary files in the local checkout. Run tests aga
 not during a live demonstration. Missing footage can cause the upload test to skip; inspect the summary.
 
 Current VESTIGE API: [endpoint guide](vestige_api.md), or `/docs` on the running service for generated OpenAPI.
-[docs/api.md](api.md) describes the older TRACE console and is not the VESTIGE endpoint contract.
 
 ## Hardware boundary
 
@@ -100,7 +99,5 @@ USB throughput, shared-model scheduling, end-to-end latency or power on this app
 - The 20-seed synthetic fusion run reproduced all aggregate fields of the committed 30-second report.
 - Browser checks covered home → answer → cited video playback → inferred evidence details → object memory,
   event review/audit and a new IncidentLab experiment (12 frames, low light, baseline versus enhancement).
-- Desktop and 390 × 844 mobile views were inspected. Fresh screenshots:
-  [home](screenshots/10_review_home.jpg), [answer](screenshots/11_review_answer.jpg),
-  [mobile home](screenshots/12_review_mobile_home.jpg), [mobile answer](screenshots/13_review_mobile_answer.jpg).
+- Desktop and 390 × 844 mobile views were inspected in a browser.
 - UGen300 hardware, optional local Qwen intent classification and a final YouTube submission URL remain unverified.

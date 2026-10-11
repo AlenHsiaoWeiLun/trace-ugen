@@ -26,6 +26,8 @@ WORKSPACES = [
      "description": "Virtual station replay from the TRACE engine (stock clips, scripted alarm and radio)."},
     {"id": "construction", "name": "Construction site", "kind": "construction",
      "description": "Construction-site footage (Pexels). Not a WanZe site."},
+    {"id": "road", "name": "Taipei Bridge road", "kind": "road",
+     "description": "Taipei Bridge approach — TRACE road replay on public footage (Wikimedia Commons, Pexels)."},
 ]
 
 CAMPUS = {
@@ -200,6 +202,62 @@ def import_metro(conn, log=print):
     log(f"  metro: {len(run['incidents'])} incidents, {len(run['signals'])} signals imported")
 
 
+def import_road(conn, log=print):
+    """Bring the TRACE road replay (erratic-riding detection) into World Memory as its own site."""
+    run = json.loads((db.ROOT / "data/run_road.json").read_text())
+    out = db.ROOT / "media/vestige/road"
+    out.mkdir(parents=True, exist_ok=True)
+    for z in run["site"]["zones"]:
+        db.insert(conn, "zones", {"id": f"R-{z['id']}", "workspace_id": "road", "name": z["name"], "kind": "lane",
+                                  "x": z["x"], "y": z["y"], "w": z["w"], "h": z["h"]})
+        for cam in z.get("cameras", []):
+            db.insert(conn, "sources", {
+                "id": cam, "workspace_id": "road", "name": f"{cam} · {z['name']}", "kind": "camera",
+                "zone_id": f"R-{z['id']}", "start_ts": run["incidents"][0]["start_ts"] if run["incidents"] else db.now(),
+                "status": "processed", "provenance": "public-footage",
+                "license": PEXELS if cam == "CAM-R3" else "CC BY-SA 4.0 (Tze Chiang Hao, Wikimedia)",
+                "map_x": z["x"] + z["w"] / 2, "map_y": z["y"] + z["h"] / 2, "recording_available": 1,
+                "notes": "TRACE road replay"})
+    for inc in run["incidents"]:
+        eid = None
+        if inc.get("keyframe"):
+            eid = f"E-{inc['id']}"
+            dst = out / f"{inc['id']}.jpg"
+            shutil.copy(db.ROOT / inc["keyframe"].lstrip("/"), dst)
+            if inc.get("clip"):
+                shutil.copy(db.ROOT / inc["clip"].lstrip("/"), out / f"{inc['id']}.mp4")
+            db.insert(conn, "evidence", {"id": eid, "workspace_id": "road", "source_id": inc["sensors"][0], "kind": "frame",
+                                         "path": str(dst.relative_to(db.ROOT)), "ts": inc["start_ts"],
+                                         "provenance": "public-footage", "caption": inc["title"], "created_ts": db.now()})
+        sig = inc["signals"][0] if inc["signals"] else {}
+        f = sig.get("features") or {}
+        db.insert(conn, "events", {
+            "id": f"EV-{inc['id']}", "workspace_id": "road", "kind": "lateral_weaving", "title": "Rider weaving across the lane",
+            "ts_start": inc["start_ts"], "ts_end": inc["end_ts"], "priority": inc["priority"], "summary": inc["summary"],
+            "provenance": "derived", "model": "YOLO11n + ByteTrack + TRACE trajectory rules",
+            "metrics": {"swings": int(f.get("swings", 0)), "lateral_std_widths": round(f.get("lateral_std_w", 0), 2),
+                        "duration_s": round(f.get("duration_s", 0), 1), "score": inc["score"], "vlm": inc.get("vlm"),
+                        "sop": inc.get("sop")},
+            "evidence_id": eid, "zone_id": f"R-{inc['zones'][0]}"})
+        for sg in inc["signals"]:
+            seid = None
+            if sg.get("thumb"):
+                seid = f"E-{sg['id']}"
+                dst = out / f"{sg['id']}.jpg"
+                shutil.copy(db.ROOT / sg["thumb"].lstrip("/"), dst)
+                db.insert(conn, "evidence", {"id": seid, "workspace_id": "road", "source_id": sg["sensor"], "kind": "frame",
+                                             "path": str(dst.relative_to(db.ROOT)), "ts": sg["ts"],
+                                             "provenance": "public-footage", "caption": sg["detail"], "created_ts": db.now()})
+            oid = f"O-{sg['id']}"
+            db.insert(conn, "observations", {
+                "id": oid, "workspace_id": "road", "source_id": sg["sensor"], "ts": sg["ts"], "kind": sg["kind"],
+                "status": "OBSERVED", "zone_id": f"R-{sg['zone']}", "evidence_id": seid, "model": "TRACE trajectory rules",
+                "confidence": sg["confidence"], "provenance": "public-footage", "detail": sg["detail"]})
+            conn.execute("INSERT OR REPLACE INTO event_links VALUES (?,?,?)", (f"EV-{inc['id']}", oid, "trigger"))
+    conn.commit()
+    log(f"  road: {len(run['incidents'])} incidents imported")
+
+
 BENCHMARK = [  # public clips used only as IncidentLab test sets, not as scenario evidence
     ("BENCH-ROAD-1", "Taipei Bridge scooters 06", "bridge_06.webm", "CC BY-SA 4.0 (Tze Chiang Hao, Wikimedia)"),
     ("BENCH-ROAD-2", "Taipei Bridge scooters 07", "bridge_07.webm", "CC BY-SA 4.0 (Tze Chiang Hao, Wikimedia)"),
@@ -226,9 +284,9 @@ def preflight():
     """Check all inputs before resetting an existing memory database."""
     videos = {s["media"] for spec in (CAMPUS, CONSTRUCTION) for s in spec["sources"]}
     videos.update(media for _, _, media, _ in BENCHMARK)
-    replay = db.ROOT / "data/run_metro.json"
-    needed = [db.ROOT / "data/videos" / name for name in sorted(videos)] + [replay]
-    if replay.exists():
+    replays = [db.ROOT / "data/run_metro.json", db.ROOT / "data/run_road.json"]
+    needed = [db.ROOT / "data/videos" / name for name in sorted(videos)] + replays
+    for replay in [r for r in replays if r.exists()]:
         run = json.loads(replay.read_text())
         for inc in run["incidents"]:
             needed.extend(db.ROOT / inc[k].lstrip("/") for k in ("keyframe", "clip") if inc.get(k))
@@ -249,6 +307,7 @@ def build(log=print):
     log("campus"); build_campus(conn, log)
     log("construction"); build_construction(conn, log)
     log("metro"); import_metro(conn, log)
+    log("road"); import_road(conn, log)
     build_benchmark(conn)
     db.audit(conn, None, "system", "demo build", "all workspaces")
     conn.commit()

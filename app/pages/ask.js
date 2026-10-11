@@ -121,7 +121,8 @@ export function AskPage({ ws, setWs, go, route }) {
   };
   const [examples, setExamples] = useState([]);
   const [bySite, setBySite] = useState({});
-  useEffect(() => { api.suggestions().then((x) => { setExamples(x.examples); setBySite(x.by_site); }).catch(() => {}); }, []);
+  const [sites, setSites] = useState([]);
+  useEffect(() => { api.suggestions().then((x) => { setExamples(x.examples); setBySite(x.by_site); setSites(x.sites || []); }).catch(() => {}); }, []);
   useEffect(() => { setSugs(res ? bySite[res.workspace?.id] || examples : examples); }, [res, bySite, examples]);
   useEffect(() => {
     const k = (e) => {
@@ -149,7 +150,11 @@ export function AskPage({ ws, setWs, go, route }) {
           <h1 class="display">The world<br/>leaves a trace.</h1>
           <p class="lede">Ask what happened. See the footage that answers it.</p>
           ${box(true)}
-          <div class="chips">${examples.map((s) => html`<button class="chip-q" onClick=${() => run(s)}>${s}</button>`)}</div>
+          ${sites.length ? html`<div class="sites">
+            <div class="sites-t">Connected to ${sites.length} sites · ${sites.reduce((n, x) => n + x.cameras, 0)} cameras <span>demo</span></div>
+            ${sites.map((x) => html`<button class="site-row" onClick=${() => run(x.example)}>
+              <span class="site-n"><span class="live"></span>${x.name}</span><span class="site-q">${x.example}</span><${Icon} name="arrow" size=${14} /></button>`)}
+          </div>` : null}
           <${Err} error=${err} />
         </div>
         <div class="h-right"><${Showcase} go=${go} /></div>

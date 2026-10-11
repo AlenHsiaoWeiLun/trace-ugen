@@ -30,6 +30,7 @@ The three workspaces below are reproducible
 | Workspace | Try this | What to inspect |
 |---|---|---|
 | **Construction** | “What safety alerts happened today?” → **Why was it flagged?** | See the conclusion, frame and image-space rule behind a worker–vehicle alert. Record a human decision beside the answer. |
+| **Taipei Bridge road** | “Any erratic riding on the bridge?” | A motorcycle that swings sideways 3 times in 3 s, the clip and the rule — VESTIGE flags the riding pattern and does not guess the cause (impairment, distraction or avoidance). |
 | **Campus** | “What happened to my bicycle?” | A recorded check-in, two direct sightings, candidate links across cameras, a map and an explicit end to coverage. Click a citation or timeline row to open its evidence. |
 | **Metro** | “What happened before the emergency alert?” or select an alert under **Needs review** | Review the camera, scripted alarm and radio signals behind a fused incident. A staged recording outage remains a gap. |
 | **⋯ → Detection lab** | **New test** → **Benchmark** → Taipei Bridge scooters | Compare clean-frame detection retention under blur, low light, noise or occlusion. Run a test, inspect the frame comparison and download its report. |
@@ -69,12 +70,20 @@ python -m vestige
 ```
 
 Open **[http://127.0.0.1:8100](http://127.0.0.1:8100)**. The first run builds `data/vestige.db` from video;
-subsequent runs reuse it. Build time depends on the machine and first-use model downloads.
+subsequent runs reuse it. No browser needed:
 
 ```bash
-python -m vestige --port 8101      # use a different local port
+python -m vestige ask "What happened to my bicycle?"     # cited answer, evidence frames listed
+python -m vestige ask "Any erratic riding on the bridge?"
+python -m vestige alerts                                 # open alerts across every site
+python -m vestige lab                                    # IncidentLab results
+```
+ Build time depends on the machine and first-use model downloads.
+
+```bash
+python -m vestige serve --port 8101   # use a different local port
 python -m pytest -q tests         # include API, evidence and ingestion tests
-python -m vestige --rebuild       # replace demo memory; removes local check-ins/reviews/experiments
+python -m vestige build              # rebuild demo memory; removes local check-ins/reviews/experiments
 ```
 
 **If setup fails:** the downloader preserves completed files so it can be rerun. If a media host rejects an
@@ -115,96 +124,22 @@ Feature-by-feature evidence: [implementation status](docs/STATUS.md). API: [refe
 
 ## Repository structure
 
-Start with **`app/` for the current interface** and **`vestige/` for the application backend**.
-`traceai/` provides shared perception/evidence code and the earlier replay pipeline;
-`web/` is its old console, not the UI served by `python -m vestige`.
-
 ```text
 trace-ugen/
-├── app/                         # Current VESTIGE browser interface (Preact, plain ES modules)
-│   ├── index.html               # HTML entry and local module import map
-│   ├── app.js                   # App shell, workspace selection and hash routing
-│   ├── styles.css               # Design system and responsive layouts
-│   ├── pages/
-│   │   ├── ask.js               # Main flow: questions, alerts, answers, evidence and human review
-│   │   ├── memory.js            # Shared SiteMap; retained standalone object-memory page
-│   │   ├── investigate.js       # Retained standalone event page (not in the current router)
-│   │   ├── lab.js               # Detection stress-test configuration and results
-│   │   ├── sources.js           # Camera/source listing and authorized video uploads
-│   │   └── settings.js          # Demo data policy, coverage and audit views
-│   ├── lib/
-│   │   ├── api.js               # HTTP client and background-job polling
-│   │   └── ui.js                # Shared timeline, citation, video and UI components
-│   └── vendor/                  # Vendored Preact, hooks and HTM modules
-├── vestige/                     # Current application backend
-│   ├── __main__.py              # python -m vestige: first-run build, then start the server
-│   ├── api.py                   # FastAPI routes, workspace checks, jobs and static/media serving
-│   ├── db.py                    # SQLite schema, connections, serialization and audit writes
-│   ├── scenarios.py             # Input preflight, demo setup and metro replay import
-│   ├── ingest.py                # Video -> tracks, observations, event rules and masked evidence
-│   ├── associate.py             # Cross-camera candidate links using topology/time/colour
-│   ├── memory.py                # Retrieval tools for objects, events, history and evidence
-│   ├── agent.py                 # Question intent -> retrieval tools -> cited answer
-│   └── incidentlab.py           # Frame perturbations, mitigations, metrics and report generation
-├── traceai/                     # Shared primitives and earlier offline pipeline
-│   ├── perception.py            # Detector backends, ByteTrack wrapper and timing
-│   ├── evidence.py              # Head masking, annotated keyframes and evidence clips
-│   ├── schema.py                # Signal and incident data types for the earlier pipeline
-│   ├── rules.py                 # Metro/road track rules -> signals
-│   ├── fusion.py                # Time/zone-based multi-source signal fusion
-│   ├── speech.py                # Local radio transcription -> staff-report signals
-│   ├── summarize.py             # Incident summaries and optional local VLM wrapper
-│   ├── verify.py                # Optional VLM second opinion on fused incidents
-│   ├── hailo.py                 # Planned Hailo speech/VLM adapters; hardware validation pending
-│   ├── ask.py                   # Earlier event-log question handler
-│   └── server.py                # Earlier console API, serving web/ rather than app/
-├── web/                         # Earlier console HTML/CSS/JS and mock responses
-├── configs/                     # Earlier metro/road pipeline settings and response SOP
-├── scripts/                     # Reproduction and presentation utilities
-│   ├── download_media.sh        # Download the attributed demo footage
-│   ├── run_pipeline.py          # Earlier video/radio/rules/fusion replay pipeline
-│   ├── simulate_alert_storm.py  # Seeded synthetic fusion benchmark
-│   ├── incidentlab_pilot.py     # Earlier standalone detector-robustness pilot
-│   ├── screenshots.py          # Capture product screenshots
-│   ├── demo_gif.py              # Assemble the README walkthrough GIF
-│   ├── make_charts.py           # Generate experiment charts
-│   ├── build_deck.py            # Build the earlier proposal deck
-│   ├── record_demo.py           # Record demo footage
-│   ├── assemble_video.py        # Assemble the narrated demo video
-│   └── screenshot_console.py   # Capture the earlier console
-├── tests/                       # Retrieval, API, upload, preflight, lab, rules and fusion checks
-├── data/                        # Committed replay JSON/audio plus local runtime data
-│   ├── run_metro.json           # Committed metro replay imported by scenarios.py
-│   ├── run_road.json            # Earlier road replay output
-│   ├── tracks_road.json         # Earlier road track output
-│   ├── audio/                  # Scripted radio sample
-│   ├── videos/                 # Downloaded footage (ignored by Git)
-│   ├── uploads/                # User-uploaded source videos (generated, ignored)
-│   └── vestige.db              # World Memory, reviews, jobs and lab results (generated, ignored)
-├── media/                       # Committed replay evidence and generated product evidence
-│   ├── metro/                  # Committed metro keyframes and clips
-│   └── vestige/                # Masked frames/videos and lab comparisons (generated, ignored)
-├── models/                      # Downloaded model weights (local, ignored by Git)
-├── results/                     # Saved benchmark JSON/text and IncidentLab Markdown reports
-├── examples/                    # Sample cited API answers and lab summary JSON
-├── docs/                        # Architecture, API, status, reproduction and submission guides
-│   ├── ARCHITECTURE.md          # Module dependencies, execution flows and storage boundaries
-│   ├── architecture.png        # Target hardware deployment diagram
-│   └── screenshots/            # Product captures used in the README and proposal
-├── deck/                        # Earlier English PDF, source HTML, charts and assets
-├── deck2/                       # Newer VESTIGE slide sources and assets
-├── video/                       # Narration and draft YouTube upload metadata
-├── requirements.txt             # Python application and test dependencies
-├── ATTRIBUTION.md               # Footage, image and other third-party asset sources
-├── LICENSE                      # Project-authored code license
-├── .gitignore                   # Local state, downloads and generated artifacts to exclude
-└── README.md                    # Product overview and getting started
+├── vestige/          # application: memory, agent, IncidentLab, API, CLI (python -m vestige)
+├── app/              # browser interface used in the demo (no build step)
+├── traceai/          # perception, trajectory rules, multi-source fusion, Hailo backends
+├── tests/
+├── scripts/          # download_media.sh, run_pipeline.py (TRACE replays), simulate_alert_storm.py, …
+├── configs/          # TRACE replay settings (metro, road) and response SOPs
+├── data/             # committed replay outputs; downloaded footage and the database stay local
+├── media/            # committed replay evidence
+├── results/          # benchmark and IncidentLab reports
+├── examples/         # sample cited answers (JSON) for readers who don't run the code
+├── docs/             # architecture, status, reproduction, Hailo port, Stage I checklist
+├── deck2/            # proposal slide sources
+└── video/            # demo narration
 ```
-
-The tree groups presentation assets and omits package marker files (`__init__.py`); it covers every
-top-level source/content directory. Generated folders appear after download, ingestion or testing.
-For the exact module connections, startup, question, upload and lab flows, see
-**[Software architecture](docs/ARCHITECTURE.md)**.
 
 ## What we measured
 
@@ -261,7 +196,7 @@ rules on **11 October 2026**. Stage I permits laptop validation; Stage II requir
 | Material | Repository status |
 |---|---|
 | Code, setup, architecture and measured results | Available here |
-| English deck | [Existing TRACE draft: 20 main pages + 2 appendices](deck/b13902049_CN_league.pdf). It predates the VESTIGE product UI. Latest VESTIGE slide sources are in [deck2/](deck2/); a final matching PDF still needs to be exported and checked. |
+| English deck | VESTIGE slide sources in [deck2/](deck2/); the final `b13902049_CN_league.pdf` is exported and submitted separately. |
 | English demo video, YouTube unlisted | **Pending — no verified submission URL in this repository** |
 
 The README and screenshots support review; they do not replace the required deck and video.

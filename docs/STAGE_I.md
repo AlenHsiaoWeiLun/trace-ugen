@@ -28,13 +28,12 @@ This is preparation, not an additional invented Stage I requirement.
 
 ## Repository readiness
 
-- [x] English [README](../README.md) with product explanation, UI screenshots and runnable setup.
+- [x] English [README](../README.md) with product explanation, runnable setup and a command-line demo.
 - [x] Architecture, current versus planned hardware roles, [model/port notes](hailo_port.md).
 - [x] [Feature status](STATUS.md), measured reports and [reproduction commands](REPRODUCING.md).
 - [x] Public-footage attribution and staged/synthetic-data disclosures.
 - [ ] Export the final **VESTIGE** English deck and check page count, references, screenshots and product names.
-  The tracked [TRACE PDF](../deck/b13902049_CN_league.pdf) has 20 main pages plus 2 appendices, but predates the
-  VESTIGE UI. [deck2/](../deck2/) contains newer slide sources, not a verified final submission PDF.
+  [deck2/](../deck2/) contains the VESTIGE slide sources, not yet a verified final submission PDF.
 - [ ] Record a matching English walkthrough, upload as unlisted, and put the verified URL near the README top.
   [video/youtube.txt](../video/youtube.txt) is draft upload metadata, not a published video URL.
 - [ ] Confirm theme, track, participation format and team information in the entry form.

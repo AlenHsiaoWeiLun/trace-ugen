@@ -132,7 +132,6 @@ flowchart LR
     Fusion --> Summary[summarize.py and optional verify.py]
     Summary --> Replay[data/run_*.json and media/]
     Replay --> Import[vestige/scenarios.py - metro import]
-    Replay --> Old[traceai/server.py - earlier web/ console]
 ```
 
 `traceai/schema.py` defines that pipeline's signal/incident types. `traceai/perception.py` includes a planned
