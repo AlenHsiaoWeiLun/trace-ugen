@@ -11,6 +11,7 @@
   "bike",
   "cameras",
   "beyond",
+  "task",
   "intro",
   "answer",
   "sites",
@@ -30,7 +31,7 @@
  ],
  "sections": {
   "s1": {
-   "description": "A bike disappears — and the same problem at city and work-site scale",
+   "description": "A bike disappears, the same problem at city and work-site scale, and the task we take on",
    "start": "cover"
   },
   "s2": {

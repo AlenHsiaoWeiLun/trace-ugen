@@ -32,8 +32,9 @@ This is preparation, not an additional invented Stage I requirement.
 - [x] Architecture, current versus planned hardware roles, [model/port notes](hailo_port.md).
 - [x] [Feature status](STATUS.md), measured reports and [reproduction commands](REPRODUCING.md).
 - [x] Public-footage attribution and staged/synthetic-data disclosures.
-- [x] Export the final **VESTIGE** English deck: [b13902049_CN_league.pdf](b13902049_CN_league.pdf), 17 main pages
-  plus 3 appendices; the last main page carries the GitHub link, video link, name and student ID.
+- [x] Export the final **VESTIGE** English deck: [b13902049_CN_league.pdf](b13902049_CN_league.pdf), 18 main pages
+  plus 3 appendices; page 5 defines the problem and the task; the last page carries the GitHub link, video link,
+  name and student ID.
   Slide sources are in [deck2/](../deck2/).
 - [x] English demo video (2:56), YouTube unlisted: https://youtu.be/zxdB01iN2EA — linked near the README top.
 - [ ] Confirm theme, track, participation format and team information in the entry form.

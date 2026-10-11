@@ -4,6 +4,10 @@
 
 **Ask what happened. Follow the evidence.**
 
+**The task (Workplace AI):** flag worker–vehicle near misses on the cameras a construction site already has,
+and answer what happened with the footage as proof. Detection is designed for the 2.5 W ASUS UGen300 (Stage II);
+today it runs as a laptop prototype.
+
 VESTIGE turns authorized video, alarms and staff reports into a searchable memory of the physical world.
 Ask “What happened to my bicycle?” and get a direct answer, a timeline and the footage behind each sighting.
 One search box routes questions to the relevant authorized site. It distinguishes what a camera observed,
@@ -169,7 +173,7 @@ rules on **11 October 2026**. Stage I permits laptop validation; Stage II requir
 | Material | Repository status |
 |---|---|
 | Code, setup, architecture and measured results | Available here |
-| English deck | [docs/b13902049_CN_league.pdf](docs/b13902049_CN_league.pdf) (17 main pages + 3 appendices); slide sources in [deck2/](deck2/) |
+| English deck | [docs/b13902049_CN_league.pdf](docs/b13902049_CN_league.pdf) (18 main pages + 3 appendices); slide sources in [deck2/](deck2/) |
 | English demo video, YouTube unlisted | [youtu.be/zxdB01iN2EA](https://youtu.be/zxdB01iN2EA) (2:56) |
 
 The README and screenshots support review; they do not replace the required deck and video.
