@@ -9,6 +9,37 @@ is supported by the detector but is slower. Neither Windows-native setup nor UGe
 Install with the [README quickstart](../README.md). `requirements.txt` includes FastAPI's multipart upload
 parser and HTTPX for API tests. No Node tooling is needed to run the application.
 
+## Install FFmpeg
+
+FFmpeg must be available on `PATH` before preparing the demo. If it is missing:
+
+```bash
+brew install ffmpeg             # macOS with Homebrew
+```
+
+On Debian/Ubuntu:
+
+```bash
+sudo apt-get install ffmpeg
+```
+
+Then follow the [README quickstart](../README.md#quickstart). The default demo needs no API key,
+cloud account, frontend build or ASUS accelerator.
+
+## Local operation
+
+From the repository folder, restart the app with:
+
+```bash
+source .venv/bin/activate
+python -m vestige
+```
+
+If port 8100 is occupied, use `python -m vestige --port 8101` and open `http://127.0.0.1:8101`.
+The first launch creates `data/vestige.db`; later launches reuse it. Preparation time depends on the machine
+and first-use model downloads. For offline operation, download the footage and prepare the local YOLO
+weights under `models/` while online first.
+
 ## Data preparation
 
 ```bash
@@ -16,7 +47,8 @@ bash scripts/download_media.sh
 python -m vestige
 ```
 
-The script downloads 11 Pexels videos and two Wikimedia videos. Credits and per-file names are in
+The script downloads 11 Pexels videos and two Wikimedia videos. Completed downloads are reused, so rerun
+the script after a failed transfer. Credits and per-file names are in
 [ATTRIBUTION.md](../ATTRIBUTION.md). The campus scenario needs four bicycle clips, construction needs two site
 clips, and the lab has road/station sources. If a download is blocked, save the corresponding video manually
 under its listed name; do not substitute unrelated footage while claiming to reproduce these results.

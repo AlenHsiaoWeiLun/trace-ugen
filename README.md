@@ -49,9 +49,8 @@ The three workspaces below are reproducible
 
 ## Quickstart
 
-Requires **Python 3.11+**, **FFmpeg** on `PATH`, and internet access for dependency, footage and first-use model downloads.
-The current prototype uses a laptop CPU/GPU; an ASUS accelerator is **not required for Stage I**.
-There is no frontend build step, API key or cloud account requirement for the default planner.
+You need **Python 3.11+**, **FFmpeg** and internet access for the initial downloads.
+[Install FFmpeg if needed](docs/REPRODUCING.md#install-ffmpeg).
 
 ```bash
 git clone https://github.com/AlenHsiaoWeiLun/trace-ugen.git
@@ -59,27 +58,14 @@ cd trace-ugen
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
-
-# Install FFmpeg first if needed: brew install ffmpeg (macOS)
-# or sudo apt-get install ffmpeg (Debian/Ubuntu).
 bash scripts/download_media.sh
 python -m vestige
 ```
 
-Open **[http://127.0.0.1:8100](http://127.0.0.1:8100)**. The first run builds `data/vestige.db` from video;
-subsequent runs reuse it. Build time depends on the machine and first-use model downloads.
+Open **[localhost:8100](http://127.0.0.1:8100)**. The first launch prepares the demo;
+wait until the server is ready. Next time, activate `.venv` and run `python -m vestige`.
 
-```bash
-python -m vestige --port 8101      # use a different local port
-python -m pytest -q tests         # include API, evidence and ingestion tests
-python -m vestige --rebuild       # replace demo memory; removes local check-ins/reviews/experiments
-```
-
-**If setup fails:** the downloader preserves completed files so it can be rerun. If a media host rejects an
-automated download, use its link in [ATTRIBUTION.md](ATTRIBUTION.md), save the video under the listed filename
-in `data/videos/`, then rerun. Startup checks all scenario inputs and FFmpeg before resetting memory.
-For offline operation, prepare footage and the YOLO weights under `models/` while online first.
-See [reproduction and troubleshooting](docs/REPRODUCING.md) for exact scope and prerequisites.
+[Setup help, tests and rebuild options](docs/REPRODUCING.md).
 
 ## How it works
 
