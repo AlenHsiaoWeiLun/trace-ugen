@@ -32,11 +32,10 @@ This is preparation, not an additional invented Stage I requirement.
 - [x] Architecture, current versus planned hardware roles, [model/port notes](hailo_port.md).
 - [x] [Feature status](STATUS.md), measured reports and [reproduction commands](REPRODUCING.md).
 - [x] Public-footage attribution and staged/synthetic-data disclosures.
-- [ ] Export the final **VESTIGE** English deck and check page count, references, screenshots and product names.
-  The tracked [TRACE PDF](trace-proposal-draft.pdf) has 20 main pages plus 2 appendices, but predates the
-  VESTIGE UI. [deck2/](../deck2/) contains newer slide sources, not a verified final submission PDF.
-- [ ] Record a matching English walkthrough, upload as unlisted, and put the verified URL near the README top.
-  No verified published video URL is tracked; old TRACE narration/upload drafts have been removed.
+- [x] Export the final **VESTIGE** English deck: [b13902049_CN_league.pdf](b13902049_CN_league.pdf), 17 main pages
+  plus 3 appendices; the last main page carries the GitHub link, video link, name and student ID.
+  Slide sources are in [deck2/](../deck2/).
+- [x] English demo video (2:56), YouTube unlisted: https://youtu.be/zxdB01iN2EA — linked near the README top.
 - [ ] Confirm theme, track, participation format and team information in the entry form.
 - [ ] Test deck/GitHub/video access from a signed-out browser, submit, and retain the receipt.
   A repository commit is not proof of contest submission.

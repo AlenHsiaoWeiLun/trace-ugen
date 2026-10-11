@@ -11,7 +11,7 @@ what the system inferred and where coverage ends.
 
 **ASUS UGen AI League 2026 · Workplace AI · Battlefield Lightning · ASUS UGen300 target**
 
-[Run locally](#quickstart) · [Try the demo](#a-three-minute-walkthrough) · [Measured results](#what-we-measured) · [Architecture](#how-it-works) · [Repository structure](#repository-structure) · [Submission checklist](docs/STAGE_I.md)
+[Watch the 3-minute video](https://youtu.be/zxdB01iN2EA) · [Run locally](#quickstart) · [Try the demo](#a-three-minute-walkthrough) · [Measured results](#what-we-measured) · [Architecture](#how-it-works) · [Repository structure](#repository-structure) · [Submission checklist](docs/STAGE_I.md)
 
 ![VESTIGE: ask a question and review construction alerts](docs/screenshots/00_home.png)
 
@@ -169,8 +169,8 @@ rules on **11 October 2026**. Stage I permits laptop validation; Stage II requir
 | Material | Repository status |
 |---|---|
 | Code, setup, architecture and measured results | Available here |
-| English deck | VESTIGE slide sources in [deck2/](deck2/); the final `b13902049_CN_league.pdf` is exported and submitted separately. |
-| English demo video, YouTube unlisted | **Pending — no verified submission URL in this repository** |
+| English deck | [docs/b13902049_CN_league.pdf](docs/b13902049_CN_league.pdf) (17 main pages + 3 appendices); slide sources in [deck2/](deck2/) |
+| English demo video, YouTube unlisted | [youtu.be/zxdB01iN2EA](https://youtu.be/zxdB01iN2EA) (2:56) |
 
 The README and screenshots support review; they do not replace the required deck and video.
 
