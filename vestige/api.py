@@ -31,6 +31,15 @@ USER = "demo"
 app = FastAPI(title="VESTIGE")
 
 
+@app.middleware("http")
+async def no_stale_frontend(request, call_next):
+    """The app is served as plain ES modules; stop browsers mixing cached old modules with new ones."""
+    resp = await call_next(request)
+    if not request.url.path.startswith("/media/"):
+        resp.headers["Cache-Control"] = "no-cache"
+    return resp
+
+
 def conn():
     return db.connect()
 
