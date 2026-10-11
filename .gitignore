@@ -14,3 +14,8 @@ video/*.mp4
 deck2/gen/*.png
 deck2/build/
 deck2/assets/alert_storm_old.png
+
+# VESTIGE generated state (rebuild with python -m vestige.scenarios)
+data/vestige.db*
+data/uploads/
+media/vestige/

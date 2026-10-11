@@ -1,171 +1,127 @@
-# TRACE — edge incident intelligence on a 2.5 W ASUS UGen300
+# VESTIGE — The World Leaves a Trace
 
-**ASUS UGen AI League 2026 · Battlefield Lightning · Workplace AI**
-Wei-Lun (Alen) Hsiao · B13902049 · National Taiwan University
+**An AI memory and investigation platform for the physical world.**
+ASUS UGen AI League 2026 · Battlefield Lightning (ASUS UGen300 · Hailo-10H) · Workplace AI
+Wei-Lun (Alen) Hsiao · B13902049 · National Taiwan University · *VESTIGE — an Archean project (provisional)*
 
-TRACE is a copilot for the **station duty officer** who watches camera walls, an alarm panel and a
-radio channel at the same time. It fuses cameras, alarm I/O and staff radio into **one
-evidence-linked incident card per real-world event**, and wakes an on-device vision-language model
-only when an incident needs a second opinion. The same pipeline screens road video for observable
-risky motion (repeated lateral deviation, wrong-way travel) and never labels a rider.
-
-Everything runs on the edge: raw video and audio never leave the box.
+VESTIGE turns authorized camera footage, alarms and staff reports into a **persistent memory of objects
+and events**, answers questions such as *"What happened to my bicycle?"* with a timeline in which **every
+camera sighting cites a stored frame** (user records and coverage gaps are labelled as such, never dressed up
+as sightings), and **stress-tests its own perception** in IncidentLab. The underlying
+engine is **TRACE** (perception, fusion, evidence).
 
 | | |
 |---|---|
-| Deck (Stage I) | `deck/b13902049_CN_league.pdf` |
-| Demo video | see deck p.20 |
-| Target hardware | ASUS UGen300 (Hailo-10H, 40 TOPS INT4, 8 GB, 2.5 W) |
-| Prototype hardware | any laptop (tested: Apple M4 Pro, PyTorch MPS) |
+| Run it | `python -m vestige.api` → http://127.0.0.1:8100 |
+| Status of every feature | [`docs/STATUS.md`](docs/STATUS.md) |
+| Screenshots | [`docs/screenshots/`](docs/screenshots) |
+| Hailo port | [`docs/hailo_port.md`](docs/hailo_port.md) |
+| Stage I deck sources | `deck2/` |
 
-## Why it matters
-
-- In the Dec 19, 2025 Taipei Metro attack, **41 detector groups** fired across zones; operators had
-  to reconstruct the event alarm by alarm.
-- Taipei Metro is adding AI cameras: **280 → 2,901** (Phase I → II). More detectors mean more alerts.
-- Operator attention drops after **~20 min** of monitoring; **94–98 %** of classic alarms are false.
-
-Detection scales; attention doesn't. TRACE's unit of work is the *incident*, not the alert.
-
-## How it works
+## Three capabilities, one engine
 
 ```mermaid
 flowchart LR
-  subgraph Site["Existing site"]
-    C[IP cameras]:::in
-    A[Alarm panel I/O]:::in
-    R[Staff radio]:::in
-  end
-  subgraph Box["TRACE edge box (host + UGen300)"]
-    direction LR
-    subgraph H["Host CPU"]
-      T[ByteTrack + rules] --> F[Zone-graph fusion]
-      F --> E[Evidence: masked clips]
-      E --> S[Summary + SOP + audit]
-      S --> UI[FastAPI console]
-    end
-    subgraph U["UGen300 · Hailo-10H · shared VDevice"]
-      Y[YOLO HEF<br/>every frame]
-      W[Whisper HEF<br/>on voice]
-      V[Qwen2-VL-2B HEF<br/>per incident]
-      L[LLM 1.5B HEF<br/>on question]
-    end
-  end
-  C --> Y --> T
-  A --> F
-  R --> W --> F
-  F -- incident --> V -- second opinion --> S
-  UI -- ask --> L
-  UI --> O[Officer]:::out
-  S -- webhook/JSON metadata --> X[Existing VMS]:::out
-  classDef in fill:#131821,stroke:#38bdf8,color:#e6eaf0;
-  classDef out fill:#0f2633,stroke:#38bdf8,color:#e6eaf0;
+  S[Authorized sources<br/>cameras · check-ins · alarms · radio] --> P[Perception<br/>YOLO11 + ByteTrack + stitching<br/>UGen300 target]
+  P --> O[Observations<br/>with provenance]
+  O --> M[(World Memory<br/>SQLite: objects · tracks · observations<br/>events · relations · evidence · gaps)]
+  M --> A[Investigation agent<br/>planner → tools → cited answer]
+  A --> U[Ask · Memory · Investigations UI]
+  M --> L[IncidentLab<br/>perturb → re-run model → grade]
+  L -->|failure reports, mitigations| P
 ```
 
-1. **Sense** — YOLO + ByteTrack on every camera; per-camera rules emit signals
-   (`crowd_surge`, `sudden_dispersal`, `person_down`, `lateral_weaving`, `wrong_way`,
-   `speed_outlier`). Distances are normalised by body height / vehicle width, so rules work across
-   camera heights without calibration. Whisper transcribes radio calls; the zone is the *last place
-   mentioned* ("this is platform 2 … running toward exit C" → exit C).
-2. **Relate** — `traceai/fusion.py`: a signal joins an open incident if it is within `window_s`
-   of its last signal and within `max_hops` of the zone where the incident started (anchoring +
-   a duration cap stop noise from chaining). Non-visual alarms pull **camera snapshots on demand**
-   from the same and adjacent zones.
-3. **Score** — noisy-OR with one vote per sensor, a confidence floor, and a corroboration factor
-   rewarding independent source types; camera-only evidence is capped at *medium*; a confident human
-   radio report plus any machine sensor is always *high*.
-4. **Verify** — `traceai/verify.py`: only for fused incidents, Qwen2-VL-2B answers one targeted
-   yes/no question on the keyframe (e.g. *is a train at the platform with passengers boarding?*).
-   It may only **downgrade camera-only** incidents; it can never override an alarm or a human report.
-5. **Explain** — masked 6-s clip + keyframe, timeline, summary where every clause cites a signal ID,
-   a site-editable checklist (`configs/sop.yaml`), and an audit log of every machine and human action.
-6. **Review & ask** — the console (`web/`) offers one-key confirm / escalate / dismiss and
-   *Ask the station*: an on-device LLM answers questions from the event log only, with citations.
+- **REMEMBER** — detections become stored observations with an explicit evidence state:
+  `RECORDED` (a user or system record), `OBSERVED` / `LAST_SEEN` (camera evidence), `INFERRED`
+  (cross-camera link), `UNKNOWN` (explicit gap). States are never merged.
+- **INVESTIGATE** — a deterministic tool planner calls `search_objects`, `get_object_history`,
+  `search_events`, `get_event_timeline`, `get_evidence`, `get_source_coverage`; the answer is composed only
+  from their results and cites `[E#]` evidence that opens the stored frame / processed video at that moment.
+  Optional local LLM (`VESTIGE_LLM=qwen`) may only choose an intent label; it never writes facts.
+- **VERIFY (IncidentLab)** — pick an event, a benchmark set or a camera; apply low light, blur, noise,
+  low resolution, partial occlusion or scale; re-run the real detector; report **Detection Retention Rate**
+  (share of the model's clean-frame detections it still finds — *not* ground-truth recall) and compare
+  test-time **mitigations**: corruption-aware enhancement, higher resolution, test-time augmentation,
+  a larger model.
 
-## Results (prototype)
+## Results (measured on this repository, Apple M4 Pro laptop)
 
-**Alert storm (synthetic, 20 seeds, `scripts/simulate_alert_storm.py`)** — 16-zone station,
-32 cameras, 16 detectors, 4 radios, one hour of nuisance alarms + 6 injected multi-zone incidents:
+**IncidentLab on dense Taipei Bridge scooter traffic** (`bench-road`, 24 frames, 98 reference detections,
+level-2 perturbations; [`results/incidentlab_bench-road_X-dae2cec5.md`](results)):
 
-| per hour | cards | incident recall |
-|---|---:|---:|
-| every alarm is a card | 409 | 100 % |
-| per-sensor de-dup (VMS-style) | 373 | 100 % |
-| **TRACE high priority (30 s window)** | **9.4** | **99 %** |
+| Perturbation | Baseline YOLO11n | Best mitigation | Retention | Gain | Cost |
+|---|---:|---|---:|---:|---|
+| Partial occlusion | 33 % | Larger model (YOLO11s) | 62 % | **+29 pp** | 75 vs 46 ms/frame; more new detections |
+| Motion blur | 56 % | Larger model (YOLO11s) | 89 % | **+33 pp** | 75 vs 50 ms/frame |
+| Sensor noise | 56 % | Test-time augmentation | 92 % | **+36 pp** | 111 vs 47 ms/frame |
+| Low light | 90 % | Larger model | 98 % | +8 pp | — |
+| Low light | 90 % | Naive enhancement (CLAHE) | 79 % | **−11 pp** | enhancement can hurt |
 
-False high-priority cards: 3.1/h at 30 s, 0.95/h at 20 s (97 % recall). See `results/`.
+Station crowds (`bench-station`) are already robust (91–96 % baseline); mitigations add 1–4 pp.
+On the Hailo-10H the same trade-off is YOLOv11n 302 FPS vs YOLOv11s 142 FPS (published, PCIe) — both fit
+8 cameras × 15 fps. *Hardware numbers are Hailo's; we have not measured a UGen300 yet.*
 
-**Real footage** — metro run: 4 cameras + scripted intercom alarm + synthesised radio call → one
-*high* incident ("Alarm corroborated by staff report", 5 signals) and one *low* crowd surge that the
-VLM explains as a routine train arrival. Road run: 55 real scooter tracks on the Taipei Bridge
-footage → 1 flagged for review.
+**Engineering improvements found by testing our own pipeline**
+- *Tracklet stitching* (`vestige/ingest.py::stitch`) — ByteTrack split the red bicycle into 4 tracklets on
+  CAM-G2; stitching merges same-class tracklets across short gaps (2 tracks after). Without it no
+  cross-camera chain formed.
+- *Track-level colour signature* — averaging hue histograms over the whole track instead of one frame made
+  the same bicycle's similarity stable (0.57–0.59) and kept a different (silver) bicycle at 0.11–0.17.
+- *Overlay-free VLM input* — Qwen2-VL answered the "train at platform?" check correctly only on the clean,
+  privacy-masked frame; drawn boxes broke it.
 
-**Measured stage latency** (Apple M4 Pro, PyTorch MPS, unoptimised): YOLO11n @960 px ≈ 47 ms/frame,
-ByteTrack + rules < 1 ms, fusion < 1 ms, Whisper tiny.en ≈ 1.5 s for an 8.7 s call. Planning figures
-for the Hailo-10H (Model Zoo, PCIe): YOLOv11n 302 FPS, Whisper-Base 25 tok/s, Qwen2-VL-2B 7 tok/s
-(TTFT 1.0 s). USB throughput is the first Stage II measurement.
+**TRACE fusion (synthetic alert storm, 20 seeds)** — 409 alarms/h → 9.4 high-priority cards, 99 % incident
+recall, 3.1 false high cards/h; per-sensor de-duplication alone removes 9 %. `scripts/simulate_alert_storm.py`
 
-## Quick start
+**Latency** — World Memory investigation query: 1.6–3 ms; YOLO11n @ 960 px: ~47 ms/frame (MPS);
+ingestion of a 12 s 1080p clip incl. masked proxy video: ~9 s.
+
+## Demo scenarios (`python -m vestige.scenarios` rebuilds everything from footage)
+
+| Workspace | Footage | What VESTIGE does |
+|---|---|---|
+| **Campus** | 4 Pexels clips stitched into a site with topology P3/P5 → W1 → G2 | B-17 check-in (RECORDED, staged) → seen at P3 → *left its parked position, handled by person #2* (OBSERVED) → similar red bicycle on W1 and G2 (INFERRED: adjacency + 39 s / 81 s travel + colour 0.59) → *no camera beyond G2* (UNKNOWN). A silver bicycle leaving P5 is checked and **not linked**. |
+| **Metro demo** | TRACE replay (stock clips + scripted intercom alarm + Whisper-transcribed radio) | Fused incident; timeline of the 60 s before the alarm; CAM-05 "live only, no replay" window shown as an evidence gap (staged). |
+| **Construction** | 2 Pexels site clips | Worker–truck image-space proximity events (operators inside cabs excluded), "why was this flagged" with the exact rule, IncidentLab stress test of the event. Not a WanZe site. |
+
+Example questions: *What happened to my bicycle?* · *Where was my bike last seen?* · *Show me everything near
+the underpass gate* · *What happened before the emergency alert?* · *Why was this construction safety event flagged?*
+
+## Install & run
 
 ```bash
-pip install -r requirements.txt
-scripts/download_media.sh                      # openly licensed demo footage
-python scripts/run_pipeline.py configs/metro_demo.yaml --vlm
-python scripts/run_pipeline.py configs/road_demo.yaml --vlm
-python -m traceai.server --replay              # http://127.0.0.1:8000
-python -m pytest -q tests
-python scripts/simulate_alert_storm.py --seeds 20 --window 30
+pip install -r requirements.txt            # Python 3.11+, ffmpeg on PATH
+scripts/download_media.sh                  # openly licensed footage (not redistributed)
+python -m vestige.scenarios                # builds data/vestige.db with real perception (~2 min)
+python -m vestige.api --port 8100          # app + API
+python -m pytest -q tests                  # 30 tests (tests run on a copy of the database)
+python scripts/screenshots.py docs/screenshots
 ```
 
-The console also runs without a backend: `python -m http.server -d web 8765` → `/?mock=1`.
+Configuration: `VESTIGE_LLM=qwen` enables the optional local intent classifier (needs `models/qwen2-vl-2b`).
+Detector backend: `detector_cfg={"backend": "hailo", "hef": ".../yolov8s.hef"}` in `vestige/ingest.py`
+uses `traceai/hailo.py` (HailoRT 5, shared VDevice) — written against Hailo's official examples; **not yet
+validated on hardware**.
 
-## Running on the UGen300
+## Data model
 
-All accelerator code goes through `traceai/hailo.py`, written against HailoRT 5 and the official
-`hailo-apps` examples (`create_infer_model`, `hailo_platform.genai.VLM`, `Speech2Text`). Every model
-shares one `VDevice(group_id="TRACE")` so the HailoRT scheduler time-slices detection, speech and
-the VLM on one chip.
-
-```yaml
-# configs/metro_demo.yaml
-detector: {backend: hailo, hef: models/yolov8s_h10.hef}
-asr: {backend: hailo, hef: models/Whisper-Base.hef}
-```
-```bash
-python scripts/run_pipeline.py configs/metro_demo.yaml --vlm-hef models/Qwen2-VL-2B-Instruct.hef
-```
-
-Host code (tracking, rules, fusion, evidence, console) is identical on the laptop and the UGen300.
-
-## Repository layout
-
-```
-traceai/      schema, perception (Ultralytics / Hailo), rules, fusion, verify (VLM), speech,
-              summarize, evidence, ask, hailo, server
-scripts/      run_pipeline, simulate_alert_storm, make_charts, build_deck, download_media
-configs/      metro_demo.yaml, road_demo.yaml, sop.yaml
-web/          operator console (vanilla JS, no build step; ?mock=1 for fixtures)
-data/         pipeline outputs (run_*.json), synthesised radio audio
-media/        privacy-masked evidence clips and keyframes
-results/      benchmark outputs
-deck/         Stage I proposal (HTML → PDF)
-tests/        unit tests (fusion, VLM verifier, trajectories)
-```
+`workspaces · zones · sources (provenance, license, recording_available) · topology (travel windows) ·
+objects · tracks (path, colour signature) · observations (status, provenance, evidence) · events ·
+event_links · relations (moved_by / same_object_candidate with basis, INFERRED or REJECTED) · evidence
+(sha256, frame, offset) · gaps · experiments · experiment_results · jobs · audit` — see `vestige/db.py`.
 
 ## Trust & privacy
 
-No face recognition and no cross-camera re-identification. Head regions are blurred in every stored
-frame. Video and radio audio are processed in memory; only short masked clips attached to incidents
-are kept (24 h default) and only metadata goes upstream. Prompts forbid guessing identity, emotion,
-intent or intoxication. A road flag describes motion only and always goes to a human.
+Authorized sources only (upload requires an explicit authorization flag) · workspace isolation (403 across
+workspaces) · no face recognition; people are pseudonymous tracks and heads are blurred in every stored
+frame and in the processed proxy video · staged and synthetic data are labelled at row level · missing
+footage is shown as a gap, never filled · movement ≠ theft, proximity ≠ intent, similar appearance ≠
+identity · every review and question is written to the audit log.
 
 ## Honesty notes
 
-- The metro "station" is stitched from stock clips of different real stations; the detector alarm
-  and radio call are scripted inputs. Everything after the inputs is real pipeline output.
-- The alert-storm benchmark uses synthetic alarms; triage-time figures in the deck are stated
-  assumptions to be measured with operators in Stage II.
-- Hailo-10H figures are from Hailo's published Model Zoo; they have not yet been measured on a UGen300.
-
-Development was assisted by AI coding tools (Claude Code, OpenAI Codex). Media credits: `ATTRIBUTION.md`.
-License: MIT.
+Footage is public stock video re-timed into demo sites; the owner check-in, the metro alarm and radio
+call and the CAM-05 outage are staged inputs. IncidentLab reports robustness against the model's own
+clean-frame output, not human labels. Hailo performance figures are published by Hailo. Development was
+assisted by AI tools (Claude Code, OpenAI Codex); images in the deck marked as AI-generated were made with
+an OpenAI image model. Media credits: `ATTRIBUTION.md`. License: MIT.
