@@ -1,7 +1,7 @@
 # VESTIGE API
 
 Server: `python -m vestige` → `http://127.0.0.1:8100`. Interactive OpenAPI: `/docs`.
-This documents `vestige/api.py`; [api.md](api.md) belongs to the older TRACE console.
+This documents the current server in `vestige/api.py`.
 
 The current service uses one demo identity and a workspace allow-list. It is not a production login system.
 Timestamps in the demo are assigned local ISO strings. Evidence and scope checks reject unauthorized

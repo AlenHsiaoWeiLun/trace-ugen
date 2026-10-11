@@ -14,7 +14,7 @@ from pathlib import Path
 import websockets
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from scripts.record_demo import CDP, CHROME  # noqa: E402
+from scripts.browser_capture import CDP, CHROME  # noqa: E402
 
 BASE = "http://127.0.0.1:8100/"
 # (hash, js after load, [(wait seconds, hold seconds in the GIF), ...])

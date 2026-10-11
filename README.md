@@ -113,8 +113,7 @@ Feature-by-feature evidence: [implementation status](docs/STATUS.md). API: [refe
 ## Repository structure
 
 Start with **`app/` for the current interface** and **`vestige/` for the application backend**.
-`traceai/` provides shared perception/evidence code and the earlier replay pipeline;
-`web/` is its old console, not the UI served by `python -m vestige`.
+`traceai/` provides shared perception/evidence code and the reproducible offline fusion pipeline.
 
 ```text
 trace-ugen/
@@ -124,14 +123,13 @@ trace-ugen/
 │   ├── styles.css               # Design system and responsive layouts
 │   ├── pages/
 │   │   ├── ask.js               # Main flow: questions, alerts, answers, evidence and human review
-│   │   ├── memory.js            # Shared SiteMap; retained standalone object-memory page
-│   │   ├── investigate.js       # Retained standalone event page (not in the current router)
 │   │   ├── lab.js               # Detection stress-test configuration and results
 │   │   ├── sources.js           # Camera/source listing and authorized video uploads
 │   │   └── settings.js          # Demo data policy, coverage and audit views
 │   ├── lib/
 │   │   ├── api.js               # HTTP client and background-job polling
-│   │   └── ui.js                # Shared timeline, citation, video and UI components
+│   │   ├── ui.js                # Shared timeline, citation, video and UI components
+│   │   └── site-map.js          # Object-route map embedded in the answer
 │   └── vendor/                  # Vendored Preact, hooks and HTM modules
 ├── vestige/                     # Current application backend
 │   ├── __main__.py              # python -m vestige: first-run build, then start the server
@@ -152,10 +150,7 @@ trace-ugen/
 │   ├── speech.py                # Local radio transcription -> staff-report signals
 │   ├── summarize.py             # Incident summaries and optional local VLM wrapper
 │   ├── verify.py                # Optional VLM second opinion on fused incidents
-│   ├── hailo.py                 # Planned Hailo speech/VLM adapters; hardware validation pending
-│   ├── ask.py                   # Earlier event-log question handler
-│   └── server.py                # Earlier console API, serving web/ rather than app/
-├── web/                         # Earlier console HTML/CSS/JS and mock responses
+│   └── hailo.py                 # Planned Hailo speech/VLM adapters; hardware validation pending
 ├── configs/                     # Earlier metro/road pipeline settings and response SOP
 ├── scripts/                     # Reproduction and presentation utilities
 │   ├── download_media.sh        # Download the attributed demo footage
@@ -164,11 +159,8 @@ trace-ugen/
 │   ├── incidentlab_pilot.py     # Earlier standalone detector-robustness pilot
 │   ├── screenshots.py          # Capture product screenshots
 │   ├── demo_gif.py              # Assemble the README walkthrough GIF
-│   ├── make_charts.py           # Generate experiment charts
-│   ├── build_deck.py            # Build the earlier proposal deck
-│   ├── record_demo.py           # Record demo footage
-│   ├── assemble_video.py        # Assemble the narrated demo video
-│   └── screenshot_console.py   # Capture the earlier console
+│   ├── browser_capture.py      # Shared CDP client for screenshots and GIF capture
+│   └── make_charts.py           # Generate experiment charts into deck2/assets/
 ├── tests/                       # Retrieval, API, upload, preflight, lab, rules and fusion checks
 ├── data/                        # Committed replay JSON/audio plus local runtime data
 │   ├── run_metro.json           # Committed metro replay imported by scenarios.py
@@ -187,10 +179,9 @@ trace-ugen/
 ├── docs/                        # Architecture, API, status, reproduction and submission guides
 │   ├── ARCHITECTURE.md          # Module dependencies, execution flows and storage boundaries
 │   ├── architecture.png        # Target hardware deployment diagram
+│   ├── trace-proposal-draft.pdf # Earlier English proposal PDF, retained for reference
 │   └── screenshots/            # Product captures used in the README and proposal
-├── deck/                        # Earlier English PDF, source HTML, charts and assets
 ├── deck2/                       # Newer VESTIGE slide sources and assets
-├── video/                       # Narration and draft YouTube upload metadata
 ├── requirements.txt             # Python application and test dependencies
 ├── ATTRIBUTION.md               # Footage, image and other third-party asset sources
 ├── LICENSE                      # Project-authored code license
@@ -248,7 +239,7 @@ rules on **11 October 2026**. Stage I permits laptop validation; Stage II requir
 | Material | Repository status |
 |---|---|
 | Code, setup, architecture and measured results | Available here |
-| English deck | [Existing TRACE draft: 20 main pages + 2 appendices](deck/b13902049_CN_league.pdf). It predates the VESTIGE product UI. Latest VESTIGE slide sources are in [deck2/](deck2/); a final matching PDF still needs to be exported and checked. |
+| English deck | [Existing TRACE draft: 20 main pages + 2 appendices](docs/trace-proposal-draft.pdf). It predates the VESTIGE product UI. Latest VESTIGE slide sources are in [deck2/](deck2/); a final matching PDF still needs to be exported and checked. |
 | English demo video, YouTube unlisted | **Pending — no verified submission URL in this repository** |
 
 The README and screenshots support review; they do not replace the required deck and video.

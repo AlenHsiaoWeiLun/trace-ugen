@@ -8,7 +8,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
-OUT = ROOT / "deck" / "charts"
+OUT = ROOT / "deck2" / "assets"
 OUT.mkdir(parents=True, exist_ok=True)
 SURF, INK, MUTED, GRID = "#10222c", "#e6f1f4", "#8aa5b0", "#1c3542"
 TRUE_C, FALSE_C = "#1f9e90", "#d0782a"

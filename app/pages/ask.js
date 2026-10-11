@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { api } from "../lib/api.js";
 import { Cited, Err, html, Icon, Skel, Steps, Story, Toast, Viewer, hhmmss } from "../lib/ui.js";
-import { SiteMap } from "./memory.js";
+import { SiteMap } from "../lib/site-map.js";
 
 // Alerts waiting for a person, shown on the home page: one click opens the answer.
 function Inbox({ ws, onOpen }) {

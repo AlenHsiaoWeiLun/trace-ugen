@@ -82,7 +82,6 @@ flow writes and then cleans temporary files in the local checkout. Run tests aga
 not during a live demonstration. Missing footage can cause the upload test to skip; inspect the summary.
 
 Current VESTIGE API: [endpoint guide](vestige_api.md), or `/docs` on the running service for generated OpenAPI.
-[docs/api.md](api.md) describes the older TRACE console and is not the VESTIGE endpoint contract.
 
 ## Hardware boundary
 
@@ -93,14 +92,16 @@ USB throughput, shared-model scheduling, end-to-end latency or power on this app
 
 ## Verification on 2026-10-11
 
-- **39 tests passed**, including actual upload → ingestion → cited-answer checks and six new preflight tests.
+- Before cleanup, **39 tests passed**, including actual upload → ingestion → cited-answer checks and six new preflight tests.
+  The retired console and its three Q&A tests were then removed; **36 current tests passed** after cleanup.
 - A fresh temporary database was built from the available footage/weights: 5 workspaces, 16 sources,
   23 tracks, 63 observations, 7 events, 38 evidence items and 1 stored gap. This used an existing Python
   environment and local model/media files; it was not a fresh internet-only dependency installation.
 - The 20-seed synthetic fusion run reproduced all aggregate fields of the committed 30-second report.
 - Browser checks covered home → answer → cited video playback → inferred evidence details → object memory,
   event review/audit and a new IncidentLab experiment (12 frames, low light, baseline versus enhancement).
-- Desktop and 390 × 844 mobile views were inspected. Fresh screenshots:
-  [home](screenshots/10_review_home.jpg), [answer](screenshots/11_review_answer.jpg),
-  [mobile home](screenshots/12_review_mobile_home.jpg), [mobile answer](screenshots/13_review_mobile_answer.jpg).
+- Desktop and 390 × 844 mobile views were inspected before the latest single-page UI integration.
+  Those obsolete captures were removed; the README uses the current [product screenshot set](screenshots/).
+- After retiring the console, browser checks confirmed construction alert questions, the extracted object-route
+  map and evidence video playback still work; no browser console errors were observed.
 - UGen300 hardware, optional local Qwen intent classification and a final YouTube submission URL remain unverified.

@@ -33,10 +33,10 @@ This is preparation, not an additional invented Stage I requirement.
 - [x] [Feature status](STATUS.md), measured reports and [reproduction commands](REPRODUCING.md).
 - [x] Public-footage attribution and staged/synthetic-data disclosures.
 - [ ] Export the final **VESTIGE** English deck and check page count, references, screenshots and product names.
-  The tracked [TRACE PDF](../deck/b13902049_CN_league.pdf) has 20 main pages plus 2 appendices, but predates the
+  The tracked [TRACE PDF](trace-proposal-draft.pdf) has 20 main pages plus 2 appendices, but predates the
   VESTIGE UI. [deck2/](../deck2/) contains newer slide sources, not a verified final submission PDF.
 - [ ] Record a matching English walkthrough, upload as unlisted, and put the verified URL near the README top.
-  [video/youtube.txt](../video/youtube.txt) is draft upload metadata, not a published video URL.
+  No verified published video URL is tracked; old TRACE narration/upload drafts have been removed.
 - [ ] Confirm theme, track, participation format and team information in the entry form.
 - [ ] Test deck/GitHub/video access from a signed-out browser, submit, and retain the receipt.
   A repository commit is not proof of contest submission.

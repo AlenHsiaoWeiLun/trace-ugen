@@ -15,7 +15,7 @@ flowchart TB
     subgraph Browser[Browser - app/]
         Shell[app.js - shell and routing] --> Ask[pages/ask.js - questions and alert review]
         Shell --> Admin[pages/sources.js, lab.js, settings.js]
-        Ask --> Map[pages/memory.js - SiteMap component]
+        Ask --> Map[lib/site-map.js - object route map]
         Ask --> UI[lib/ui.js - citations, timeline, video]
         Ask --> Client[lib/api.js - HTTP and job polling]
         Admin --> Client
@@ -45,9 +45,8 @@ flowchart TB
     API -->|scope-checked /media| Files
 ```
 
-`memory.js` still includes an older standalone page, but `ask.js` now imports its `SiteMap` directly.
-The retained `investigate.js` page is not registered by the current `app.js` router; event investigation
-and review now happen in `ask.js`. Their APIs remain available.
+`ask.js` imports the shared `SiteMap` from `app/lib/site-map.js`. Questions, object history, event
+investigation and human review share that page; there is no second console or separate memory/event page.
 
 ## Execution flows
 
@@ -132,7 +131,6 @@ flowchart LR
     Fusion --> Summary[summarize.py and optional verify.py]
     Summary --> Replay[data/run_*.json and media/]
     Replay --> Import[vestige/scenarios.py - metro import]
-    Replay --> Old[traceai/server.py - earlier web/ console]
 ```
 
 `traceai/schema.py` defines that pipeline's signal/incident types. `traceai/perception.py` includes a planned
@@ -144,7 +142,7 @@ default VESTIGE demo runs on UGen300. See [the hardware plan](hailo_port.md) for
 | Change | Start here |
 |---|---|
 | Main user flow, alert inbox or review controls | `app/pages/ask.js` |
-| Object map | `app/pages/memory.js` → `SiteMap` |
+| Object map | `app/lib/site-map.js` → `SiteMap` |
 | Timeline/citations/video interaction | `app/lib/ui.js` |
 | Routes, upload validation or background jobs | `vestige/api.py` |
 | Question intent or answer composition | `vestige/agent.py` |
