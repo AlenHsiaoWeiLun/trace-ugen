@@ -27,6 +27,7 @@ SHOTS = [
     ("04_answer_bicycle_map", "#/ask?ws=campus&q=What%20happened%20to%20my%20bicycle%3F", 1600, 1000,
      "setTimeout(()=>document.querySelector('.omap')?.scrollIntoView({block:'center'}),2500)", 5),
     ("05_answer_metro", "#/ask?ws=metro&q=What%20happened%20before%20the%20emergency%20alert%3F", 1600, 1000, None, 5),
+    ("05b_answer_road", "#/ask?q=Why%20was%20the%2008%3A12%20alert%20flagged%3F", 1600, 1000, None, 5),
     ("06_detection_lab", "#/lab?ws=construction", 1600, 1000, None, 4),
     ("07_sources", "#/sources?ws=construction", 1600, 1000, None, 3),
     ("08a_mobile_home", "#/ask?ws=construction", 390, 844, None, 6),
