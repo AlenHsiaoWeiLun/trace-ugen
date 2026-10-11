@@ -62,7 +62,7 @@ function Showcase({ go }) {
   return html`<div class="show">
     <div class="show-top">
       <span class="show-site"><span class="live"></span>${scene.name}</span>
-      <button class="link" aria-label=${`Explore ${scene.name} demo`} onClick=${() => go("ask", null, { q: scene.q })}>Explore demo <${Icon} name="arrow" size=${14} /></button>
+      <button class="link" aria-label=${`Investigate: ${scene.q}`} onClick=${() => go("ask", null, { q: scene.q })}>Explore demo <${Icon} name="arrow" size=${14} /></button>
     </div>
     <div class="show-frame" role="button" tabindex="0" aria-label=${`Investigate: ${scene.q}`}
       onKeyDown=${(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go("ask", null, { q: scene.q }); } }}
