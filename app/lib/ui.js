@@ -26,12 +26,21 @@ const ICONS = {
   flask: "M9 3h6M10 3v6L5 19a1.5 1.5 0 0 0 1.3 2h11.4A1.5 1.5 0 0 0 19 19l-5-10V3",
   upload: "M12 16V4M6 10l6-6 6 6M4 20h16",
   download: "M12 4v12M6 10l6 6 6-6M4 20h16",
+  chev: "M6 9l6 6 6-6",
+  chevl: "M15 6l-6 6 6 6",
+  chevr: "M9 6l6 6-6 6",
+  dots: "M5 12h.01M12 12h.01M19 12h.01",
+  plus: "M12 5v14M5 12h14",
+  map: "M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14",
+  spark: "M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6",
+  shield: "M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z",
+  gapi: "M4 12h3M10 12h4M17 12h3",
 };
 export const Icon = ({ name, size = 17 }) => html`<svg viewBox="0 0 24 24" width=${size} height=${size}
   style="stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"><path d=${ICONS[name]} /></svg>`;
 
-export const Status = ({ s }) => html`<span class=${`chip st-${s}`}>${STATUS_LABEL[s] || s}</span>`;
-export const Prov = ({ p }) => p ? html`<span class=${`pill ${p === "staged" ? "staged" : ""}`} title="provenance">${p}</span>` : null;
+export const Status = ({ s }) => html`<span class=${`chip st-${s}`}><i></i>${STATUS_LABEL[s] || s}</span>`;
+export const Prov = ({ p }) => p ? html`<span class=${`prov ${p === "staged" ? "staged" : ""}`} title="provenance">${p}</span>` : null;
 
 export function Skel({ h = 16, w = "100%", style = "" }) {
   return html`<div class="skel" style=${`height:${h}px;width:${w};${style}`}></div>`;
@@ -114,8 +123,8 @@ export function Compare({ a, b, labelA = "Original", labelB = "Perturbed" }) {
       onKeyDown=${(e) => { if (e.key === "ArrowLeft") setX(Math.max(0, x - 5)); if (e.key === "ArrowRight") setX(Math.min(100, x + 5)); }}>
     <img src=${a} alt=${labelA} /><img class="top" src=${b} alt=${labelB} />
     <div class="handle"></div>
-    <span class="tag chip st-RECORDED" style="left:10px">${labelA}</span>
-    <span class="tag chip st-OBSERVED" style="right:10px">${labelB}</span>
+    <span class="tag glass" style="left:12px">${labelA}</span>
+    <span class="tag glass gold-t" style="right:12px">${labelB}</span>
   </div>`;
 }
 
@@ -148,4 +157,95 @@ export function Lanes({ sources, observations, gaps = [], window, active, onPick
     ${playhead ? html`<div class="playhead" style=${`left:calc(${lane} + (100% - ${lane}) * ${(t(playhead) - t0) / (t1 - t0)})`}></div>` : null}
     <div class="axis">${ticks.map((v) => html`<span style=${`left:${((v - t0) / (t1 - t0)) * 100}%`}>${new Date(v).toTimeString().slice(0, 8)}</span>`)}</div>
   </div>`;
+}
+
+// Story: each answer sentence becomes a step; the step's evidence state comes from what it cites.
+export function stepState(sentence, citations) {
+  const ns = [...sentence.matchAll(/\[E(\d+)\]/g)].map((m) => +m[1]);
+  const cs = ns.map((n) => citations.find((c) => c.n === n)).filter(Boolean);
+  if (cs.some((c) => c.status === "INFERRED")) return { state: "INFERRED", cites: cs };
+  if (cs.length) return { state: cs[0].status === "LAST_SEEN" ? "LAST_SEEN" : "OBSERVED", cites: cs };
+  if (/no authorized camera|unknown|no camera|not covered|no recording|no replay|gap/i.test(sentence)) return { state: "UNKNOWN", cites: [] };
+  if (/recorded|check-in|registered/i.test(sentence)) return { state: "RECORDED", cites: [] };
+  return { state: "NOTE", cites: [] };
+}
+
+export function Story({ sentences, citations, active, onPick, gaps = [] }) {
+  return html`<ol class="story">${sentences.map((s, i) => {
+    const { state, cites } = stepState(s, citations);
+    const c = cites[0];
+    const t = c ? hhmmss(c.ts) : state === "UNKNOWN" && gaps[0] ? `${hhmmss(gaps[0].ts_start)} →` : "";
+    const on = c && cites.some((x) => x.n === active);
+    return html`<li class=${`step ${state} ${on ? "on" : ""} ${c ? "has" : ""}`} key=${i} style=${`--i:${i}`}
+        onClick=${() => c && onPick && onPick(c.n)}>
+      <span class="rail"><i></i></span>
+      <div class="step-b">
+        <div class="step-m">${t ? html`<span class="mono">${t}</span>` : null}${state !== "NOTE" ? html`<span class=${`tag-s ${state}`}>${STATUS_LABEL[state]}</span>` : null}
+          ${c ? html`<span>${(c.source || "").split(" · ").slice(-1)[0]}</span>` : null}</div>
+        <p><${Cited} text=${s} citations=${citations} active=${active} onCite=${onPick} /></p>
+      </div>
+      ${c?.url ? html`<img class="thumb" src=${c.url} alt=${c.caption || ""} loading="lazy" />` : null}
+    </li>`;
+  })}</ol>`;
+}
+
+// Steps: the agent's structured timeline. Meta line = time · state · place; title is short; the reasoning
+// ("basis") opens only for the selected step.
+export function Steps({ steps, active, onPick, compact = false }) {
+  const sorted = [...steps].sort((a, b) => (a.ts && b.ts ? a.ts.localeCompare(b.ts) : 0));
+  const [open, setOpen] = useState(null);
+  return html`<ol class=${`story ${compact ? "compact" : ""}`}>${sorted.map((st, i) => {
+    const on = st.n != null && st.n === active;
+    const show = on || open === i;
+    return html`<li class=${`step ${st.status} ${on ? "on" : ""} has`} key=${i} style=${`--i:${i}`}
+        onClick=${() => { if (st.n != null) onPick && onPick(st.n); setOpen(open === i ? null : i); }}>
+      <span class="rail"><i></i></span>
+      <div class="step-b">
+        <div class="step-m">${st.ts ? html`<span class="mono">${hhmmss(st.ts)}${st.status === "UNKNOWN" ? " →" : ""}</span>` : null}
+          <span class=${`tag-s ${st.status}`}>${STATUS_LABEL[st.status] || st.status}</span>${st.place ? html`<span>${st.place}</span>` : null}
+          ${st.n != null ? html`<span class=${`cite ${st.status === "INFERRED" ? "inferred" : ""} ${on ? "on" : ""}`}>E${st.n}</span>` : null}</div>
+        <div class="step-t">${st.title}</div>
+        ${show && st.basis ? html`<div class="basis fadein">${st.basis}</div>` : null}
+        ${!show && st.basis ? html`<button class="basis-t" onClick=${(e) => { e.stopPropagation(); setOpen(i); }}>Why we think so</button>` : null}
+      </div>
+    </li>`;
+  })}</ol>`;
+}
+
+// Evidence viewer: processed video at the cited moment when available, else the stored frame.
+export function Viewer({ c, list = [], onNav, empty = "Select a step to see its evidence." }) {
+  const ref = useRef();
+  const [playing, setPlaying] = useState(false);
+  const idx = c ? list.findIndex((x) => x.n === c.n) : -1;
+  const play = () => {
+    const v = ref.current;
+    if (!v) return;
+    v.currentTime = c.proxy_url ? Math.max(0, (c.t_offset_s || 0) - 1.5) : 0;
+    v.play().catch(() => {});
+  };
+  const src = c?.proxy_url || c?.clip_url;
+  useEffect(() => {
+    const v = ref.current;
+    if (!v || !c) return;
+    const t = c.proxy_url ? Math.max(0, (c.t_offset_s || 0) - 1.5) : 0;
+    const seek = () => { try { v.currentTime = t; v.pause(); } catch {} };
+    if (v.readyState >= 1) seek(); else v.addEventListener("loadedmetadata", seek, { once: true });
+  }, [c?.evidence_id || c?.id, src]);
+  if (!c) return html`<div class="viewer-empty">${empty}</div>`;
+  return html`<figure class="viewer fadein">
+    <div class="media">
+      ${src ? html`<video ref=${ref} src=${src} muted playsinline poster=${c.url || ""} onPlay=${() => setPlaying(true)} onPause=${() => setPlaying(false)} onEnded=${() => setPlaying(false)} onClick=${() => (playing ? ref.current.pause() : play())}></video>`
+            : c.url ? html`<img src=${c.url} alt=${c.caption || ""} />` : html`<div class="noimg">${c.caption || c.label}</div>`}
+      <div class="media-tags"><span class="glass">${(c.source || c.source_id || "").split(" · ")[0]}</span><span class="glass mono">${hhmmss(c.ts)}</span>
+        <span class="sp"></span><span class="glass dimmed">${src ? "Video · faces masked" : "Still frame"}</span></div>
+      ${src && !playing ? html`<button class="play" onClick=${play} aria-label="Play clip"><${Icon} name="play" size=${18} /> Play clip</button>` : null}
+    </div>
+    ${list.length > 1 && idx >= 0 ? html`<div class="vnav">
+      <button class="iconbtn" disabled=${idx <= 0} onClick=${() => onNav && onNav(list[idx - 1].n)} aria-label="Previous evidence"><${Icon} name="chevl" size=${18} /></button>
+      <span class="mono">E${c.n} <span class="dim">/ ${list.length}</span></span>
+      <button class="iconbtn" disabled=${idx >= list.length - 1} onClick=${() => onNav && onNav(list[idx + 1].n)} aria-label="Next evidence"><${Icon} name="chevr" size=${18} /></button>
+    </div>` : null}
+    <figcaption><${Status} s=${c.status} /><span>${c.caption || c.label || ""}</span><span class="sp"></span>
+      ${c.provenance ? html`<span class="prov">${c.provenance}</span>` : null}</figcaption>
+  </figure>`;
 }

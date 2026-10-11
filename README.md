@@ -94,7 +94,7 @@ pip install -r requirements.txt            # Python 3.11+, ffmpeg on PATH
 scripts/download_media.sh                  # openly licensed footage (not redistributed)
 python -m vestige.scenarios                # builds data/vestige.db with real perception (~2 min)
 python -m vestige.api --port 8100          # app + API
-python -m pytest -q tests                  # 30 tests (tests run on a copy of the database)
+python -m pytest -q tests                  # 33 tests (tests run on a copy of the database)
 python scripts/screenshots.py docs/screenshots
 ```
 

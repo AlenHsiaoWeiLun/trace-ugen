@@ -1,5 +1,5 @@
 import { render } from "preact";
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import { api } from "./lib/api.js";
 import { html, Icon } from "./lib/ui.js";
 import { AskPage } from "./pages/ask.js";
@@ -9,11 +9,9 @@ import { LabPage } from "./pages/lab.js";
 import { SourcesPage } from "./pages/sources.js";
 import { SettingsPage } from "./pages/settings.js";
 
-const SHORT = { memory: "Memory", investigate: "Events", lab: "Lab" };
-const NAV = [
-  ["ask", "Ask", "ask", "1"], ["memory", "World Memory", "memory", "2"], ["investigate", "Investigations", "invest", "3"],
-  ["lab", "IncidentLab", "lab", "4"], ["sources", "Sources", "sources", "5"], ["settings", "Settings", "settings", "6"],
-];
+// Four primary places; sources and settings live in the menu.
+const NAV = [["ask", "Ask", "ask"], ["memory", "Memory", "memory"], ["investigate", "Events", "invest"], ["lab", "Lab", "lab"]];
+const MORE = [["sources", "Sources"], ["settings", "Settings & data policy"]];
 
 function parseHash() {
   const [path, query] = (location.hash.slice(2) || "ask").split("?");
@@ -26,6 +24,42 @@ export function go(page, arg, params) {
   location.hash = `#/${page}${arg ? "/" + encodeURIComponent(arg) : ""}${q}`;
 }
 
+function SiteSwitch({ ws, setWs, sites }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef();
+  useEffect(() => {
+    const f = (e) => ref.current && !ref.current.contains(e.target) && setOpen(false);
+    addEventListener("pointerdown", f);
+    return () => removeEventListener("pointerdown", f);
+  }, []);
+  const cur = sites.find((s) => s.id === ws);
+  return html`<div class="menu" ref=${ref}>
+    <button class="site" onClick=${() => setOpen(!open)} aria-haspopup="listbox" aria-expanded=${open}>
+      <span class="live"></span><span>${cur?.name || ws}</span><${Icon} name="chev" size=${14} /></button>
+    ${open ? html`<div class="pop" role="listbox">
+      <div class="pop-h">Site</div>
+      ${sites.map((s) => html`<button role="option" aria-selected=${s.id === ws} class=${s.id === ws ? "on" : ""}
+          onClick=${() => { setWs(s.id); setOpen(false); }}>
+        <b>${s.name}</b><span>${s.description}</span></button>`)}
+    </div>` : null}
+  </div>`;
+}
+
+function More({ page }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef();
+  useEffect(() => {
+    const f = (e) => ref.current && !ref.current.contains(e.target) && setOpen(false);
+    addEventListener("pointerdown", f);
+    return () => removeEventListener("pointerdown", f);
+  }, []);
+  return html`<div class="menu" ref=${ref}>
+    <button class=${`iconbtn ${MORE.some((m) => m[0] === page) ? "on" : ""}`} onClick=${() => setOpen(!open)} aria-label="More"><${Icon} name="dots" size=${18} /></button>
+    ${open ? html`<div class="pop right">${MORE.map(([id, label]) => html`<a href=${`#/${id}`} onClick=${() => setOpen(false)} class=${page === id ? "on" : ""}>${label}</a>`)}
+      <div class="pop-foot">TRACE engine · target ASUS UGen300<br/>VESTIGE — an Archean project</div></div>` : null}
+  </div>`;
+}
+
 function App() {
   const [route, setRoute] = useState(parseHash());
   const [wss, setWss] = useState([]);
@@ -35,43 +69,27 @@ function App() {
   const setWs = (id) => { setWsState(id); try { localStorage.setItem("vestige.ws", id); } catch {} };
 
   useEffect(() => {
-    const f = () => setRoute(parseHash());
+    const f = () => { setRoute(parseHash()); window.scrollTo(0, 0); };
     addEventListener("hashchange", f);
     api.workspaces().then(setWss).catch(() => setWss([]));
-    const keys = (e) => {
-      if (e.target.matches("input, textarea, select")) return;
-      const n = NAV.find((x) => x[3] === e.key);
-      if (n && !e.metaKey && !e.ctrlKey) go(n[0]);
-    };
-    addEventListener("keydown", keys);
-    return () => { removeEventListener("hashchange", f); removeEventListener("keydown", keys); };
+    return () => removeEventListener("hashchange", f);
   }, []);
 
   const qws = route.q.get("ws");
   useEffect(() => { if (qws && qws !== ws) setWs(qws); }, [qws]);
-  const scenario = wss.filter((w) => !w.id.startsWith("bench"));
+  const sites = wss.filter((w) => !w.id.startsWith("bench"));
   const props = { ws, setWs, route, go, workspaces: wss };
   const Page = { ask: AskPage, memory: MemoryPage, investigate: InvestigatePage, lab: LabPage, sources: SourcesPage,
     settings: SettingsPage }[route.page] || AskPage;
 
-  return html`<div class="shell">
-    <aside class="side">
-      <div class="brand"><div class="word">VESTIGE</div><div class="tag">The world leaves a trace.</div></div>
-      <div class="ws"><span class="label">Workspace</span>
-        <select value=${ws} onChange=${(e) => setWs(e.target.value)} aria-label="Workspace">
-          ${scenario.map((w) => html`<option value=${w.id}>${w.name}</option>`)}
-        </select></div>
-      <nav class="nav">
-        ${NAV.map(([id, label, icon, k]) => html`<a href=${`#/${id}`} class=${`${route.page === id ? "on" : ""} ${id === "settings" ? "hide-m" : ""}`}>
-          <${Icon} name=${icon} /><span class="full">${label}</span><span class="short">${SHORT[id] || label}</span><span class="k">${k}</span></a>`)}
-      </nav>
-      <div class="side-foot">
-        <div class="row"><span class="dot"></span><span>Edge pipeline · local</span></div>
-        <div class="mono" style="font-size:11px">TRACE engine · target ASUS UGen300</div>
-        <div style="font-size:11px">VESTIGE — an Archean project</div>
-      </div>
-    </aside>
-    <main class="main"><${Page} ...${props} key=${route.page + ws} /></main>
+  return html`<div class="app">
+    <header class="top"><div class="top-in">
+      <a class="logo" href="#/ask" aria-label="VESTIGE home"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M5 6l7 13 7-13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>VESTIGE</span></a>
+      <nav class="tabs">${NAV.map(([id, label, icon]) => html`<a href=${`#/${id}`} class=${route.page === id ? "on" : ""}>
+        <${Icon} name=${icon} size=${16} /><span>${label}</span></a>`)}</nav>
+      <div class="top-r"><${SiteSwitch} ws=${ws} setWs=${setWs} sites=${sites} /><${More} page=${route.page} /></div>
+    </div></header>
+    <main class="main"><${Page} ...${props} key=${route.page + ws + (route.page === "ask" ? route.q.get("q") || "" : "")} /></main>
   </div>`;
 }
 

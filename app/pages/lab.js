@@ -62,22 +62,22 @@ function rowBest(cells, r) {
 
 // Per stress: baseline retention vs the best mitigation *for that stress* (they differ: occlusion favours the
 // larger model, noise favours TTA). HTML bars so labels stay readable at any card width.
-function Chart({ cells }) {
+function Chart({ cells, sel, onSel }) {
   const rows = groupedRows(cells);
   const by = new Map((cells || []).map((c) => [cellKey(c), c]));
   return html`<div class="rchart" role="img" aria-label="Retention, baseline versus best mitigation per stress">
-    <div class="row wrap rchart-legend"><span><i class="sw base"></i>Baseline YOLO11n</span><span><i class="sw best"></i>Best mitigation for that stress</span></div>
+    <div class="row wrap rchart-legend"><span><i class="sw base"></i>Baseline YOLO11n</span><span><i class="sw best"></i>Best fix for that stress</span></div>
     ${rows.map((r) => {
       const b = by.get(`${r.perturbation}:${r.level}:none`);
       const m = rowBest(cells, r);
       const up = m && m.delta > 0;
-      return html`<div class="rrow">
+      return html`<button class=${`rrow ${sel === r.key ? "on" : ""}`} onClick=${() => onSel && onSel(r.key)}>
         <div class="rlab"><b>${r.label}</b><span class="mono dim">L${r.level}</span></div>
         <div class="rbars">
           <div class="rbar"><i class="base" style=${`width:${Math.round((b?.retention || 0) * 100)}%`}></i><span class="num">${pct(b?.retention)}</span></div>
           <div class="rbar"><i class=${up ? "best" : "flat"} style=${`width:${Math.round((m?.retention || 0) * 100)}%`}></i><span class="num">${pct(m?.retention)}</span></div>
-          <div class="rmeta">${m ? html`<span class=${up ? "delta-up" : "delta-flat"}>${pp(m.delta)}</span> · ${m.mitigation_label} · ${m.latency_ms} ms/frame` : "—"}</div>
-        </div></div>`;
+          <div class="rmeta">${m ? html`<span class=${up ? "delta-up" : "delta-flat"}>${pp(m.delta)}</span> · ${m.mitigation_label}` : "—"}</div>
+        </div></button>`;
     })}
   </div>`;
 }
@@ -100,7 +100,7 @@ function RetentionMatrix({ rows, columns, by }) {
           ${c ? html`<div class="v num">${pct(c.retention)}</div>
             <div class="m">${c.kept}/${c.reference} kept</div>
             <div class=${`m ${cls}`}>${m === "none" ? "baseline" : pp(c.delta)}</div>
-            <div class="bar"><i style=${`width:${Math.round((c.retention || 0) * 100)}%;background:${m === "none" ? "#5fb3cc" : "var(--gold)"}`}></i></div>` : "—"}
+            <div class="bar"><i style=${`width:${Math.round((c.retention || 0) * 100)}%;background:${m === "none" ? "#6e6b66" : "var(--gold)"}`}></i></div>` : "—"}
         </div>`;
       })}
     </div>`)}
@@ -133,6 +133,7 @@ export function LabPage({ ws, route }) {
   const [job, setJob] = useState(null);
   const [err, setErr] = useState(null);
   const [refresh, setRefresh] = useState(0);
+  const [showConfig, setShowConfig] = useState(!!route.q.get("event"));
 
   const data = boot.data;
   const opts = normalizeOptions(data?.options);
@@ -143,7 +144,7 @@ export function LabPage({ ws, route }) {
     if (data?.history) setHist(data.history);
   }, [data]);
   useEffect(() => {
-    if (!selected && history.length) setSelected(history[0].id);
+    if (!selected && history.length) setSelected((history.find((x) => x.workspace_id === "bench-road" && x.status === "done") || history[0]).id);
   }, [history.length, selected]);
   useEffect(() => {
     if (data?.events?.length && !eventId) setEventId(data.events[0].id);
@@ -217,81 +218,79 @@ export function LabPage({ ws, route }) {
     && r.params?.level === cmpRow?.level && r.mitigation === mit && r.perturbed_path);
   const pairs = cmpRow && cmpBest ? [...new Set(results.filter((r) => r.perturbed_path).map((r) => r.frame_ref))]
     .map((ref) => ({ a: shot(ref, "none"), b: shot(ref, cmpBest.mitigation) })).filter((x) => x.a && x.b)
-    .sort((x, y) => (y.b.n_kept - y.a.n_kept) - (x.b.n_kept - x.a.n_kept)) : [];
+    .sort((x, y) => (y.b.n_kept - y.a.n_kept) - (x.b.n_kept - x.a.n_kept) || y.a.n_ref - x.a.n_ref) : [];
   const pair = pairs[0];
   const compare = pair ? pair.a : results.find((r) => r.original_path && r.perturbed_path);
   const failures = (experiment?.results || []).filter((r) => r.n_kept < r.n_ref && r.perturbed_path).slice(0, 8);
   const canRun = opts.perturbations.some((p) => pertOn[p.name]) && (mode !== "event" || eventId)
     && (mode !== "sources" || selectedSources.length) && !job;
 
-  return html`<div class="stack" style="gap:22px">
+  const base = cmpRow ? by.get(`${cmpRow.perturbation}:${cmpRow.level}:none`) : null;
+  const wsName = (id) => ({ "bench-road": "Taipei Bridge scooters", "bench-station": "Station crowds", campus: "Campus", metro: "Metro", construction: "Construction" })[id] || id;
+
+  return html`<div class="fadein">
     <header class="page-head">
-      <div><div class="kicker">VERIFY · IncidentLab</div>
-        <h1 class="h1" style="margin-top:10px">IncidentLab — know where the AI fails.</h1>
-        <div class="dim" style="max-width:860px;margin-top:10px">Detection Retention Rate uses the model's own clean-frame detections as the reference, not human ground truth; it measures robustness under controlled corruption.</div></div>
-      <button class="btn" onClick=${download} disabled=${!experiment?.id || experiment.status !== "done"}><${Icon} name="download" />Download report</button>
+      <div><h1 class="h1">Know where the AI fails —<br/>and what fixes it.</h1>
+        <p class="lede">IncidentLab degrades real frames — darkness, blur, noise, occlusion — re-runs the detector, and measures what it still finds.</p></div>
+      <div class="row wrap" style="gap:8px">
+        ${history.length ? html`<select class="input" style="width:auto;min-width:240px" value=${selected} onChange=${(e) => setSelected(e.target.value)} aria-label="Experiment">
+          ${history.map((x) => html`<option value=${x.id}>${wsName(x.workspace_id)} · ${shortDate(x.created_ts)}${x.status !== "done" ? ` · ${x.status}` : ""}</option>`)}</select>` : null}
+        <button class=${`btn ${showConfig ? "" : "gold"}`} onClick=${() => setShowConfig(!showConfig)}><${Icon} name=${showConfig ? "x" : "plus"} size=${15} />${showConfig ? "Close" : "New stress test"}</button>
+      </div>
     </header>
     <${Err} error=${err || boot.error || expState.error} />
 
-    <section class="card">
-      <div class="card-h"><span class="kicker">Configure stress test</span>${job ? html`<span class="row"><span class="spin"></span><span class="mono dim">${job.message}</span></span>` : null}</div>
-      <div class="card-b stack">
-        ${boot.loading ? html`<${Skel} h=${160} />` : html`<div class="grid g3">
-          <div class="stack">
-            <span class="label">Scope</span>
-            <div class="seg">${["event", "benchmark", "sources"].map((m) => html`<button class=${mode === m ? "on" : ""} onClick=${() => setMode(m)}>${m}</button>`)}</div>
-            ${mode === "event" ? html`<select class="input" value=${eventId} onChange=${(e) => setEventId(e.target.value)}>
-              ${(data.events || []).map((e) => html`<option value=${e.id}>${e.title || e.id}</option>`)}</select>` : null}
-            ${mode === "benchmark" ? html`<select class="input" value=${bench} onChange=${(e) => setBench(e.target.value)}>
-              <option value="bench-road">Taipei Bridge scooters</option><option value="bench-station">Station crowds</option></select>` : null}
-            ${mode === "sources" ? html`<div class="stack" style="gap:6px">${(data.sources || []).filter((s) => s.kind === "camera").map((s) => html`<button class=${`toggle ${selectedSources.includes(s.id) ? "on" : ""}`} onClick=${() => setSelectedSources((xs) => xs.includes(s.id) ? xs.filter((x) => x !== s.id) : [...xs, s.id])}>${s.name || s.id}</button>`)}</div>` : null}
-            ${mode !== "event" ? html`<label class="stack" style="gap:7px"><span class="label">Frames per source · ${frames}</span>
-              <input type="range" min="4" max="12" value=${frames} onInput=${(e) => setFrames(e.target.value)} /></label>` : null}
-          </div>
-          <div class="stack"><span class="label">Perturbations</span>${opts.perturbations.map((p) => html`<div class="row wrap" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:6px 0">
-            <button class=${`toggle ${pertOn[p.name] ? "on" : ""}`} onClick=${() => setPertOn((x) => ({ ...x, [p.name]: !x[p.name] }))}>${p.label}</button>
-            <span class="mono dim" style="font-size:11px">${valueFor(p, levels[p.name] || 2)} ${p.unit}</span>
-            <div class="seg">${[1, 2, 3].map((l) => html`<button class=${(levels[p.name] || 2) === l ? "on" : ""} onClick=${() => setLevels((x) => ({ ...x, [p.name]: l }))}>L${l}</button>`)}</div>
-          </div>`)}</div>
-          <div class="stack"><span class="label">Mitigations</span>${opts.mitigations.map((m) => html`<button disabled=${m.name === "none"} class=${`toggle ${mits[m.name] ? "on" : ""}`} onClick=${() => m.name !== "none" && setMits((x) => ({ ...x, [m.name]: !x[m.name] }))}>${m.label}</button>`)}
-            <button class="btn gold" style="margin-top:auto" disabled=${!canRun} onClick=${create}><${Icon} name="play" />Run IncidentLab</button></div>
-        </div>`}
-        ${job ? html`<div class="bar"><i style=${`width:${Math.round((job.progress || 0) * 100)}%`}></i></div>` : null}
+    ${showConfig ? html`<section class="config fadein">
+      ${boot.loading ? html`<${Skel} h=${160} />` : html`<div class="config-grid">
+        <div class="stack">
+          <span class="label">What to test</span>
+          <div class="seg">${[["event", "An event"], ["benchmark", "Benchmark"], ["sources", "Cameras"]].map(([m, l]) => html`<button class=${mode === m ? "on" : ""} onClick=${() => setMode(m)}>${l}</button>`)}</div>
+          ${mode === "event" ? html`<select class="input" value=${eventId} onChange=${(e) => setEventId(e.target.value)}>
+            ${(data.events || []).map((e) => html`<option value=${e.id}>${e.title || e.id}</option>`)}</select>` : null}
+          ${mode === "benchmark" ? html`<select class="input" value=${bench} onChange=${(e) => setBench(e.target.value)}>
+            <option value="bench-road">Taipei Bridge scooters</option><option value="bench-station">Station crowds</option></select>` : null}
+          ${mode === "sources" ? html`<div class="stack" style="gap:6px">${(data.sources || []).filter((s) => s.kind === "camera").map((s) => html`<button class=${`toggle ${selectedSources.includes(s.id) ? "on" : ""}`} onClick=${() => setSelectedSources((xs) => xs.includes(s.id) ? xs.filter((x) => x !== s.id) : [...xs, s.id])}>${s.name || s.id}</button>`)}</div>` : null}
+          ${mode !== "event" ? html`<label class="stack" style="gap:7px"><span class="label">Frames per camera · ${frames}</span>
+            <input type="range" min="4" max="12" value=${frames} onInput=${(e) => setFrames(e.target.value)} /></label>` : null}
+        </div>
+        <div class="stack" style="gap:8px"><span class="label">Stresses</span>${opts.perturbations.map((p) => html`<div class="pert">
+          <button class=${`toggle ${pertOn[p.name] ? "on" : ""}`} onClick=${() => setPertOn((x) => ({ ...x, [p.name]: !x[p.name] }))}>${p.label}</button>
+          <div class="seg">${[1, 2, 3].map((l) => html`<button class=${(levels[p.name] || 2) === l ? "on" : ""} onClick=${() => setLevels((x) => ({ ...x, [p.name]: l }))}>L${l}</button>`)}</div>
+          ${pertOn[p.name] ? html`<span class="v">${valueFor(p, levels[p.name] || 2)} ${p.unit}</span>` : null}
+        </div>`)}</div>
+        <div class="stack" style="gap:8px"><span class="label">Fixes to compare</span>${opts.mitigations.map((m) => html`<button disabled=${m.name === "none"} class=${`toggle ${mits[m.name] ? "on" : ""}`} onClick=${() => m.name !== "none" && setMits((x) => ({ ...x, [m.name]: !x[m.name] }))}>${m.name === "none" ? "Baseline (always included)" : m.label}</button>`)}
+          <button class="btn gold" style="margin-top:12px" disabled=${!canRun} onClick=${create}>${job ? html`<span class="spin"></span>` : html`<${Icon} name="play" size=${14} />`} Run stress test</button>
+          ${job ? html`<div class="stack" style="gap:6px"><div class="bar"><i style=${`width:${Math.round((job.progress || 0) * 100)}%`}></i></div><span class="note">${job.message}</span></div>` : null}</div>
+      </div>`}
+    </section>` : null}
+
+    ${expState.loading && selected && !experiment ? html`<div class="lab-hero"><${Skel} h=${380} /><${Skel} h=${380} /></div>` : null}
+    ${!selected && !boot.loading ? html`<${Empty} title="No experiments yet">Run your first stress test.</${Empty}>` : null}
+    ${experiment && experiment.status !== "done" ? html`<div class="gap">This experiment is ${experiment.status}${experiment.error ? `: ${experiment.error}` : "…"}</div>` : null}
+    ${experiment && cells.length ? html`<div class="lab-hero fadein">
+      <div>
+        ${pair ? html`<${Compare} a=${pathUrl(pair.a.perturbed_path)} b=${pathUrl(pair.b.perturbed_path)} labelA=${`Baseline · found ${pair.a.n_kept}/${pair.a.n_ref}`} labelB=${`${cmpBest.mitigation_label} · ${pair.b.n_kept}/${pair.b.n_ref}`} />`
+          : compare ? html`<${Compare} a=${pathUrl(compare.original_path)} b=${pathUrl(compare.perturbed_path)} labelA="Clean" labelB=${`${compare.perturbation} · ${compare.mitigation}`} />` : html`<div class="viewer-empty">No saved frames for this stress.</div>`}
+        <div class="legend"><span><i style="border-color:#ece6da"></i>found again</span><span><i style="border-color:var(--red)"></i>missed</span><span><i style="border-color:var(--cyan)"></i>new detection</span>
+          <span class="sp"></span><span>Same frame, same ${cmpRow?.label.toLowerCase()} — drag to compare</span></div>
       </div>
-    </section>
-
-    <section class="grid lab-layout">
-      <div class="stack">
-        ${expState.loading && selected ? html`<div class="grid g3"><${Skel} h=${120} /><${Skel} h=${120} /><${Skel} h=${120} /></div>` : null}
-        ${!selected && !boot.loading ? html`<${Empty} title="No experiments yet">Run your first stress test.</${Empty}>` : null}
-        ${experiment ? html`<div class="stack fadein">
-          <div class="stats" style="grid-template-columns:repeat(3,1fr)">
-            <div class="stat"><span class="label">Worst baseline</span><span class="v num">${pct(worst?.retention)}</span><span class="dim">${worst ? `${worst.label} · L${worst.level}` : "—"}</span></div>
-            <div class="stat"><span class="label">Best gain</span><span class="v num">${pp(best?.delta)}</span><span class="dim">${best?.mitigation_label || "—"}</span></div>
-            <div class="stat"><span class="label">Cost of that gain</span><span class="v num">${best ? `${best.latency_ms} ms` : "—"}</span><span class="dim">${best ? `per frame vs ${by.get(`${best.perturbation}:${best.level}:none`)?.latency_ms ?? "—"} ms baseline · ${best.new_delta >= 0 ? "+" : ""}${best.new_delta} new/frame` : "—"}</span></div>
-          </div>
-
-          <div class="grid lab-showcase">
-            ${compare ? html`<div class="card"><div class="card-h"><span class="kicker">Before / after mitigation</span></div><div class="card-b">${pair ? html`<div class="seg" style="margin-bottom:12px;flex-wrap:wrap">${rows.map((r) => html`<button class=${cmpRow?.key === r.key ? "on" : ""} onClick=${() => setCmpKey(r.key)}>${r.label}</button>`)}</div>
-              <${Compare} a=${pathUrl(pair.a.perturbed_path)} b=${pathUrl(pair.b.perturbed_path)} labelA=${`Baseline · ${pair.a.n_kept}/${pair.a.n_ref}`} labelB=${`${cmpBest.mitigation_label} · ${pair.b.n_kept}/${pair.b.n_ref}`} />
-              <div class="dim" style="font-size:12px;margin-top:8px">Same frame, same ${cmpRow.label.toLowerCase()} (L${cmpRow.level}); drag to compare the baseline detector with the best mitigation for this stress.</div>`
-            : html`<${Compare} a=${pathUrl(compare.original_path)} b=${pathUrl(compare.perturbed_path)} labelA="Clean" labelB=${`${compare.perturbation} · ${compare.mitigation}`} />`}
-            <div class="row wrap" style="margin-top:12px"><span class="pill" style="border-color:#ece6da;color:#ece6da">ivory = re-detected</span><span class="pill" style="border-color:var(--red);color:var(--red)">red = missed</span><span class="pill" style="border-color:var(--cyan);color:var(--cyan)">cyan = new detection</span></div></div></div>
-            ` : null}
-            <div class="card"><div class="card-h"><span class="kicker">Baseline versus best mitigation</span></div><div class="card-b"><${Chart} cells=${cells} /></div></div>
-          </div>
-
-          <div class="card"><div class="card-h"><span class="kicker">Retention matrix</span><span class="mono dim">${summary.frames || 0} frames · ${cells.length} cells</span></div>
-            <div class="card-b"><${RetentionMatrix} rows=${rows} columns=${columns} by=${by} /></div></div>
-
-          ${compare ? html`<div class="card"><div class="card-h"><span class="kicker">Failure gallery</span></div><div class="card-b grid evidence-grid">${failures.length ? failures.map((r) => html`<div class="ev"><img src=${pathUrl(r.perturbed_path)} alt=${`${r.perturbation} ${r.mitigation}`} /><div class="meta"><b>missed ${r.n_ref - r.n_kept} of ${r.n_ref}</b><span class="sp"></span><span class="mono dim">${r.perturbation} · ${r.mitigation}</span></div></div>`) : html`<span class="dim">No misses in saved thumbnails.</span>`}</div></div>` : null}
-          ${summary.method ? html`<div class="dim" style="font-size:12px">${summary.method}</div>` : null}
-        </div>` : null}
+      <div>
+        <span class="label">${cmpRow?.label} · level ${cmpRow?.level} · ${wsName(experiment.workspace_id)}</span>
+        <div class="big-num"><span class="from">${pct(base?.retention)}</span><span class="arr">→</span><span class="to">${pct(cmpBest?.retention)}</span></div>
+        <p class="lab-claim">Under ${cmpRow?.label.toLowerCase()}, the baseline detector still finds <b>${pct(base?.retention)}</b> of what it finds on clean frames.${" "}
+          ${cmpBest && cmpBest.delta > 0 ? html`<b>${cmpBest.mitigation_label}</b> recovers <b>${pp(cmpBest.delta)}</b>, at ${cmpBest.latency_ms} ms vs ${base?.latency_ms} ms per frame.` : html`None of the tested fixes helped here.`}</p>
+        <div class="section-t">Every stress tested <span class="dim">· click one to compare</span></div>
+        <${Chart} cells=${cells} sel=${cmpRow?.key} onSel=${setCmpKey} />
+        <p class="note" style="margin-top:18px">Retention = share of the model's own clean-frame detections it still finds (IoU ≥ 0.5). It measures robustness, not accuracy against human labels.</p>
       </div>
-      <aside class="card"><div class="card-h"><span class="kicker">History</span></div><div class="card-b stack" style="gap:4px">
-        ${history.length ? history.map((x) => html`<button class="btn ghost" style=${`height:auto;justify-content:flex-start;padding:10px;border-color:${selected === x.id ? "var(--gold)" : "transparent"}`} onClick=${() => setSelected(x.id)}>
-          <span class=${x.status === "running" ? "spin" : ""}></span><span style="text-align:left"><span class="mono">${x.id}</span><br/><span class="dim" style="font-size:12px">${x.workspace_id} · ${shortDate(x.created_ts)} · ${(x.summary?.cells || []).length} cells</span></span><span class="sp"></span>${statusChip(x.status)}</button>`) : html`<span class="dim">No experiments yet.</span>`}
-      </div></aside>
-    </section>
+    </div>
+    <details class="disclose" style="margin-top:36px"><summary>Full retention matrix <span class="dim">· ${summary.frames || 0} frames · ${cells.length} cells</span></summary>
+      <div><${RetentionMatrix} rows=${rows} columns=${columns} by=${by} /></div></details>
+    ${failures.length ? html`<details class="disclose"><summary>Failure frames <span class="dim">· ${failures.length}</span></summary><div class="grid g3">
+      ${failures.map((r) => html`<figure class="viewer" style="margin:0"><div class="media"><img src=${pathUrl(r.perturbed_path)} alt=${`${r.perturbation} ${r.mitigation}`} /></div>
+        <figcaption><span>missed ${r.n_ref - r.n_kept} of ${r.n_ref}</span><span class="sp"></span><span class="prov">${r.perturbation} · ${r.mitigation}</span></figcaption></figure>`)}</div></details>` : null}
+    <details class="disclose"><summary>Method and report</summary><div class="stack">
+      ${summary.method ? html`<p class="note" style="margin:0">${summary.method}</p>` : null}
+      <div><button class="btn sm" onClick=${download}><${Icon} name="download" size=${14} /> Download report (.md)</button></div></div></details>` : null}
   </div>`;
 }

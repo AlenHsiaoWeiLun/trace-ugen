@@ -190,3 +190,17 @@ def test_upload_ingest_ask_flow():
     assert ev and client.get(f"/api/evidence/{ev[0]}").status_code == 200
     a = client.post("/api/workspaces/construction/ask", json={"question": "Show me everything near the upload test"}).json()
     assert a["intent"] in ("place", "search")
+
+
+def test_headline_and_steps_only_cite_stored_evidence():
+    import re
+    c = db.connect()
+    for ws, q in [("campus", "What happened to my bicycle?"), ("campus", "Where was my bike last seen?"),
+                  ("metro", "Why was this alert flagged?"), ("construction", "Why was this construction safety event flagged?")]:
+        a = agent.ask(c, ws, q)
+        ns = {x["n"] for x in a["citations"]}
+        assert a["headline"], q
+        assert {int(n) for n in re.findall(r"\[E(\d+)\]", a["headline"])} <= ns
+        assert all(s["n"] is None or s["n"] in ns for s in a["steps"])
+    last = agent.ask(c, "campus", "Where was my bike last seen?")["headline"]
+    assert last.startswith("Last seen directly") and "not confirmed" in last and "unknown" in last

@@ -19,16 +19,15 @@ from scripts.record_demo import CDP, CHROME  # noqa: E402
 BASE = "http://127.0.0.1:8100/"
 SHOTS = [
     # name, hash, width, height, js-after-load, wait
+    ("00_home", "#/ask?ws=campus", 1600, 1000, None, 3),
     ("01_ask_answer", "#/ask?ws=campus&q=What%20happened%20to%20my%20bicycle%3F", 1600, 1000, None, 4),
     ("02_memory", "#/memory?ws=campus", 1600, 1000, None, 3),
     ("03_investigate_metro", "#/investigate?ws=metro", 1600, 1000, None, 4),
     ("04_investigate_construction", "#/investigate?ws=construction", 1600, 1000,
      "document.querySelectorAll('.sug')[1]?.click()", 5),
-    ("05_incidentlab", "#/lab?ws=campus", 1600, 1000,
-     "[...document.querySelectorAll('*')].find(e=>e.textContent.trim().startsWith('X-dae2cec5') && e.children.length<3)?.click()", 4),
-    ("05b_incidentlab_results", "#/lab?ws=campus", 1600, 1000,
-     "[...document.querySelectorAll('*')].find(e=>e.textContent.trim().startsWith('X-dae2cec5') && e.children.length<3)?.click();"
-     "setTimeout(()=>document.querySelector('.stats')?.scrollIntoView({block:'start'}),2000)", 5),
+    ("05_incidentlab", "#/lab?ws=campus", 1600, 1000, None, 4),
+    ("05b_incidentlab_config", "#/lab?ws=campus", 1600, 1000,
+     "[...document.querySelectorAll('button')].find(b=>b.textContent.includes('New stress test'))?.click()", 3),
     ("06_sources", "#/sources?ws=campus", 1600, 1000, None, 3),
     ("07_settings", "#/settings?ws=campus", 1600, 1000, None, 3),
     ("08_mobile_ask", "#/ask?ws=campus&q=What%20happened%20to%20my%20bicycle%3F", 390, 844, None, 4),
@@ -53,7 +52,10 @@ async def shoot(out: Path):
             c = CDP(ws)
             pump = asyncio.create_task(c.pump())
             await c.call("Page.enable")
+            only = sys.argv[2].split(",") if len(sys.argv) > 2 else None
             for name, h, w, hh, js, wait in SHOTS:
+                if only and not any(name.startswith(o) for o in only):
+                    continue
                 await c.call("Emulation.setDeviceMetricsOverride", width=w, height=hh, deviceScaleFactor=2 if w < 800 else 1,
                              mobile=w < 800)
                 await c.call("Page.navigate", url=BASE + "?" + name + h)

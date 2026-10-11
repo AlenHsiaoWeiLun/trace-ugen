@@ -1,112 +1,124 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { api } from "../lib/api.js";
-import { Cited, Empty, Err, EvidenceCard, html, Icon, Skel, Status, useAsync, VTimeline, hhmmss } from "../lib/ui.js";
+import { Cited, Err, html, Icon, Skel, Steps, Story, Viewer } from "../lib/ui.js";
 
-const WS_TITLE = {
-  campus: ["Campus", "Bicycles, racks and paths"],
-  metro: ["Metro demo", "Station alarms, cameras and staff radio"],
-  construction: ["Construction", "Workers, machines and hazard zones"],
-};
+function evidenceSummary(cs) {
+  const direct = cs.filter((c) => c.status === "OBSERVED" || c.status === "LAST_SEEN").length;
+  const inf = cs.filter((c) => c.status === "INFERRED").length;
+  const other = cs.length - direct - inf;
+  return [`${cs.length} piece${cs.length === 1 ? "" : "s"} of evidence`, direct && `${direct} direct observation${direct === 1 ? "" : "s"}`,
+    inf && `${inf} inferred`, other && `${other} records`].filter(Boolean).join(" · ");
+}
+
+// The three demo sites, each with the question that shows it best and real processed footage as cover.
+const SCENES = [
+  { ws: "campus", name: "Campus", title: "A bicycle disappears from the rack", q: "What happened to my bicycle?", meta: "4 cameras",
+    video: "/media/vestige/campus/CAM-P3/proxy.mp4" },
+  { ws: "metro", name: "Metro", title: "An emergency alarm on the platform", q: "What happened before the emergency alert?", meta: "Cameras · alarm · radio",
+    video: "/media/vestige/metro/INC-M-0001.mp4" },
+  { ws: "construction", name: "Construction", title: "A worker steps into a truck's path", q: "Why was this construction safety event flagged?", meta: "2 cameras",
+    video: "/media/vestige/construction/CAM-S1/proxy.mp4" },
+];
+
+function Scene({ s, current, go }) {
+  const ref = useRef();
+  return html`<button class=${`scene ${current ? "cur" : ""}`} onClick=${() => go("ask", null, { ws: s.ws, q: s.q })}
+      onMouseEnter=${() => ref.current?.play().catch(() => {})} onMouseLeave=${() => ref.current?.pause()}>
+    <video ref=${ref} src=${`${s.video}#t=2`} muted loop playsinline preload="metadata"></video>
+    ${current ? html`<span class="scene-cur">Current site</span>` : null}
+    <div class="scene-b">
+      <span class="scene-n">${s.name} demo · ${s.meta}</span>
+      <span class="scene-t">${s.title}</span>
+      <span class="scene-go">Explore ${s.name} demo <${Icon} name="arrow" size=${14} /></span>
+    </div>
+  </button>`;
+}
 
 export function AskPage({ ws, go, route }) {
-  const ov = useAsync(() => api.overview(ws), [ws]);
   const [q, setQ] = useState(route.q.get("q") || "");
   const [res, setRes] = useState(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(null);
   const [active, setActive] = useState(null);
+  const [sugs, setSugs] = useState([]);
   const input = useRef();
 
   const run = async (question) => {
     const text = (question ?? q).trim();
     if (!text) return;
-    setQ(text); setBusy(true); setErr(null); setActive(null);
-    try { setRes(await api.ask(ws, text)); } catch (e) { setErr(e); setRes(null); }
+    setQ(text); setBusy(true); setErr(null);
+    try {
+      const r = await api.ask(ws, text);
+      // default to the evidence that answers the question (first citation in the conclusion)
+      const m = (r.headline || "").match(/\[E(\d+)\]/);
+      setRes(r); setActive(m ? +m[1] : r.citations[0]?.n ?? null);
+    } catch (e) { setErr(e); setRes(null); }
     setBusy(false);
   };
   useEffect(() => { if (route.q.get("q")) run(route.q.get("q")); }, []);
+  useEffect(() => { api.overview(ws).then((o) => setSugs(o.suggestions || [])).catch(() => {}); }, [ws]);
   useEffect(() => {
-    const k = (e) => { if (e.key === "/" && document.activeElement !== input.current) { e.preventDefault(); input.current.focus(); } };
+    const k = (e) => { if (e.key === "/" && document.activeElement !== input.current) { e.preventDefault(); input.current?.focus(); } };
     addEventListener("keydown", k);
     return () => removeEventListener("keydown", k);
   }, []);
 
-  const o = ov.data;
-  const [title, sub] = WS_TITLE[ws] || [ws, ""];
-  const cite = res && active ? res.citations.find((c) => c.n === active) : null;
+  const box = (big) => html`<form class=${`ask ${big ? "big" : ""}`} onSubmit=${(e) => { e.preventDefault(); run(); }}>
+    <${Icon} name="ask" size=${big ? 20 : 17} />
+    <input ref=${input} value=${q} onInput=${(e) => setQ(e.target.value)} placeholder="Ask about an object, a place or an event…"
+      aria-label="Ask VESTIGE" autocomplete="off" />
+    <button class="go" disabled=${busy || !q.trim()} aria-label="Ask">${busy ? html`<span class="spin"></span>` : html`<${Icon} name="arrow" size=${18} />`}</button>
+  </form>`;
 
-  return html`<div class="stack" style="gap:22px">
-    <section class="ask-hero">
-      <div class="row"><span class="kicker">${title}</span><span class="dim" style="font-size:13px">· ${sub}</span></div>
-      <h1 class="h1" style="margin-top:14px">Ask what happened.<br/><i style="color:var(--gold)">Get the evidence.</i></h1>
-      <form class="askbox" onSubmit=${(e) => { e.preventDefault(); run(); }}>
-        <${Icon} name="ask" size=${20} />
-        <input ref=${input} value=${q} onInput=${(e) => setQ(e.target.value)} placeholder="Ask VESTIGE about this workspace…"
-          aria-label="Ask VESTIGE" autocomplete="off" />
-        <span class="kbd">/</span>
-        <button class="btn gold" disabled=${busy || !q.trim()}>${busy ? html`<span class="spin"></span>` : "Ask"}</button>
-      </form>
-      <div class="sugs">${(o?.suggestions || []).map((s) => html`<button class="sug" onClick=${() => run(s)}>${s}</button>`)}</div>
-    </section>
+  // ---------- home ----------
+  if (!res && !busy) {
+    return html`<div class="home fadein">
+      <section class="hero">
+        <div class="eyebrow"><span class="live"></span>Edge AI memory for the physical world</div>
+        <h1 class="display">What happened here?</h1>
+        <p class="lede">Ask about your physical world. Get answers backed by footage.</p>
+        ${box(true)}
+        <div class="chips"><span class="chips-l">Try on ${SCENES.find((x) => x.ws === ws)?.name || ws}:</span>${sugs.map((s) => html`<button class="chip-q" onClick=${() => run(s)}>${s}</button>`)}</div>
+        <${Err} error=${err} />
+      </section>
+      <section class="scenes">${SCENES.map((s) => html`<${Scene} s=${s} current=${s.ws === ws} go=${go} />`)}</section>
+      <section class="proof">
+        <div><${Icon} name="spark" size=${18} /><b>Remembers</b><span>Detections become a persistent memory of objects and events, with provenance on every row.</span></div>
+        <div><${Icon} name="ask" size=${18} /><b>Investigates</b><span>Answers are composed from memory lookups only and cite the frame behind each sighting.</span></div>
+        <div><${Icon} name="flask" size=${18} /><b>Verifies itself</b><span>IncidentLab stress-tests the detector and measures which fixes recover what it misses.</span></div>
+      </section>
+      <p class="foot">Demo sites use public stock footage and staged inputs, labelled as such. No face recognition — heads are blurred in everything stored.</p>
+    </div>`;
+  }
 
-    <${Err} error=${err || ov.error} />
-
-    ${busy ? html`<div class="grid g2"><div class="card pad stack"><${Skel} h=${22} /><${Skel} h=${22} w="80%" /><${Skel} h=${22} w="60%" /></div>
-      <div class="card pad"><${Skel} h=${200} /></div></div>` : null}
-
-    ${res && !busy ? html`<section class="grid ask-result-grid fadein">
-      <div class="card">
-        <div class="card-h"><div class="row"><span class="kicker">Answer</span>
-          <span class="pill">${res.intent.replace("_", " ")}</span><span class="pill">${res.planner}</span></div>
-          <span class="mono dim" style="font-size:11px">${res.latency_ms} ms · ${res.tool_calls.length} tool calls</span></div>
-        <div class="card-b">
-          <div class="answer">${res.sentences.map((s) => html`<p class="s"><${Cited} text=${s} citations=${res.citations} active=${active} onCite=${setActive} /></p>`)}</div>
-          ${res.subject ? html`<div class="row wrap" style="margin-top:14px">
-            ${res.subject.type === "object" ? html`<button class="btn sm" onClick=${() => go("memory", res.subject.id)}>Open object history <${Icon} name="arrow" size=${14} /></button>` : null}
-            ${res.subject.type === "event" ? html`<button class="btn sm" onClick=${() => go("investigate", res.subject.id)}>Open investigation <${Icon} name="arrow" size=${14} /></button>
-              <button class="btn sm" onClick=${() => go("lab", null, { event: res.subject.id, ws })}><${Icon} name="flask" size=${14} /> Stress test this event</button>` : null}
-          </div>` : null}
-          <details style="margin-top:18px"><summary class="label" style="cursor:pointer">How this answer was built</summary>
-            <div class="trace" style="margin-top:10px">
-              ${res.tool_calls.map((t, i) => html`<div class="tc"><span>${i + 1}</span><span><b>${t.tool}</b>(${(t.args || []).join?.(", ") ?? ""})</span><span>${t.results} rows · ${t.ms} ms</span></div>`)}
-              <div style="margin-top:8px">Facts come only from these calls; the planner chooses tools, it never writes timestamps or places.</div>
-            </div></details>
+  // ---------- answer ----------
+  const cite = res?.citations.find((c) => c.n === active);
+  return html`<div class="answer-page">
+    <div class="qbar">${box(false)}</div>
+    <${Err} error=${err} />
+    ${busy ? html`<div class="answer-grid"><div class="stack"><${Skel} h=${44} w="70%" /><${Skel} h=${90} /><${Skel} h=${90} /><${Skel} h=${90} /></div><${Skel} h=${360} /></div>` : html`
+    <div class="answer-grid fadein">
+      <div class="a-head">
+        <h1 class="answer-q">${res.question}</h1>
+        ${res.headline ? html`<p class="headline"><${Cited} text=${res.headline} citations=${res.citations} active=${active} onCite=${setActive} /></p>` : null}
+        <div class="answer-meta">${evidenceSummary(res.citations)}</div>
+      </div>
+      <div class="a-steps">
+        <div class="section-t">How it unfolded</div>
+        ${res.steps?.length ? html`<${Steps} steps=${res.steps} active=${active} onPick=${setActive} />`
+          : html`<${Story} sentences=${res.sentences} citations=${res.citations} active=${active} onPick=${setActive} gaps=${res.gaps} />`}
+        <div class="row wrap actions">
+          ${res.subject?.type === "object" ? html`<button class="btn" onClick=${() => go("memory", res.subject.id)}><${Icon} name="map" size=${15} /> See it on the map</button>` : null}
+          ${res.subject?.type === "event" ? html`<button class="btn" onClick=${() => go("investigate", res.subject.id)}>Open the event <${Icon} name="arrow" size=${15} /></button>
+            <button class="btn ghost" onClick=${() => go("lab", null, { event: res.subject.id, ws })}><${Icon} name="flask" size=${15} /> Stress-test it</button>` : null}
         </div>
+        <details class="how"><summary>How this answer was built</summary>
+          <p>${res.tool_calls.length} memory lookups · ${res.latency_ms} ms on this machine</p>
+          <ol>${res.tool_calls.map((t) => html`<li><span class="mono">${t.tool}</span><span>${t.results} rows · ${t.ms} ms</span></li>`)}</ol>
+          <p>Planner: ${res.planner}. Facts come only from these lookups; the planner picks tools and never writes times or places. Inferred links are adjacency + travel time + colour similarity, not identity.</p>
+        </details>
       </div>
-      <div class="stack">
-        <div class="row"><span class="kicker">Evidence</span><span class="dim" style="font-size:12px">${res.citations.length} items · click to inspect</span></div>
-        ${res.citations.length ? html`<div class="grid evidence-grid">
-          ${res.citations.map((c) => html`<${EvidenceCard} c=${c} on=${active === c.n} onClick=${() => setActive(c.n)} />`)}</div>`
-          : html`<${Empty} title="No evidence">This answer has no supporting evidence.</${Empty}>`}
-        ${cite ? html`<div class="card pad fadein stack" style="gap:8px">
-          <div class="row"><span class="cite on">E${cite.n}</span><${Status} s=${cite.status} /><span class="mono dim">${hhmmss(cite.ts)}</span>
-            <span class="sp"></span><span class="pill">${cite.provenance}</span></div>
-          ${cite.url ? html`<img src=${cite.url} alt=${cite.caption} style="border-radius:10px" />` : null}
-          <div style="font-size:13px">${cite.caption}</div>
-          <div class="dim mono" style="font-size:11px">${cite.source} · evidence ${cite.evidence_id}${cite.t_offset_s != null ? ` · t+${cite.t_offset_s}s in source` : ""}</div>
-          ${cite.proxy_url ? html`<video src=${`${cite.proxy_url}#t=${Math.max(0, (cite.t_offset_s || 0) - 1)}`} controls muted playsinline style="width:100%;border-radius:10px"></video>` : null}
-        </div>` : null}
-        ${res.gaps.map((g) => html`<div class="gap"><div class="row" style="margin-bottom:6px"><${Status} s="UNKNOWN" /><span class="mono">${hhmmss(g.ts_start)} →</span></div>${g.reason}</div>`)}
-      </div>
-    </section>
-    ${res.timeline.length ? html`<section class="card fadein"><div class="card-h"><span class="kicker">Reconstructed timeline</span>
-      <div class="row" style="gap:6px"><${Status} s="RECORDED" /><${Status} s="OBSERVED" /><${Status} s="INFERRED" /><${Status} s="UNKNOWN" /></div></div>
-      <div class="card-b"><${VTimeline} items=${res.timeline} gaps=${res.gaps} /></div></section>` : null}` : null}
-
-    ${!res && !busy && o ? html`<section class="stats fadein">
-      ${[["Sources", o.counts.sources], ["Tracks", o.counts.tracks], ["Observations", o.counts.observations], ["Events", o.counts.events], ["Evidence items", o.counts.evidence]]
-        .map(([k, v]) => html`<div class="stat"><span class="label">${k}</span><span class="v num">${v}</span></div>`)}
-    </section>
-    <section class="grid g2 fadein">
-      <div class="card"><div class="card-h"><span class="kicker">Recent events</span><a href="#/investigate" class="label">All →</a></div>
-        <div class="card-b stack" style="gap:2px">${o.events.length ? o.events.map((e) => html`<a href=${`#/investigate/${e.id}`} class="row" style="padding:8px 0;color:var(--text);border-bottom:1px solid var(--line)">
-          <span class=${`mono prio-${e.priority}`} style="font-size:11px;width:56px">${e.priority.toUpperCase()}</span><span>${e.title}</span><span class="sp"></span>
-          <span class="mono dim" style="font-size:11px">${hhmmss(e.ts_start)}</span></a>`) : html`<span class="dim">No events yet.</span>`}</div></div>
-      <div class="card"><div class="card-h"><span class="kicker">Memory by evidence state</span></div>
-        <div class="card-b stack">${["RECORDED", "OBSERVED", "LAST_SEEN", "INFERRED"].map((s) => {
-          const n = o.observations_by_status[s] || 0, tot = o.counts.observations || 1;
-          return html`<div class="row"><span style="width:92px"><${Status} s=${s} /></span><div class="bar sp"><i style=${`width:${(100 * n) / tot}%`}></i></div><span class="mono num" style="width:36px;text-align:right">${n}</span></div>`; })}
-          <div class="dim" style="font-size:12px">Inferred = cross-camera links. States are never merged: an inferred link is not shown as an observation.</div></div></div>
-    </section>` : null}
+      <aside class="answer-side"><${Viewer} c=${cite} list=${res.citations} onNav=${setActive} empty="This answer has no visual evidence." /></aside>
+    </div>`}
   </div>`;
 }

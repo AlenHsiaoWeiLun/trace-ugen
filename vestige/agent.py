@@ -34,6 +34,12 @@ class Answer:
         self.intent = None
         self.planner = "deterministic"
         self.subject = None
+        self.headline = ""  # direct answer to the question asked, composed from the same tool results
+        self.steps: list[dict] = []  # short structured timeline for the UI; `basis` holds the reasoning detail
+
+    def step(self, ts, status, place, title, basis="", cite_tag=""):
+        n = int(cite_tag[2:-1]) if cite_tag.startswith("[E") else None
+        self.steps.append({"ts": ts, "status": status, "place": place, "title": title, "basis": basis, "n": n})
 
     def cite(self, evidence: dict | None, status: str, ts: str | None, label: str) -> str:
         if not evidence:
@@ -52,7 +58,8 @@ class Answer:
 
     def to_json(self) -> dict:
         return {"question": self.question, "workspace_id": self.workspace_id, "intent": self.intent,
-                "planner": self.planner, "subject": self.subject, "answer": " ".join(self.sentences),
+                "planner": self.planner, "subject": self.subject, "headline": self.headline, "steps": self.steps,
+                "answer": " ".join(self.sentences),
                 "sentences": self.sentences, "citations": self.citations, "timeline": self.timeline,
                 "gaps": self.gaps, "tool_calls": self.tool_calls}
 
@@ -156,16 +163,25 @@ def _object_fate(conn, ws, ans: Answer, ents):
     if rec:
         ans.sentences.append(f"You recorded your {label} at {rec['source'].split(' · ')[-1]} at {hhmm(rec['ts'])} "
                              f"(owner check-in{', staged demo record' if rec['provenance'] == 'staged' else ''}).")
+        ans.step(rec["ts"], "RECORDED", rec["source"].split(" · ")[-1], "You parked it here",
+                 "Owner check-in — your statement, not a camera observation"
+                 + (" (staged demo record)." if rec["provenance"] == "staged" else "."))
     if direct:
         before = [e for e in direct if moved is None or e["ts"] <= moved["ts"]]
         first = before[0] if before else direct[0]
         c = ans.cite(ev(first), "OBSERVED", first["ts"], "seen at its position")
         ans.sentences.append(f"{first['source'].split(' · ')[0]} observed it in place at {hhmm(first['ts'])} {c}.")
+        ans.step(first["ts"], "OBSERVED", first["source"].split(" · ")[-1], "Still in its parked position",
+                 f"{first['source'].split(' · ')[0]}: {first['detail']}.", c)
     if moved:
         c = ans.cite(ev(moved), "OBSERVED", moved["ts"], "left its position")
         who = re.search(r"person #(\d+)", moved["detail"])
         ans.sentences.append(f"At {hhmm(moved['ts'])} it left its parked position"
                              + (f", handled by an unidentified person (track #{who.group(1)})" if who else "") + f" {c}.")
+        ans.step(moved["ts"], "OBSERVED", moved["source"].split(" · ")[-1],
+                 "Moved from its parked position" + (" by an unidentified person" if who else ""),
+                 f"{moved['source'].split(' · ')[0]}: {moved['detail']}. Movement is not theft — a person handling a bike "
+                 "can be the owner, staff or someone else.", c)
     seen_src = []
     for e in inferred:
         if e["source"] in seen_src:
@@ -178,13 +194,42 @@ def _object_fate(conn, ws, ans: Answer, ents):
             f"{e['source'].split(' · ')[-1]} at {hhmm(e['ts'])} {c} — inferred from adjacent cameras, "
             f"{via.get('travel_s', '?'):.0f} s travel time and colour similarity {via.get('colour_similarity', 0):.2f}; "
             f"not a confirmed identity.".replace("  ", " "))
+        ans.step(e["ts"], "INFERRED", e["source"].split(" · ")[-1], f"Similar {(via.get('colours') or ['', ''])[1]} bicycle appears".replace("  ", " "),
+                 f"{via.get('topology', 'adjacent cameras')} · {via.get('travel_s', 0):.0f} s travel (allowed "
+                 f"{(via.get('window_s') or [0, 0])[0]:.0f}–{(via.get('window_s') or [0, 0])[1]:.0f} s) · colour similarity "
+                 f"{via.get('colour_similarity', 0):.2f} (threshold {via.get('threshold', 0.55)}). Not a confirmed identity.", c)
     if hist.get("rejected_links"):
         ans.sentences.append(f"{len(hist['rejected_links'])} other bicycle sighting(s) nearby were checked and "
                              f"not linked (colour or timing did not match).")
+        rj = hist["rejected_links"]
+        ans.step(None, "REJECTED", "", f"{len(rj)} other bicycle{'s' if len(rj) != 1 else ''} checked — not linked",
+                 "; ".join(f"{r['b_id'].replace('T-', '')}: colour {' vs '.join(r['basis'].get('colours') or [])} "
+                           f"({r['basis'].get('colour_similarity')})" for r in rj[:3]))
     for g in hist["gaps"]:
         ans.sentences.append(g["reason"] + " — what happened after that is unknown.")
+        ans.step(g["ts_start"], "UNKNOWN", "", "No camera coverage after this point", g["reason"] + ".")
     if not direct and not inferred:
         ans.sentences.append("No camera has observed this object yet.")
+        ans.headline = "No camera has observed it yet."
+        return
+    place = lambda e: e["source"].split(" · ")[-1]
+    # the first sighting on the last camera reached — the same entry the story cites for that camera
+    last_inf = next(e for e in inferred if e["source"] == inferred[-1]["source"]) if inferred else None
+    tail = (f" A similar bicycle was later seen at {place(last_inf)} at {hhmm(last_inf['ts'])} "
+            f"{ans.cite(ev(last_inf), 'INFERRED', last_inf['ts'], 'similar bicycle')} — identity not confirmed."
+            if last_inf else "")
+    unknown = " Where it is now is unknown." if hist["gaps"] else ""
+    if re.search(r"\b(where|last seen)\b", ans.question.lower()) and direct:
+        last = direct[-1]
+        c = ans.cite(ev(last), last["status"], last["ts"], "last direct observation")
+        ans.headline = f"Last seen directly at {place(last)} at {hhmm(last['ts'])} {c}.{tail}{unknown}"
+    elif moved:
+        who = " by an unidentified person" if re.search(r"person #\d+", moved["detail"]) else ""
+        c = ans.cite(ev(moved), "OBSERVED", moved["ts"], "left its position")
+        ans.headline = f"It left {place(moved)} at {hhmm(moved['ts'])}, moved{who} {c}.{tail}{unknown}"
+    else:
+        last = direct[-1] if direct else last_inf
+        ans.headline = f"Last seen at {place(last)} at {hhmm(last['ts'])}.{tail if direct else ''}{unknown}"
 
 
 def _pick_event(conn, ws, ans: Answer):
@@ -225,10 +270,17 @@ def _event_before(conn, ws, ans: Answer, ents):
                              "detail": o["detail"], "evidence_id": o["evidence_id"], "role": o.get("role")})
         ans.sentences.append(f"{hhmm(o['ts'])} — {o['source'].split(' · ')[0]} ({o['status'].lower().replace('_', ' ')}): "
                              f"{o['detail']} {c}".rstrip())
+        d = o["detail"]
+        ans.step(o["ts"], o["status"], o["source"].split(" · ")[0], d[:1].upper() + d[1:],
+                 f"{o['source']} · {o['kind']}" + (" · trigger" if o.get("role") == "trigger" else ""), c)
     for g in tl["gaps"]:
         ans.sentences.append(f"Evidence gap: {g['source']} — {g['reason']}.")
-    if ev.get("summary") and ws["kind"] == "metro":
-        ans.sentences.append("Fusion summary is available on the event card.")
+        ans.step(g["ts_start"], "UNKNOWN", g["source"].split(" · ")[0], "No recording for this window", g["reason"] + ".")
+    if not ans.headline:
+        srcs = sorted({o["source"].split(" · ")[0] for o in obs})
+        gap = f" {', '.join(g['source'].split(' · ')[0] for g in tl['gaps'])} has no recording for that window." if tl["gaps"] else ""
+        ans.headline = (f"{len(obs)} signals were recorded on {len(srcs)} source{'s' if len(srcs) != 1 else ''} "
+                        f"({', '.join(srcs[:4])}) in the minute leading up to \"{ev['title']}\".{gap}")
 
 
 def _event_why(conn, ws, ans: Answer, ents):
@@ -246,6 +298,11 @@ def _event_why(conn, ws, ans: Answer, ents):
         ans.sentences.append(
             f"It was flagged because a worker {where} a {m.get('vehicle_class', 'vehicle')} for "
             f"{m.get('duration_s', '?')} s {c}. The rule fires below 0.35 body-heights for at least 1 s.")
+        ans.step(ev["ts_start"], "OBSERVED", "", f"Worker {where} a {m.get('vehicle_class', 'vehicle')} for {m.get('duration_s', '?')} s",
+                 "Rule: gap below 0.35 body-heights for at least 1 s, measured in the image (uncalibrated camera). "
+                 "Proximity is not intent and not a collision prediction.", c)
+        ans.headline = (f"A worker {where} a {m.get('vehicle_class', 'vehicle')} for {m.get('duration_s', '?')} s {c} — "
+                        f"measured in the image, not as a real distance.")
         ans.sentences.append("This is image-space proximity from an uncalibrated camera, not a measured distance "
                              "or a collision prediction. Stress-test the event in IncidentLab to see how reliable "
                              "the detections behind it are.")
@@ -253,11 +310,20 @@ def _event_why(conn, ws, ans: Answer, ents):
         ans.sentences.append(f"TRACE fused {m.get('n_signals', '?')} signals into this incident (score "
                              f"{m.get('score', '?')}) {c}.")
         vlm = (m.get("vlm") or {}).get("second_opinion")
+        ans.step(ev["ts_start"], "OBSERVED", "", f"{m.get('n_signals', '?')} signals fused into one incident",
+                 f"Fusion score {m.get('score', '?')}; signals agree in zone and time window." +
+                 (f" On-device VLM check: \"{vlm['question']}\" → \"{vlm['answer']}\"." if vlm else ""), c)
+        ans.headline = f"{m.get('n_signals', '?')} independent signals agreed within one zone and time window {c}, so they were fused into one incident."
         if vlm:
             ans.sentences.append(f"The on-device VLM was asked: \"{vlm['question']}\" and answered \"{vlm['answer']}\".")
     else:
         ans.sentences.append(f"{ev['title']}: {ev['kind'].replace('_', ' ')} {c}.")
+        ans.headline = f"{ev['title']} {c} — the rule behind it is shown below."
+    n_rule = len(ans.steps)
     _event_before(conn, ws, ans, ents)
+    # the trigger observation repeats the rule step (same evidence); keep the rule wording
+    rule_ns = {s["n"] for s in ans.steps[:n_rule] if s["n"] is not None}
+    ans.steps = ans.steps[:n_rule] + [s for s in ans.steps[n_rule:] if s["n"] is None or s["n"] not in rule_ns]
 
 
 def _place(conn, ws, ans: Answer, ents):
@@ -272,6 +338,7 @@ def _place(conn, ws, ans: Answer, ents):
         ans.sentences.append(f"No observations are stored for \"{place}\".")
         return
     ans.subject = {"type": "place", "label": place}
+    ans.headline = f"{len(obs)} observations are stored near {place}, from {hhmm(obs[0]['ts'])} to {hhmm(obs[-1]['ts'])}."
     ans.sentences.append(f"{len(obs)} observations near {place}:")
     for o in obs[:8]:
         e = _call(ans, "get_evidence", memory.get_evidence, conn, o["evidence_id"]) if o.get("evidence_id") else None
@@ -279,6 +346,7 @@ def _place(conn, ws, ans: Answer, ents):
         ans.timeline.append({"ts": o["ts"], "status": o["status"], "source": o["source_id"], "kind": o["kind"],
                              "detail": o["detail"], "evidence_id": o["evidence_id"]})
         ans.sentences.append(f"{hhmm(o['ts'])} — {o['detail']} {c}")
+        ans.step(o["ts"], o["status"], o.get("source_id") or "", o["detail"][:1].upper() + o["detail"][1:], o.get("kind", ""), c)
 
 
 def _search(conn, ws, ans: Answer, ents):
@@ -291,8 +359,10 @@ def _search(conn, ws, ans: Answer, ents):
         ans.sentences.append("Nothing in this workspace's memory matches that question. Try asking about an "
                              "object, an event, or a place.")
         return
+    ans.headline = f"{len(uniq)} stored observations match your question."
     ans.sentences.append(f"{len(uniq)} matching observations:")
     for o in sorted(uniq.values(), key=lambda o: o["ts"])[:6]:
         e = _call(ans, "get_evidence", memory.get_evidence, conn, o["evidence_id"]) if o.get("evidence_id") else None
         c = ans.cite(e, o["status"], o["ts"], o["kind"])
         ans.sentences.append(f"{hhmm(o['ts'])} — {o['detail']} {c}")
+        ans.step(o["ts"], o["status"], o.get("source_id") or "", o["detail"][:1].upper() + o["detail"][1:], o.get("kind", ""), c)
