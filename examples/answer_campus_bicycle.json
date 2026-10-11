@@ -373,7 +373,7 @@
         "me"
       ],
       "results": 1,
-      "ms": 0.06
+      "ms": 0.07
     },
     {
       "tool": "get_object_history",
@@ -381,7 +381,7 @@
         "B-17"
       ],
       "results": 13,
-      "ms": 0.35
+      "ms": 0.39
     },
     {
       "tool": "get_evidence",
@@ -389,7 +389,7 @@
         "E-CAM-P3-001"
       ],
       "results": 0,
-      "ms": 0.08
+      "ms": 0.05
     },
     {
       "tool": "get_evidence",
@@ -397,7 +397,7 @@
         "E-CAM-P3-004"
       ],
       "results": 0,
-      "ms": 0.04
+      "ms": 0.03
     },
     {
       "tool": "get_evidence",

@@ -388,7 +388,7 @@
         "me"
       ],
       "results": 1,
-      "ms": 0.03
+      "ms": 0.04
     },
     {
       "tool": "get_object_history",
@@ -396,7 +396,7 @@
         "B-17"
       ],
       "results": 13,
-      "ms": 0.18
+      "ms": 0.2
     },
     {
       "tool": "get_evidence",

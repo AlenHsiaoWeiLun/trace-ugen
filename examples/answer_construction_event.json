@@ -1,5 +1,5 @@
 {
-  "question": "Why was this construction safety event flagged?",
+  "question": "Why was the 07:58 alert flagged?",
   "workspace_id": "construction",
   "intent": "event_why",
   "planner": "deterministic",
@@ -95,7 +95,7 @@
         "construction"
       ],
       "results": 3,
-      "ms": 0.02
+      "ms": 0.03
     },
     {
       "tool": "get_evidence",
@@ -120,7 +120,7 @@
         60.0
       ],
       "results": 16,
-      "ms": 0.11
+      "ms": 0.21
     },
     {
       "tool": "get_evidence",
@@ -136,7 +136,7 @@
         "E-CAM-S1-009"
       ],
       "results": 0,
-      "ms": 0.03
+      "ms": 0.04
     }
   ]
 }

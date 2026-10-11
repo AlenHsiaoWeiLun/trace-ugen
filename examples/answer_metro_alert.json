@@ -228,7 +228,7 @@
         "metro"
       ],
       "results": 2,
-      "ms": 0.04
+      "ms": 0.02
     },
     {
       "tool": "get_evidence",
@@ -236,7 +236,7 @@
         "E-INC-M-0001"
       ],
       "results": 0,
-      "ms": 0.05
+      "ms": 0.04
     },
     {
       "tool": "search_events",
@@ -253,7 +253,7 @@
         60.0
       ],
       "results": 5,
-      "ms": 0.14
+      "ms": 0.09
     },
     {
       "tool": "get_evidence",
@@ -261,7 +261,7 @@
         "E-SIG-M0002"
       ],
       "results": 0,
-      "ms": 0.03
+      "ms": 0.02
     },
     {
       "tool": "get_evidence",
@@ -269,7 +269,7 @@
         "E-SIG-M0004"
       ],
       "results": 0,
-      "ms": 0.02
+      "ms": 0.03
     },
     {
       "tool": "get_evidence",

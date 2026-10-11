@@ -19,20 +19,19 @@ from scripts.record_demo import CDP, CHROME  # noqa: E402
 BASE = "http://127.0.0.1:8100/"
 SHOTS = [
     # name, hash, width, height, js-after-load, wait
-    ("00_home", "#/ask?ws=campus", 1600, 1000, None, 6),
-    ("01_ask_answer", "#/ask?ws=campus&q=What%20happened%20to%20my%20bicycle%3F", 1600, 1000, None, 4),
-    ("02_memory", "#/memory?ws=campus", 1600, 1000, None, 3),
-    ("03_investigate_metro", "#/investigate?ws=metro", 1600, 1000, None, 4),
-    ("04_investigate_construction", "#/investigate?ws=construction", 1600, 1000,
-     "document.querySelectorAll('.sug')[1]?.click()", 5),
-    ("05_incidentlab", "#/lab?ws=campus", 1600, 1000, None, 4),
-    ("05b_incidentlab_config", "#/lab?ws=campus", 1600, 1000,
-     "[...document.querySelectorAll('button')].find(b=>b.textContent.includes('New stress test'))?.click()", 3),
-    ("06_sources", "#/sources?ws=campus", 1600, 1000, None, 3),
-    ("07_settings", "#/settings?ws=campus", 1600, 1000, None, 3),
-    ("08a_mobile_home", "#/ask?ws=campus", 390, 844, None, 6),
-    ("08_mobile_ask", "#/ask?ws=campus&q=What%20happened%20to%20my%20bicycle%3F", 390, 844, None, 4),
-    ("09_mobile_investigate", "#/investigate?ws=construction", 390, 844, None, 4),
+    ("00_home", "#/ask?ws=construction", 1600, 1000, None, 6),
+    ("00b_home_alerts", "#/ask?ws=construction", 1600, 1000, "window.scrollTo(0, 700)", 3),
+    ("01_answer_construction_alerts", "#/ask?ws=construction&q=What%20safety%20alerts%20happened%20today%3F", 1600, 1000, None, 5),
+    ("02_answer_alert_why", "#/ask?ws=construction&event=EV-CAM-S1-prox-1-3", 1600, 1000, None, 5),
+    ("03_answer_bicycle", "#/ask?ws=campus&q=What%20happened%20to%20my%20bicycle%3F", 1600, 1000, None, 5),
+    ("04_answer_bicycle_map", "#/ask?ws=campus&q=What%20happened%20to%20my%20bicycle%3F", 1600, 1000,
+     "setTimeout(()=>document.querySelector('.omap')?.scrollIntoView({block:'center'}),2500)", 5),
+    ("05_answer_metro", "#/ask?ws=metro&q=What%20happened%20before%20the%20emergency%20alert%3F", 1600, 1000, None, 5),
+    ("06_detection_lab", "#/lab?ws=construction", 1600, 1000, None, 4),
+    ("07_sources", "#/sources?ws=construction", 1600, 1000, None, 3),
+    ("08a_mobile_home", "#/ask?ws=construction", 390, 844, None, 6),
+    ("08_mobile_answer", "#/ask?ws=construction&q=What%20safety%20alerts%20happened%20today%3F", 390, 844, None, 5),
+    ("09_mobile_bicycle", "#/ask?ws=campus&q=What%20happened%20to%20my%20bicycle%3F", 390, 844, None, 5),
 ]
 
 

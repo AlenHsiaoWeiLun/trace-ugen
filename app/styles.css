@@ -60,7 +60,7 @@ img, video { display: block; max-width: 100%; }
 /* ---------- shell ---------- */
 .top { position: sticky; top: 0; z-index: 40; background: rgba(9, 9, 11, .72); backdrop-filter: saturate(1.4) blur(14px);
   -webkit-backdrop-filter: saturate(1.4) blur(14px); border-bottom: 1px solid var(--line); }
-.top-in { max-width: var(--w); margin: 0 auto; height: 60px; padding: 0 32px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; }
+.top-in { max-width: var(--w); margin: 0 auto; height: 60px; padding: 0 32px; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 16px; }
 .logo { display: inline-flex; align-items: center; gap: 10px; color: var(--text); font: 600 14px/1 var(--sans); letter-spacing: .22em; }
 .logo svg { color: var(--gold); }
 .tabs { display: flex; gap: 2px; padding: 3px; border-radius: 12px; background: rgba(255,255,255,.03); border: 1px solid var(--line); }
@@ -605,3 +605,21 @@ table.t tr.sel td { background: rgba(255,255,255,.04); }
 @media (max-width: 760px) { .headline { font-size: 21px; } }
 .play.sm { width: 52px; height: 52px; padding: 0; justify-content: center; }
 .ev-side { gap: 28px; }
+
+/* ---------- single page: inbox, verdict, map ---------- */
+.inbox { margin-top: 8px; }
+.inbox-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.alert { display: flex; flex-direction: column; padding: 0; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--panel);
+  cursor: pointer; text-align: left; color: inherit; transition: border-color .15s, transform .2s var(--ease); }
+.alert:hover { border-color: var(--line-2); transform: translateY(-2px); }
+.alert img, .alert-noimg { width: 100%; aspect-ratio: 16/9; object-fit: cover; background: #000; }
+.alert-b { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; }
+.alert-b b { font-weight: 500; font-size: 14px; }
+.alert-b span { display: flex; align-items: center; gap: 7px; font: 12px var(--mono); color: var(--dim); }
+.verdict { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 18px; }
+.verdict .label { margin-right: 4px; font-size: 13.5px; color: var(--text-2); }
+.omap { margin-top: 28px; }
+.step-open { margin-top: 6px; font-size: 13px; }
+@media (max-width: 1100px) { .inbox-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .main { padding-bottom: 48px; } }
+.map.v2 { background: #0f1210; aspect-ratio: 16/9; }

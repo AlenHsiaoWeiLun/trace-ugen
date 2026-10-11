@@ -17,10 +17,10 @@ Wei-Lun Hsiao · B13902049 · National Taiwan University · *VESTIGE — an Arch
 | Detection + tracking on video (YOLO11 + ByteTrack + tracklet stitching) | ✅ Done, tested | runs on a laptop today |
 | World Memory: objects, events, evidence, coverage gaps, provenance on every row | ✅ Done, tested | SQLite |
 | Cross-camera links (camera adjacency + travel time + colour) | ✅ Done, tested | stored as *inferred*, never as identity |
-| Ask: cited answers ("What happened to my bicycle?") | ✅ Done, tested | deterministic tool planner; optional local LLM picks intent only |
-| Events: lead-up timeline, video at the moment, human review + audit log | ✅ Done, tested | |
+| Ask: one page — conclusion, evidence video at the moment, timeline, map ("What safety alerts happened today?", "What happened to my bicycle?") | ✅ Done, tested | deterministic tool planner; optional local LLM picks intent only |
+| Alerts to review: lead-up, why it was flagged, real / false alarm / not sure + audit log | ✅ Done, tested | |
 | IncidentLab: stress tests (low light, blur, noise, low-res, occlusion, scale) + mitigations | ✅ Done, measured | results below |
-| Three demo workspaces: campus bicycle, metro incident, construction safety | ✅ Done | public footage + staged inputs, labelled |
+| Three demo workspaces: **construction safety (first market)**, campus bicycle, metro incident | ✅ Done | public footage + staged inputs, labelled; not a WanZe site |
 | Upload authorized footage → background processing → ask | ✅ Done, tested | file sources |
 | Running the models on the UGen300 (Hailo-10H) | ⏳ Stage II | HailoRT 5 port written (`traceai/hailo.py`), not yet run on hardware |
 | Live RTSP cameras, multi-user roles, retention enforcement | ⏳ Stage II | |

@@ -191,7 +191,7 @@ export function Story({ sentences, citations, active, onPick, gaps = [] }) {
 
 // Steps: the agent's structured timeline. Meta line = time · state · place; title is short; the reasoning
 // ("basis") opens only for the selected step.
-export function Steps({ steps, active, onPick, compact = false }) {
+export function Steps({ steps, active, onPick, onOpen, compact = false }) {
   const sorted = [...steps].sort((a, b) => (a.ts && b.ts ? a.ts.localeCompare(b.ts) : 0));
   const [open, setOpen] = useState(null);
   return html`<ol class=${`story ${compact ? "compact" : ""}`}>${sorted.map((st, i) => {
@@ -206,6 +206,7 @@ export function Steps({ steps, active, onPick, compact = false }) {
 </div>
         <div class="step-t">${st.title}</div>
         ${show && st.basis ? html`<div class="basis fadein">${st.basis}</div>` : null}
+        ${st.event_id && onOpen ? html`<button class="link step-open" onClick=${(e) => { e.stopPropagation(); onOpen(st.event_id, st.ts); }}>Why was it flagged? <${Icon} name="arrow" size=${13} /></button>` : null}
       </div>
     </li>`;
   })}</ol>`;

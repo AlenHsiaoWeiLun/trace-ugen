@@ -3,14 +3,11 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import { api } from "./lib/api.js";
 import { html, Icon } from "./lib/ui.js";
 import { AskPage } from "./pages/ask.js";
-import { MemoryPage } from "./pages/memory.js";
-import { InvestigatePage } from "./pages/investigate.js";
 import { LabPage } from "./pages/lab.js";
 import { SourcesPage } from "./pages/sources.js";
 import { SettingsPage } from "./pages/settings.js";
 
-// Four primary places; sources and settings live in the menu.
-const NAV = [["ask", "Ask", "ask"], ["memory", "Memory", "memory"], ["investigate", "Events", "invest"]];
+// One place for users: ask, read the answer, watch the footage. Admin and engineering pages live in the menu.
 // Engineering and admin pages stay reachable but out of the user's way.
 const MORE = [["sources", "Cameras & sources"], ["lab", "Detection lab"], ["settings", "Settings & data policy"]];
 
@@ -65,9 +62,9 @@ function App() {
   const [route, setRoute] = useState(parseHash());
   const [wss, setWss] = useState([]);
   const [ws, setWsState] = useState(() => {
-    try { return localStorage.getItem("vestige.ws") || "campus"; } catch { return "campus"; }
+    try { return localStorage.getItem("vestige.site") || "construction"; } catch { return "construction"; }
   });
-  const setWs = (id) => { setWsState(id); try { localStorage.setItem("vestige.ws", id); } catch {} };
+  const setWs = (id) => { setWsState(id); try { localStorage.setItem("vestige.site", id); } catch {} };
 
   useEffect(() => {
     const f = () => { setRoute(parseHash()); window.scrollTo(0, 0); };
@@ -80,17 +77,15 @@ function App() {
   useEffect(() => { if (qws && qws !== ws) setWs(qws); }, [qws]);
   const sites = wss.filter((w) => !w.id.startsWith("bench"));
   const props = { ws, setWs, route, go, workspaces: wss };
-  const Page = { ask: AskPage, memory: MemoryPage, investigate: InvestigatePage, lab: LabPage, sources: SourcesPage,
-    settings: SettingsPage }[route.page] || AskPage;
+  // memory / investigate links from older screens resolve into the single answer view
+  const Page = { lab: LabPage, sources: SourcesPage, settings: SettingsPage }[route.page] || AskPage;
 
   return html`<div class="app">
     <header class="top"><div class="top-in">
       <a class="logo" href="#/ask" aria-label="VESTIGE home"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M5 6l7 13 7-13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>VESTIGE</span></a>
-      <nav class="tabs">${NAV.map(([id, label, icon]) => html`<a href=${`#/${id}`} class=${route.page === id ? "on" : ""}>
-        <${Icon} name=${icon} size=${16} /><span>${label}</span></a>`)}</nav>
       <div class="top-r"><${SiteSwitch} ws=${ws} setWs=${setWs} sites=${sites} /><${More} page=${route.page} /></div>
     </div></header>
-    <main class="main"><${Page} ...${props} key=${route.page + ws + (route.page === "ask" ? route.q.get("q") || "" : "")} /></main>
+    <main class="main"><${Page} ...${props} key=${(Page === AskPage ? "ask" : route.page) + ws + (Page === AskPage ? (route.q.get("q") || "") + (route.q.get("event") || route.arg || "") : "")} /></main>
   </div>`;
 }
 

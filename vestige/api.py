@@ -119,8 +119,8 @@ def overview(ws: str):
 SUGGESTIONS = {
     "campus": ["What happened to my bicycle?", "Where was my bike last seen?", "Show me everything near the underpass gate"],
     "metro": ["What happened before the emergency alert?", "Why was this incident flagged?", "Show me the evidence"],
-    "construction": ["Why was this construction safety event flagged?", "What happened before this alert?",
-                     "Show me everything near the pour area"],
+    "construction": ["What safety alerts happened today?", "Why was the 07:58 alert flagged?",
+                     "Show me everything at the pour area"],
 }
 
 

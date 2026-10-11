@@ -12,12 +12,13 @@ from __future__ import annotations
 
 import os
 import re
+from collections import defaultdict
 import time
 from datetime import datetime
 
 from . import db, memory
 
-INTENTS = ("object_fate", "event_before", "event_why", "place", "evidence", "search")
+INTENTS = ("object_fate", "events_list", "event_before", "event_why", "place", "evidence", "search")
 
 OBJECT_WORDS = r"\b(bike|bicycle|scooter|backpack|bag|equipment|tool|object|b-\d+)\b"
 PLACE_WORDS = r"\b(near|at|around|in)\s+(?P<place>[a-z0-9 ]{3,30})"
@@ -81,6 +82,8 @@ def plan(question: str, workspace_kind: str) -> tuple[str, dict]:
     q = question.lower()
     if re.search(r"\b(evidence|show me (the )?proof|source)\b", q) and not re.search(OBJECT_WORDS, q):
         return "evidence", {}
+    if re.search(r"\b(which|what|any|how many|list|all)\b.*\b(alerts?|events?|incidents?|warnings?)\b", q) and not re.search(r"\b(why|before)\b", q):
+        return "events_list", {}
     if re.search(r"\bwhy\b.*\b(flag|alert|event|incident|warning)", q) or "why was" in q:
         return "event_why", {}
     if re.search(r"\b(before|lead(ing)? up|prior to)\b", q) or re.search(r"what happened (in|at) the (station|site)", q):
@@ -125,7 +128,7 @@ def ask(conn, workspace_id: str, question: str, event_id: str | None = None) -> 
             intent, ans.planner = llm, "qwen (intent only)"
     ans.intent = intent
     {"object_fate": _object_fate, "event_before": _event_before, "event_why": _event_why,
-     "place": _place, "evidence": _event_before, "search": _search}[intent](conn, ws, ans, ents)
+     "place": _place, "evidence": _event_before, "search": _search, "events_list": _events_list}[intent](conn, ws, ans, ents)
     db.audit(conn, workspace_id, "user", "ask", intent, question[:200])
     conn.commit()
     return ans.to_json()
@@ -232,6 +235,41 @@ def _object_fate(conn, ws, ans: Answer, ents):
         ans.headline = f"Last seen at {place(last)} at {hhmm(last['ts'])}.{tail if direct else ''}{unknown}"
 
 
+def _events_list(conn, ws, ans: Answer, ents):
+    evs = _call(ans, "search_events", memory.search_events, conn, ws["id"])
+    if not evs:
+        ans.headline = "No alerts have been raised in this workspace."
+        ans.sentences.append(ans.headline)
+        return
+    evs = sorted(evs, key=lambda e: e["ts_start"])
+    ans.subject = {"type": "events", "label": f"{len(evs)} alerts"}
+    tags = []
+    for e in evs:
+        ev = _call(ans, "get_evidence", memory.get_evidence, conn, e["evidence_id"]) if e.get("evidence_id") else None
+        c = ans.cite(ev, "OBSERVED", e["ts_start"], e["title"])
+        src = (ev or {}).get("source") or {}
+        place = (src.get("name") or "").split(" · ")[-1]
+        dur = (e.get("metrics") or {}).get("duration_s")
+        tags.append(f"{hhmm(e['ts_start'])}{f' ({dur:.0f} s)' if isinstance(dur, (int, float)) else ''} {c}")
+        ans.sentences.append(f"{hhmm(e['ts_start'])} — {e['title']} ({e['priority']}) {c}")
+        ans.step(e["ts_start"], "OBSERVED", place, e["title"] + (f" · {dur:.0f} s" if isinstance(dur, (int, float)) else ""),
+                 f"{e['priority'].capitalize()} priority · {'needs review' if e['status'] == 'open' else e['status']}.", c)
+        ans.steps[-1]["event_id"] = e["id"]
+        ans.timeline.append({"ts": e["ts_start"], "status": "OBSERVED", "source": place, "kind": e["kind"],
+                             "detail": e["title"], "evidence_id": e.get("evidence_id"), "event_id": e["id"]})
+    open_n = sum(e["status"] == "open" for e in evs)
+    longest = max(evs, key=lambda e: (e.get("metrics") or {}).get("duration_s") or 0)
+    lc = ans.cite(memory.get_evidence(conn, longest["evidence_id"]) if longest.get("evidence_id") else None,
+                  "OBSERVED", longest["ts_start"], longest["title"])
+    ld = (longest.get("metrics") or {}).get("duration_s")
+    review = f" {'All ' + str(open_n) if open_n == len(evs) else open_n} still need review." if open_n else " All reviewed."
+    if all(e["kind"] == "worker_vehicle_proximity" for e in evs):
+        ans.headline = (f"{len(evs)} time{'s' if len(evs) != 1 else ''} a worker was inside a truck's hazard zone"
+                        + (f" — the longest for {ld:.0f} s at {hhmm(longest['ts_start'])} {lc}." if ld else f" {lc}.") + review)
+    else:
+        ans.headline = f"{len(evs)} alert{'s' if len(evs) != 1 else ''} so far; the first at {hhmm(evs[0]['ts_start'])}.{review}"
+
+
 def _pick_event(conn, ws, ans: Answer):
     if getattr(ans, "event_id", None):
         ev = _call(ans, "get_event", memory.get_event, conn, ans.event_id)
@@ -241,6 +279,12 @@ def _pick_event(conn, ws, ans: Answer):
     evs = _call(ans, "search_events", memory.search_events, conn, ws["id"])
     if not evs:
         return None
+    t = re.search(r"\b(\d{1,2}):(\d{2})", q)
+    if t:
+        hm = f"{int(t.group(1)):02d}:{t.group(2)}"
+        at = [e for e in evs if e["ts_start"][11:16] == hm]
+        if at:
+            evs = at
     words = [w for w in re.findall(r"[a-z]+", q) if len(w) > 3]
     def dur(e):
         return (datetime.fromisoformat(e["ts_end"]) - datetime.fromisoformat(e["ts_start"])).total_seconds()
@@ -276,10 +320,18 @@ def _event_before(conn, ws, ans: Answer, ents):
         ans.sentences.append(f"Evidence gap: {g['source']} — {g['reason']}.")
         ans.step(g["ts_start"], "UNKNOWN", g["source"].split(" · ")[0], "No recording for this window", g["reason"] + ".")
     if not ans.headline:
-        srcs = sorted({o["source"].split(" · ")[0] for o in obs})
-        gap = f" {', '.join(g['source'].split(' · ')[0] for g in tl['gaps'])} has no recording for that window." if tl["gaps"] else ""
-        ans.headline = (f"{len(obs)} signals were recorded on {len(srcs)} source{'s' if len(srcs) != 1 else ''} "
-                        f"({', '.join(srcs[:4])}) in the minute leading up to \"{ev['title']}\".{gap}")
+        words = {"detector_alarm": ("an alarm", "alarms"), "staff_report": ("a staff radio call", "staff radio calls"),
+                 "scene_check": ("a camera check", "camera checks"), "proximity": ("a worker–truck proximity", "worker–truck proximities"),
+                 "moved": ("a movement", "movements"), "seen": ("a sighting", "sightings")}
+        kinds = defaultdict(int)
+        for o in obs:
+            kinds[o["kind"]] += 1
+        parts = [words.get(k, (k.replace("_", " "), k.replace("_", " ") + "s"))[n != 1] if n == 1 else
+                 f"{n} {words.get(k, (k, k + 's'))[1]}" for k, n in kinds.items()]
+        listed = ", ".join(parts[:-1]) + (" and " if len(parts) > 1 else "") + parts[-1] if parts else "nothing"
+        gap = (f" {', '.join(g['source'].split(' · ')[0] for g in tl['gaps'])} has no recording for that minute."
+               if tl["gaps"] else "")
+        ans.headline = f"In the minute before \"{ev['title']}\": {listed}.{gap}"
 
 
 def _plain(detail: str) -> tuple[str, str]:
@@ -347,15 +399,39 @@ def _place(conn, ws, ans: Answer, ents):
         ans.sentences.append(f"No observations are stored for \"{place}\".")
         return
     ans.subject = {"type": "place", "label": place}
-    ans.headline = f"{len(obs)} observations are stored near {place}, from {hhmm(obs[0]['ts'])} to {hhmm(obs[-1]['ts'])}."
-    ans.sentences.append(f"{len(obs)} observations near {place}:")
-    for o in obs[:8]:
+    name = (zones[0]["name"] if zones else srcs[0]["name"].split(" · ")[-1])
+    # who/what was there: distinct tracks by class (pseudonymous counts, no identities)
+    tids = sorted({o["track_id"] for o in obs if o.get("track_id")})
+    cls = db.rows(conn.execute("SELECT cls, COUNT(*) AS n FROM tracks WHERE id IN (%s) GROUP BY cls" % ",".join("?" * len(tids)), tids)) if tids else []
+    noun = {"person": ("person", "people"), "bicycle": ("bicycle", "bicycles"), "truck": ("truck", "trucks"),
+            "car": ("car", "cars"), "bus": ("bus", "buses"), "motorcycle": ("motorcycle", "motorcycles")}
+    counts = ", ".join(f"{r['n']} {noun.get(r['cls'], (r['cls'], r['cls'] + 's'))[r['n'] != 1]}" for r in sorted(cls, key=lambda r: -r["n"]))
+    src_ids = {o["source_id"] for o in obs}
+    evs = [e for e in _call(ans, "search_events", memory.search_events, conn, ws["id"])
+           if e.get("evidence_id") and (memory.get_evidence(conn, e["evidence_id"]) or {}).get("source_id") in src_ids]
+    ans.headline = (f"At {name} between {hhmm(obs[0]['ts'])} and {hhmm(obs[-1]['ts'])}: {counts or 'activity'} on camera"
+                    + (f", and {len(evs)} alert{'s' if len(evs) != 1 else ''}." if evs else ", no alerts."))
+    ans.sentences.append(ans.headline)
+    for e in sorted(evs, key=lambda e: e["ts_start"]):
+        ev = _call(ans, "get_evidence", memory.get_evidence, conn, e["evidence_id"])
+        c = ans.cite(ev, "OBSERVED", e["ts_start"], e["title"])
+        dur = (e.get("metrics") or {}).get("duration_s")
+        ans.step(e["ts_start"], "OBSERVED", name, e["title"] + (f" · {dur:.0f} s" if isinstance(dur, (int, float)) else ""),
+                 f"{e['priority'].capitalize()} priority alert.", c)
+        ans.steps[-1]["event_id"] = e["id"]
+    seen = set()
+    for o in obs:
+        if len(ans.steps) >= 6:
+            break
+        if o.get("track_id") in seen or o["kind"] not in ("seen", "moved"):
+            continue
+        seen.add(o.get("track_id"))
         e = _call(ans, "get_evidence", memory.get_evidence, conn, o["evidence_id"]) if o.get("evidence_id") else None
         c = ans.cite(e, o["status"], o["ts"], o["kind"])
+        title, basis = _plain(re.sub(r" · colour .*$", "", o["detail"]).replace("person", "Person"))
+        ans.step(o["ts"], o["status"], name, title, basis or o["detail"], c)
         ans.timeline.append({"ts": o["ts"], "status": o["status"], "source": o["source_id"], "kind": o["kind"],
                              "detail": o["detail"], "evidence_id": o["evidence_id"]})
-        ans.sentences.append(f"{hhmm(o['ts'])} — {o['detail']} {c}")
-        ans.step(o["ts"], o["status"], o.get("source_id") or "", o["detail"][:1].upper() + o["detail"][1:], o.get("kind", ""), c)
 
 
 def _search(conn, ws, ans: Answer, ents):

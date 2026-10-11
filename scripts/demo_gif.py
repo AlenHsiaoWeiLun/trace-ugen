@@ -19,12 +19,13 @@ from scripts.record_demo import CDP, CHROME  # noqa: E402
 BASE = "http://127.0.0.1:8100/"
 # (hash, js after load, [(wait seconds, hold seconds in the GIF), ...])
 STEPS = [
-    ("#/ask?ws=campus", None, [(4, 1.6), (3.2, 1.6), (3.2, 1.6)]),          # showcase auto-advances
-    ("#/ask?ws=campus&q=What%20happened%20to%20my%20bicycle%3F", None, [(4, 3.2)]),
-    ("#/memory?ws=campus", None, [(4, 2.4)]),
-    ("#/investigate?ws=construction", None, [(5, 2.8)]),
-    ("#/investigate?ws=metro", None, [(5, 2.8)]),
-    ("#/lab?ws=campus", None, [(4, 3.2)]),
+    ("#/ask?ws=construction", None, [(4, 1.6), (3.2, 1.6), (3.2, 1.6)]),        # showcase auto-advances
+    ("#/ask?ws=construction&q=What%20safety%20alerts%20happened%20today%3F", None, [(4, 2.8)]),
+    ("#/ask?ws=construction&event=EV-CAM-S1-prox-1-3", None, [(4, 3.0)]),
+    ("#/ask?ws=campus&q=What%20happened%20to%20my%20bicycle%3F", None, [(4, 3.0)]),
+    ("#/ask?ws=campus&q=What%20happened%20to%20my%20bicycle%3F",
+     "document.querySelector('.omap')?.scrollIntoView({block:'center'})", [(4, 2.6)]),
+    ("#/ask?ws=metro&q=What%20happened%20before%20the%20emergency%20alert%3F", None, [(4, 2.8)]),
 ]
 
 
