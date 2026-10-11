@@ -118,82 +118,54 @@ Start with **`app/` for the current interface** and **`vestige/` for the applica
 
 ```text
 trace-ugen/
-├── app/                         # Current VESTIGE browser interface (Preact, plain ES modules)
-│   ├── index.html               # HTML entry and local module import map
-│   ├── app.js                   # App shell, workspace selection and hash routing
-│   ├── styles.css               # Design system and responsive layouts
+├── app/                     # Browser interface · Preact
+│   ├── index.html
+│   ├── app.js
+│   ├── styles.css
 │   ├── pages/
-│   │   ├── ask.js               # Main flow: questions, alerts, answers, evidence and human review
-│   │   ├── lab.js               # Detection stress-test configuration and results
-│   │   ├── sources.js           # Camera/source listing and authorized video uploads
-│   │   └── settings.js          # Demo data policy, coverage and audit views
+│   │   ├── ask.js
+│   │   ├── lab.js
+│   │   ├── sources.js
+│   │   └── settings.js
 │   ├── lib/
-│   │   ├── api.js               # HTTP client and background-job polling
-│   │   ├── ui.js                # Shared timeline, citation, video and UI components
-│   │   └── site-map.js          # Object-route map embedded in the answer
-│   └── vendor/                  # Vendored Preact, hooks and HTM modules
-├── vestige/                     # Current application backend
-│   ├── __main__.py              # python -m vestige: first-run build, then start the server
-│   ├── api.py                   # FastAPI routes, workspace checks, jobs and static/media serving
-│   ├── db.py                    # SQLite schema, connections, serialization and audit writes
-│   ├── scenarios.py             # Input preflight, demo setup and metro replay import
-│   ├── ingest.py                # Video -> tracks, observations, event rules and masked evidence
-│   ├── associate.py             # Cross-camera candidate links using topology/time/colour
-│   ├── memory.py                # Retrieval tools for objects, events, history and evidence
-│   ├── agent.py                 # Site/intent routing -> retrieval tools -> cited answer
-│   └── incidentlab.py           # Frame perturbations, mitigations, metrics and report generation
-├── traceai/                     # Shared primitives and earlier offline pipeline
-│   ├── perception.py            # Detector backends, ByteTrack wrapper and timing
-│   ├── evidence.py              # Head masking, annotated keyframes and evidence clips
-│   ├── schema.py                # Signal and incident data types for the earlier pipeline
-│   ├── rules.py                 # Metro/road track rules -> signals
-│   ├── fusion.py                # Time/zone-based multi-source signal fusion
-│   ├── speech.py                # Local radio transcription -> staff-report signals
-│   ├── summarize.py             # Incident summaries and optional local VLM wrapper
-│   ├── verify.py                # Optional VLM second opinion on fused incidents
-│   └── hailo.py                 # Planned Hailo speech/VLM adapters; hardware validation pending
-├── configs/                     # Earlier metro/road pipeline settings and response SOP
-├── scripts/                     # Reproduction and presentation utilities
-│   ├── download_media.sh        # Download the attributed demo footage
-│   ├── run_pipeline.py          # Earlier video/radio/rules/fusion replay pipeline
-│   ├── simulate_alert_storm.py  # Seeded synthetic fusion benchmark
-│   ├── incidentlab_pilot.py     # Earlier standalone detector-robustness pilot
-│   ├── screenshots.py          # Capture product screenshots
-│   ├── demo_gif.py              # Assemble the README walkthrough GIF
-│   ├── browser_capture.py      # Shared CDP client for screenshots and GIF capture
-│   └── make_charts.py           # Generate experiment charts into deck2/assets/
-├── tests/                       # Retrieval, API, upload, preflight, lab, rules and fusion checks
-├── data/                        # Committed replay JSON/audio plus local runtime data
-│   ├── run_metro.json           # Committed metro replay imported by scenarios.py
-│   ├── run_road.json            # Earlier road replay output
-│   ├── tracks_road.json         # Earlier road track output
-│   ├── audio/                  # Scripted radio sample
-│   ├── videos/                 # Downloaded footage (ignored by Git)
-│   ├── uploads/                # User-uploaded source videos (generated, ignored)
-│   └── vestige.db              # World Memory, reviews, jobs and lab results (generated, ignored)
-├── media/                       # Committed replay evidence and generated product evidence
-│   ├── metro/                  # Committed metro keyframes and clips
-│   └── vestige/                # Masked frames/videos and lab comparisons (generated, ignored)
-├── models/                      # Downloaded model weights (local, ignored by Git)
-├── results/                     # Saved benchmark JSON/text and IncidentLab Markdown reports
-├── examples/                    # Sample cited API answers and lab summary JSON
-├── docs/                        # Architecture, API, status, reproduction and submission guides
-│   ├── ARCHITECTURE.md          # Module dependencies, execution flows and storage boundaries
-│   ├── architecture.png        # Target hardware deployment diagram
-│   ├── trace-proposal-draft.pdf # Earlier English proposal PDF, retained for reference
-│   └── screenshots/            # Product captures used in the README and proposal
-├── deck2/                       # Newer VESTIGE slide sources and assets
-├── requirements.txt             # Python application and test dependencies
-├── ATTRIBUTION.md               # Footage, image and other third-party asset sources
-├── LICENSE                      # Project-authored code license
-├── .gitignore                   # Local state, downloads and generated artifacts to exclude
-└── README.md                    # Product overview and getting started
+│   │   ├── api.js
+│   │   ├── ui.js
+│   │   └── site-map.js
+│   └── vendor/
+├── vestige/                 # Application backend · FastAPI, memory and investigation
+│   ├── __main__.py
+│   ├── api.py
+│   ├── db.py
+│   ├── scenarios.py
+│   ├── ingest.py
+│   ├── associate.py
+│   ├── memory.py
+│   ├── agent.py
+│   └── incidentlab.py
+├── traceai/                 # Shared perception, evidence and offline fusion modules
+├── configs/                 # Replay pipeline configuration
+├── scripts/                 # Downloads, experiments and presentation utilities
+├── tests/                   # Automated checks
+├── data/                    # Replay inputs and local database, videos and uploads
+├── media/                   # Evidence frames, clips and lab comparisons
+├── models/                  # Local model weights
+├── results/                 # Saved experiment reports
+├── examples/                # Sample API responses
+├── docs/                    # Architecture, API, reproduction and submission guides
+│   ├── ARCHITECTURE.md
+│   ├── REPRODUCING.md
+│   ├── STAGE_I.md
+│   └── screenshots/
+├── deck2/                   # VESTIGE slide sources and assets
+├── requirements.txt
+├── ATTRIBUTION.md
+├── LICENSE
+└── README.md
 ```
 
-The tree groups presentation assets and omits package marker files (`__init__.py`); it covers every
-top-level source/content directory. Generated folders appear after download, ingestion or testing.
-For the exact module connections, startup, question, upload and lab flows, see
-**[Software architecture](docs/ARCHITECTURE.md)**.
+This overview expands the main application modules; supporting folders are grouped.
+Downloaded weights, source videos, uploads, the local database and generated evidence are ignored by Git.
+For module responsibilities and execution flows, see **[Software architecture](docs/ARCHITECTURE.md)**.
 
 ## What we measured
 
