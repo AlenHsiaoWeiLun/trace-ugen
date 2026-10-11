@@ -25,7 +25,7 @@ done without hardware/credentials · **PLANNED** designed, not built.
 | Scenarios | Campus bicycle disappearance | TESTED | object history test |
 | Scenarios | Metro incident investigation (TRACE replay) | TESTED | gap + timestamp tests |
 | Scenarios | Construction worker–vehicle proximity | IMPLEMENTED | image-space only; COCO "truck" for machinery |
-| Scenarios | Construction machinery-specific model | PLANNED | needs site data (WanZe pilot) |
+| Scenarios | Construction machinery-specific model | PLANNED | needs site data (pilot under discussion with WanZe) |
 | IncidentLab | 6 perturbations × 3 levels, seeded | TESTED | `tests/test_incidentlab.py` |
 | IncidentLab | Retention metric, occlusion graded on hidden boxes | TESTED | unit tests |
 | IncidentLab | Mitigations: enhance / hires / TTA / larger model | IMPLEMENTED | `results/incidentlab_*.md` |

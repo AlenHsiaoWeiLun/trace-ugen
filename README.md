@@ -2,7 +2,7 @@
 
 **An AI memory and investigation platform for the physical world.**
 ASUS UGen AI League 2026 · Battlefield Lightning (ASUS UGen300 · Hailo-10H) · Workplace AI
-Wei-Lun (Alen) Hsiao · B13902049 · National Taiwan University · *VESTIGE — an Archean project (provisional)*
+Wei-Lun Hsiao · B13902049 · National Taiwan University · *VESTIGE — an Archean project (provisional)*
 
 VESTIGE turns authorized camera footage, alarms and staff reports into a **persistent memory of objects
 and events**, answers questions such as *"What happened to my bicycle?"* with a timeline in which **every
