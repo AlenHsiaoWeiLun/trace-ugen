@@ -592,3 +592,14 @@ table.t tr.sel td { background: rgba(255,255,255,.04); }
   .strip::-webkit-scrollbar { display: none; }
   .show-foot { flex-direction: column; align-items: flex-start; }
 }
+
+/* ---------- less: v4 ---------- */
+.headline { margin: 0; font: 500 26px/1.42 var(--sans); letter-spacing: -.018em; }
+.a-head { padding-bottom: 32px; }
+.follow { margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
+.show-frame { cursor: pointer; }
+.demo-corner { position: absolute; right: 14px; top: 14px; font-size: 11.5px; color: rgba(243,241,236,.75); background: rgba(9,9,11,.5); padding: 3px 8px; border-radius: 6px; }
+.show-top .link { font-size: 13px; color: var(--text-2); font-weight: 400; }
+.show-top .link svg { color: var(--gold); }
+.mo-d { font-size: 12.5px; }
+@media (max-width: 760px) { .headline { font-size: 21px; } }

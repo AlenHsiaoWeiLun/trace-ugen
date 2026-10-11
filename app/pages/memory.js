@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "preact/hooks";
 import { api } from "../lib/api.js";
-import { Empty, Err, html, Icon, Skel, Status, Toast, useAsync, Viewer, VTimeline, hhmmss } from "../lib/ui.js";
+import { Empty, Err, html, Icon, Skel, Steps, Toast, useAsync, Viewer, hhmmss } from "../lib/ui.js";
 
 // Site map: zones, cameras, topology, and the object's path through the cameras.
 function SiteMap({ zones, sources, topology, path, gaps, focus, onFocus }) {
@@ -84,6 +84,9 @@ export function MemoryPage({ ws, route, go }) {
 
   useEffect(() => { if (!sel && objs.data?.length) setSel(objs.data[0].id); }, [objs.data]);
   const hist = useAsync(() => (sel ? api.history(sel) : Promise.resolve(null)), [sel, reload]);
+  // the object's story, told the same way as an answer (short steps, evidence on click)
+  const story = useAsync(() => (hist.data?.object ? api.ask(ws, `What happened to ${hist.data.object.label.split(" · ").slice(-1)[0]}?`) : Promise.resolve(null)), [hist.data?.object?.id, reload]);
+  const [active, setActive] = useState(null);
 
   const pick = async (e, i) => {
     setActiveIdx(i);
@@ -109,7 +112,7 @@ export function MemoryPage({ ws, route, go }) {
 
     ${h?.object ? html`<div>
       <h1 class="h1">${h.object.label.split(" · ").slice(-1)[0].replace(/^./, (c) => c.toUpperCase())}</h1>
-      <p class="lede" style="margin-top:12px">${h.object.description}. ${lastObs ? `Last seen directly at ${place(lastObs)}` : "Never observed directly"}${lastInf ? `; a similar ${h.object.cls} was later inferred at ${place(lastInf)}` : ""}${h.gaps.length ? ". After that, no camera covers the route." : "."}</p>
+      <p class="lede" style="margin-top:12px">${lastObs ? `Last seen directly at ${place(lastObs)}` : "Never observed directly"}${lastInf ? `; a similar ${h.object.cls} was later inferred at ${place(lastInf)}` : ""}${h.gaps.length ? ". After that, no camera covers the route." : "."}</p>
       <div class="facts">
         <div class="fact"><span class="v">${rec ? hhmmss(rec.ts) : "—"}</span><span class="k">Recorded by you · ${rec ? place(rec) : "no check-in"}</span></div>
         <div class="fact"><span class="v">${lastObs ? hhmmss(lastObs.ts) : "—"}</span><span class="k">Last direct observation · ${lastObs ? place(lastObs) : "none"}</span></div>
@@ -121,25 +124,12 @@ export function MemoryPage({ ws, route, go }) {
       <div class="stack" style="gap:24px">
         ${cov.data ? html`<${SiteMap} zones=${zones.data || []} sources=${cov.data.sources.filter((s) => s.map_x != null)} topology=${cov.data.topology}
             path=${entries.filter((e) => e.source_id && e.status !== "RECORDED")} gaps=${h?.gaps || []} />` : html`<${Skel} h=${420} />`}
-        <div class="row wrap" style="gap:8px"><${Status} s="RECORDED" /><${Status} s="OBSERVED" /><${Status} s="INFERRED" /><${Status} s="UNKNOWN" />
-          <span class="note">Solid path = observed on one camera · dashed = inferred between cameras (adjacency + travel time + colour), not identity.</span></div>
-        ${cite ? html`<${Viewer} c=${cite} />` : null}
-        ${h?.rejected_links?.length ? html`<details class="disclose"><summary>Checked and not linked <span class="dim">· ${h.rejected_links.length}</span></summary><div class="stack" style="gap:10px">
-          ${h.rejected_links.map((r) => html`<div class="row wrap" style="gap:10px;font-size:13.5px;color:var(--text-2)"><${Status} s="REJECTED" />
-            <span class="mono" style="font-size:12px">${r.b_id.replace("T-", "")}</span>
-            <span class="dim">${(r.basis.reasons || []).join("; ")} · colour ${r.basis.colours?.join(" vs ")} (${r.basis.colour_similarity})</span></div>`)}
-        </div></details>` : null}
-        <details class="disclose"><summary>Everything the cameras remember <span class="dim">· ${tracks.data?.length ?? 0} tracks</span></summary><div class="table-wrap">
-          <table class="t"><thead><tr><th>Track</th><th>Class</th><th>First seen</th><th>Appearance</th></tr></thead><tbody>
-          ${(tracks.data || []).slice(0, 80).map((t) => html`<tr><td class="mono">${t.id.replace("T-", "")}</td><td>${t.cls}</td><td class="mono">${hhmmss(t.start_ts)}</td>
-            <td class="dim">${t.colour || (t.appearance?.colour) || "—"}</td></tr>`)}
-          </tbody></table></div></details>
+        ${cite ? html`<${Viewer} c=${cite} list=${story.data?.citations || []} onNav=${(n) => { setActive(n); setCite(story.data.citations.find((x) => x.n === n)); }} />` : null}
       </div>
       <aside>
-        ${h ? html`<div class="panel-t"><div class="section-t" style="margin:0">History <span class="dim">· ${entries.length} memories</span></div>
-            <button class="btn sm ghost" onClick=${() => go("ask", null, { ws, q: "What happened to my bicycle?" })}>Ask about it <${Icon} name="arrow" size=${13} /></button></div>
-          <${VTimeline} items=${entries} gaps=${h.gaps} active=${activeIdx} onPick=${pick} />`
-          : !objs.loading ? html`<${Empty} title="No object selected">Record a parking check-in to start an object history.</${Empty}>` : null}
+        ${h ? html`<div class="section-t">Timeline</div>
+          ${story.data ? html`<${Steps} steps=${story.data.steps || []} active=${active} onPick=${(n) => { setActive(n); setCite(story.data.citations.find((x) => x.n === n)); }} compact />` : html`<${Skel} h=${300} />`}`
+          : !objs.loading ? html`<${Empty} title="Nothing registered yet">Record where you parked to start an object history.</${Empty}>` : null}
       </aside>
     </div>
     <${Toast} msg=${toast} onDone=${() => setToast(null)} />

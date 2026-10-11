@@ -2,13 +2,6 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import { api } from "../lib/api.js";
 import { Cited, Err, html, Icon, Skel, Steps, Story, Viewer } from "../lib/ui.js";
 
-function evidenceSummary(cs) {
-  const direct = cs.filter((c) => c.status === "OBSERVED" || c.status === "LAST_SEEN").length;
-  const inf = cs.filter((c) => c.status === "INFERRED").length;
-  const other = cs.length - direct - inf;
-  return [`${cs.length} piece${cs.length === 1 ? "" : "s"} of evidence`, direct && `${direct} direct observation${direct === 1 ? "" : "s"}`,
-    inf && `${inf} inferred`, other && `${other} records`].filter(Boolean).join(" · ");
-}
 
 // The three demo workspaces and the question that shows each best.
 const SCENES = [
@@ -43,24 +36,23 @@ function Showcase({ ws, setWs, go }) {
     <div class="show-top">
       <div class="seg" role="tablist" aria-label="Demo workspace">${SCENES.map((x) => html`<button role="tab" aria-selected=${x.ws === ws}
         class=${x.ws === ws ? "on" : ""} onClick=${() => setWs(x.ws)}>${x.name}</button>`)}</div>
-      <span class="demo-tag">Demo · public footage</span>
+      <button class="link" onClick=${() => go("ask", null, { ws: scene.ws, q: scene.q })}>“${scene.q}” <${Icon} name="arrow" size=${14} /></button>
     </div>
-    <div class="show-frame">
+    <div class="show-frame" role="button" tabindex="0" onClick=${() => go("ask", null, { ws: scene.ws, q: scene.q })}>
       ${frame ? html`<img key=${frame} class="fadein-fast" src=${frame} alt=${cite?.caption || "evidence frame"} />` : html`<div class="skel" style="position:absolute;inset:0"></div>`}
       ${cur?.status === "UNKNOWN" ? html`<div class="show-unknown"><span>No camera covers what happened next.</span></div>` : null}
       ${cur ? html`<div class="show-cap"><span class=${`tag-s ${cur.status}`}>${STATE[cur.status] || cur.status}</span>
-        <span class="mono">${(cur.ts || "").slice(11, 19)}</span><span class="show-place">${cur.place || cite?.source?.split(" · ")[0] || ""}</span></div>` : null}
+        <span class="mono">${(cur.ts || "").slice(11, 19)}</span><span class="show-place">${cur.title}</span></div>` : null}
+      <span class="demo-corner">Demo · public footage</span>
     </div>
     <ol class="strip" style=${`--n:${Math.max(moments.length, 1)}`}>
       ${moments.map((m, k) => html`<li class=${`mo ${m.status} ${k === i ? "on" : ""} ${k < i ? "past" : ""}`}>
         <button onClick=${() => { setAuto(false); setI(k); }} aria-label=${m.title}>
           <span class="mo-line"></span><span class="mo-dot"></span>
           <span class="mo-t mono">${m.ts ? m.ts.slice(11, 19) : ""}</span>
-          <span class="mo-d">${clip(m.title, 52)}</span>
+          <span class="mo-d">${m.place || STATE[m.status]}</span>
         </button></li>`)}
     </ol>
-    <div class="show-foot"><span>${ans ? clip(ans.question, 60) : ""}</span>
-      <button class="link" onClick=${() => go("ask", null, { ws: scene.ws, q: scene.q })}>Open the full investigation <${Icon} name="arrow" size=${14} /></button></div>
   </div>`;
 }
 const STATE = { RECORDED: "Recorded", OBSERVED: "Observed", LAST_SEEN: "Last seen", INFERRED: "Inferred", UNKNOWN: "Unknown" };
@@ -106,21 +98,14 @@ export function AskPage({ ws, setWs, go, route }) {
     return html`<div class="home fadein">
       <section class="hero2">
         <div class="h-left">
-          <div class="eyebrow"><span class="live"></span>Edge AI for the physical world</div>
           <h1 class="display">The world<br/>leaves a trace.</h1>
-          <p class="lede">Ask what happened to an object, a place or an event. VESTIGE answers from your cameras — and shows you the footage.</p>
+          <p class="lede">Ask what happened. See the footage that answers it.</p>
           ${box(true)}
           <div class="chips">${sugs.slice(0, 2).map((s) => html`<button class="chip-q" onClick=${() => run(s)}>${s}</button>`)}</div>
           <${Err} error=${err} />
         </div>
         <div class="h-right"><${Showcase} ws=${ws} setWs=${setWs} go=${go} /></div>
       </section>
-      <section class="proof">
-        <div><${Icon} name="spark" size=${18} /><b>Remembers</b><span>Objects and events, kept as a timeline you can search — what was seen, where and when.</span></div>
-        <div><${Icon} name="ask" size=${18} /><b>Shows its evidence</b><span>Every answer comes with the footage behind it, and says plainly what is certain, inferred or unknown.</span></div>
-        <div><${Icon} name="flask" size=${18} /><b>Tests its limits</b><span>Measures how detection holds up in low light, blur and occlusion — and which fixes help.</span></div>
-      </section>
-      <p class="foot">Demo workspaces use public stock footage and staged inputs, labelled as such. No face recognition; heads are blurred in everything stored.</p>
     </div>`;
   }
 
@@ -132,12 +117,10 @@ export function AskPage({ ws, setWs, go, route }) {
     ${busy ? html`<div class="answer-grid"><div class="stack"><${Skel} h=${44} w="70%" /><${Skel} h=${90} /><${Skel} h=${90} /><${Skel} h=${90} /></div><${Skel} h=${360} /></div>` : html`
     <div class="answer-grid fadein">
       <div class="a-head">
-        <h1 class="answer-q">${res.question}</h1>
         ${res.headline ? html`<p class="headline"><${Cited} text=${res.headline} citations=${res.citations} active=${active} onCite=${setActive} /></p>` : null}
-        <div class="answer-meta">${evidenceSummary(res.citations)}</div>
       </div>
       <div class="a-steps">
-        <div class="section-t">How it unfolded</div>
+        <div class="section-t">Timeline</div>
         ${res.steps?.length ? html`<${Steps} steps=${res.steps} active=${active} onPick=${setActive} />`
           : html`<${Story} sentences=${res.sentences} citations=${res.citations} active=${active} onPick=${setActive} gaps=${res.gaps} />`}
         <div class="row wrap actions">
@@ -145,11 +128,8 @@ export function AskPage({ ws, setWs, go, route }) {
           ${res.subject?.type === "event" ? html`<button class="btn" onClick=${() => go("investigate", res.subject.id)}>Open the event <${Icon} name="arrow" size=${15} /></button>
             <button class="btn ghost" onClick=${() => go("lab", null, { event: res.subject.id, ws })}><${Icon} name="flask" size=${15} /> Stress-test it</button>` : null}
         </div>
-        <details class="how"><summary>How this answer was built</summary>
-          <p>${res.tool_calls.length} memory lookups · ${res.latency_ms} ms on this machine</p>
-          <ol>${res.tool_calls.map((t) => html`<li><span class="mono">${t.tool}</span><span>${t.results} rows · ${t.ms} ms</span></li>`)}</ol>
-          <p>Planner: ${res.planner}. Facts come only from these lookups; the planner picks tools and never writes times or places. Inferred links are adjacency + travel time + colour similarity, not identity.</p>
-        </details>
+        ${sugs.filter((x) => x !== res.question).length ? html`<div class="follow"><span class="label">Ask next</span>
+          <div class="row wrap" style="gap:8px">${sugs.filter((x) => x !== res.question).slice(0, 3).map((x) => html`<button class="chip-q" onClick=${() => run(x)}>${x}</button>`)}</div></div>` : null}
       </div>
       <aside class="answer-side"><${Viewer} c=${cite} list=${res.citations} onNav=${setActive} empty="This answer has no visual evidence." /></aside>
     </div>`}

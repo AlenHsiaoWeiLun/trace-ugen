@@ -203,10 +203,9 @@ export function Steps({ steps, active, onPick, compact = false }) {
       <div class="step-b">
         <div class="step-m">${st.ts ? html`<span class="mono">${hhmmss(st.ts)}${st.status === "UNKNOWN" ? " →" : ""}</span>` : null}
           <span class=${`tag-s ${st.status}`}>${STATUS_LABEL[st.status] || st.status}</span>${st.place ? html`<span>${st.place}</span>` : null}
-          ${st.n != null ? html`<span class=${`cite ${st.status === "INFERRED" ? "inferred" : ""} ${on ? "on" : ""}`}>E${st.n}</span>` : null}</div>
+</div>
         <div class="step-t">${st.title}</div>
         ${show && st.basis ? html`<div class="basis fadein">${st.basis}</div>` : null}
-        ${!show && st.basis ? html`<button class="basis-t" onClick=${(e) => { e.stopPropagation(); setOpen(i); }}>Why we think so</button>` : null}
       </div>
     </li>`;
   })}</ol>`;
@@ -237,7 +236,7 @@ export function Viewer({ c, list = [], onNav, empty = "Select a step to see its 
       ${src ? html`<video ref=${ref} src=${src} muted playsinline poster=${c.url || ""} onPlay=${() => setPlaying(true)} onPause=${() => setPlaying(false)} onEnded=${() => setPlaying(false)} onClick=${() => (playing ? ref.current.pause() : play())}></video>`
             : c.url ? html`<img src=${c.url} alt=${c.caption || ""} />` : html`<div class="noimg">${c.caption || c.label}</div>`}
       <div class="media-tags"><span class="glass">${(c.source || c.source_id || "").split(" · ")[0]}</span><span class="glass mono">${hhmmss(c.ts)}</span>
-        <span class="sp"></span><span class="glass dimmed">${src ? "Video · faces masked" : "Still frame"}</span></div>
+</div>
       ${src && !playing ? html`<button class="play" onClick=${play} aria-label="Play clip"><${Icon} name="play" size=${18} /> Play clip</button>` : null}
     </div>
     ${list.length > 1 && idx >= 0 ? html`<div class="vnav">
@@ -245,7 +244,6 @@ export function Viewer({ c, list = [], onNav, empty = "Select a step to see its 
       <span class="mono">E${c.n} <span class="dim">/ ${list.length}</span></span>
       <button class="iconbtn" disabled=${idx >= list.length - 1} onClick=${() => onNav && onNav(list[idx + 1].n)} aria-label="Next evidence"><${Icon} name="chevr" size=${18} /></button>
     </div>` : null}
-    <figcaption><${Status} s=${c.status} /><span>${c.caption || c.label || ""}</span><span class="sp"></span>
-      ${c.provenance ? html`<span class="prov">${c.provenance}</span>` : null}</figcaption>
+
   </figure>`;
 }

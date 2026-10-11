@@ -270,9 +270,8 @@ def _event_before(conn, ws, ans: Answer, ents):
                              "detail": o["detail"], "evidence_id": o["evidence_id"], "role": o.get("role")})
         ans.sentences.append(f"{hhmm(o['ts'])} — {o['source'].split(' · ')[0]} ({o['status'].lower().replace('_', ' ')}): "
                              f"{o['detail']} {c}".rstrip())
-        d = o["detail"]
-        ans.step(o["ts"], o["status"], o["source"].split(" · ")[0], d[:1].upper() + d[1:],
-                 f"{o['source']} · {o['kind']}" + (" · trigger" if o.get("role") == "trigger" else ""), c)
+        title, basis = _plain(o["detail"])
+        ans.step(o["ts"], o["status"], o["source"].split(" · ")[0], title, basis, c)
     for g in tl["gaps"]:
         ans.sentences.append(f"Evidence gap: {g['source']} — {g['reason']}.")
         ans.step(g["ts_start"], "UNKNOWN", g["source"].split(" · ")[0], "No recording for this window", g["reason"] + ".")
@@ -281,6 +280,21 @@ def _event_before(conn, ws, ans: Answer, ents):
         gap = f" {', '.join(g['source'].split(' · ')[0] for g in tl['gaps'])} has no recording for that window." if tl["gaps"] else ""
         ans.headline = (f"{len(obs)} signals were recorded on {len(srcs)} source{'s' if len(srcs) != 1 else ''} "
                         f"({', '.join(srcs[:4])}) in the minute leading up to \"{ev['title']}\".{gap}")
+
+
+def _plain(detail: str) -> tuple[str, str]:
+    """Short human title for an observation; track ids and measurement caveats move to the basis."""
+    m = re.match(r"[Ww]orker #(\d+) (overlapping|within [\d.]+ body-heights of) (\w+) #(\d+) for ([\d.]+) s", detail)
+    if m:
+        verb = "overlaps" if m.group(2) == "overlapping" else "comes close to"
+        return (f"Worker {verb} a {m.group(3)} for {float(m.group(5)):.0f} s",
+                f"Worker #{m.group(1)} and {m.group(3)} #{m.group(4)} · measured in the image (uncalibrated camera).")
+    m = re.match(r"(\d+) people visible when (\S+) fired", detail)
+    if m:
+        return f"{m.group(1)} people on camera", f"Counted when {m.group(2)} fired."
+    if detail.startswith('"'):
+        return "Staff radio call", detail
+    return detail[:1].upper() + detail[1:], ""
 
 
 def _event_why(conn, ws, ans: Answer, ents):
@@ -298,11 +312,8 @@ def _event_why(conn, ws, ans: Answer, ents):
         ans.sentences.append(
             f"It was flagged because a worker {where} a {m.get('vehicle_class', 'vehicle')} for "
             f"{m.get('duration_s', '?')} s {c}. The rule fires below 0.35 body-heights for at least 1 s.")
-        ans.step(ev["ts_start"], "OBSERVED", "", f"Worker {where} a {m.get('vehicle_class', 'vehicle')} for {m.get('duration_s', '?')} s",
-                 "Rule: gap below 0.35 body-heights for at least 1 s, measured in the image (uncalibrated camera). "
-                 "Proximity is not intent and not a collision prediction.", c)
-        ans.headline = (f"A worker {where} a {m.get('vehicle_class', 'vehicle')} for {m.get('duration_s', '?')} s {c} — "
-                        f"measured in the image, not as a real distance.")
+        ans.headline = (f"Flagged because a worker {where} a {m.get('vehicle_class', 'vehicle')} for "
+                        f"{m.get('duration_s', '?')} s {c}. Measured in the image, not as a real distance.")
         ans.sentences.append("This is image-space proximity from an uncalibrated camera, not a measured distance "
                              "or a collision prediction. Stress-test the event in IncidentLab to see how reliable "
                              "the detections behind it are.")
@@ -310,15 +321,13 @@ def _event_why(conn, ws, ans: Answer, ents):
         ans.sentences.append(f"TRACE fused {m.get('n_signals', '?')} signals into this incident (score "
                              f"{m.get('score', '?')}) {c}.")
         vlm = (m.get("vlm") or {}).get("second_opinion")
-        ans.step(ev["ts_start"], "OBSERVED", "", f"{m.get('n_signals', '?')} signals fused into one incident",
-                 f"Fusion score {m.get('score', '?')}; signals agree in zone and time window." +
-                 (f" On-device VLM check: \"{vlm['question']}\" → \"{vlm['answer']}\"." if vlm else ""), c)
-        ans.headline = f"{m.get('n_signals', '?')} independent signals agreed within one zone and time window {c}, so they were fused into one incident."
+        ans.headline = f"Flagged because {m.get('n_signals', '?')} separate signals pointed to the same place and time {c}."
         if vlm:
             ans.sentences.append(f"The on-device VLM was asked: \"{vlm['question']}\" and answered \"{vlm['answer']}\".")
     else:
         ans.sentences.append(f"{ev['title']}: {ev['kind'].replace('_', ' ')} {c}.")
-        ans.headline = f"{ev['title']} {c} — the rule behind it is shown below."
+        ans.headline = (f"Flagged because a parked bicycle left its position {c}. Movement alone is not theft."
+                        if ev["kind"] == "object_moved" else f"{ev['title']} {c}.")
     n_rule = len(ans.steps)
     _event_before(conn, ws, ans, ents)
     # the trigger observation repeats the rule step (same evidence); keep the rule wording

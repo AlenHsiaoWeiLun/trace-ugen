@@ -66,7 +66,7 @@ function Chart({ cells, sel, onSel }) {
   const rows = groupedRows(cells);
   const by = new Map((cells || []).map((c) => [cellKey(c), c]));
   return html`<div class="rchart" role="img" aria-label="Retention, baseline versus best mitigation per stress">
-    <div class="row wrap rchart-legend"><span><i class="sw base"></i>Baseline YOLO11n</span><span><i class="sw best"></i>Best fix for that stress</span></div>
+    <div class="row wrap rchart-legend"><span><i class="sw base"></i>Baseline</span><span><i class="sw best"></i>Most improved in this test</span></div>
     ${rows.map((r) => {
       const b = by.get(`${r.perturbation}:${r.level}:none`);
       const m = rowBest(cells, r);
@@ -76,7 +76,7 @@ function Chart({ cells, sel, onSel }) {
         <div class="rbars">
           <div class="rbar"><i class="base" style=${`width:${Math.round((b?.retention || 0) * 100)}%`}></i><span class="num">${pct(b?.retention)}</span></div>
           <div class="rbar"><i class=${up ? "best" : "flat"} style=${`width:${Math.round((m?.retention || 0) * 100)}%`}></i><span class="num">${pct(m?.retention)}</span></div>
-          <div class="rmeta">${m ? html`<span class=${up ? "delta-up" : "delta-flat"}>${pp(m.delta)}</span> · ${m.mitigation_label}` : "—"}</div>
+          <div class="rmeta">${m ? html`<span class=${up ? "delta-up" : "delta-flat"}>${pp(m.delta)}</span>` : "—"}</div>
         </div></button>`;
     })}
   </div>`;
@@ -230,12 +230,12 @@ export function LabPage({ ws, route }) {
 
   return html`<div class="fadein">
     <header class="page-head">
-      <div><h1 class="h1">Know where the AI fails —<br/>and what fixes it.</h1>
-        <p class="lede">IncidentLab degrades real frames — darkness, blur, noise, occlusion — re-runs the detector, and measures what it still finds.</p></div>
+      <div><h1 class="h1">Where does detection break?</h1>
+        <p class="lede">We degrade real frames and measure what the detector still finds.</p></div>
       <div class="row wrap" style="gap:8px">
         ${history.length ? html`<select class="input" style="width:auto;min-width:240px" value=${selected} onChange=${(e) => setSelected(e.target.value)} aria-label="Experiment">
           ${history.map((x) => html`<option value=${x.id}>${wsName(x.workspace_id)} · ${shortDate(x.created_ts)}${x.status !== "done" ? ` · ${x.status}` : ""}</option>`)}</select>` : null}
-        <button class=${`btn ${showConfig ? "" : "gold"}`} onClick=${() => setShowConfig(!showConfig)}><${Icon} name=${showConfig ? "x" : "plus"} size=${15} />${showConfig ? "Close" : "New stress test"}</button>
+        <button class="btn ghost" onClick=${() => setShowConfig(!showConfig)}><${Icon} name=${showConfig ? "x" : "plus"} size=${15} />${showConfig ? "Close" : "New test"}</button>
       </div>
     </header>
     <${Err} error=${err || boot.error || expState.error} />
@@ -271,26 +271,20 @@ export function LabPage({ ws, route }) {
       <div>
         ${pair ? html`<${Compare} a=${pathUrl(pair.a.perturbed_path)} b=${pathUrl(pair.b.perturbed_path)} labelA=${`Baseline · found ${pair.a.n_kept}/${pair.a.n_ref}`} labelB=${`${cmpBest.mitigation_label} · ${pair.b.n_kept}/${pair.b.n_ref}`} />`
           : compare ? html`<${Compare} a=${pathUrl(compare.original_path)} b=${pathUrl(compare.perturbed_path)} labelA="Clean" labelB=${`${compare.perturbation} · ${compare.mitigation}`} />` : html`<div class="viewer-empty">No saved frames for this stress.</div>`}
-        <div class="legend"><span><i style="border-color:#ece6da"></i>found again</span><span><i style="border-color:var(--red)"></i>missed</span><span><i style="border-color:var(--cyan)"></i>new detection</span>
-          <span class="sp"></span><span>Same frame, same ${cmpRow?.label.toLowerCase()} — drag to compare</span></div>
+        <div class="legend"><span><i style="border-color:#ece6da"></i>found</span><span><i style="border-color:var(--red)"></i>missed</span><span class="sp"></span><span>Drag to compare</span></div>
       </div>
       <div>
-        <span class="label">${cmpRow?.label} · level ${cmpRow?.level} · ${wsName(experiment.workspace_id)}</span>
+        <span class="label">${cmpRow?.label} · ${wsName(experiment.workspace_id)}</span>
         <div class="big-num"><span class="from">${pct(base?.retention)}</span><span class="arr">→</span><span class="to">${pct(cmpBest?.retention)}</span></div>
-        <p class="lab-claim">Under ${cmpRow?.label.toLowerCase()}, the baseline detector still finds <b>${pct(base?.retention)}</b> of what it finds on clean frames.${" "}
-          ${cmpBest && cmpBest.delta > 0 ? html`<b>${cmpBest.mitigation_label}</b> recovers <b>${pp(cmpBest.delta)}</b>, at ${cmpBest.latency_ms} ms vs ${base?.latency_ms} ms per frame.` : html`None of the tested fixes helped here.`}</p>
-        <div class="section-t">Every stress tested <span class="dim">· click one to compare</span></div>
+        <p class="lab-claim">The detector still finds <b>${pct(base?.retention)}</b> of what it finds on clean frames.${" "}
+          ${cmpBest && cmpBest.delta > 0 ? html`In this test, <b>${cmpBest.mitigation_label.replace(/^./, (x) => x.toLowerCase())}</b> raised that to <b>${pct(cmpBest.retention)}</b>.` : html`None of the tested methods helped here.`}</p>
         <${Chart} cells=${cells} sel=${cmpRow?.key} onSel=${setCmpKey} />
-        <p class="note" style="margin-top:18px">Retention = share of the model's own clean-frame detections it still finds (IoU ≥ 0.5). It measures robustness, not accuracy against human labels.</p>
+        <p class="note" style="margin-top:18px">Detection retention, not accuracy.</p>
       </div>
     </div>
-    <details class="disclose" style="margin-top:36px"><summary>Full retention matrix <span class="dim">· ${summary.frames || 0} frames · ${cells.length} cells</span></summary>
-      <div><${RetentionMatrix} rows=${rows} columns=${columns} by=${by} /></div></details>
-    ${failures.length ? html`<details class="disclose"><summary>Failure frames <span class="dim">· ${failures.length}</span></summary><div class="grid g3">
-      ${failures.map((r) => html`<figure class="viewer" style="margin:0"><div class="media"><img src=${pathUrl(r.perturbed_path)} alt=${`${r.perturbation} ${r.mitigation}`} /></div>
-        <figcaption><span>missed ${r.n_ref - r.n_kept} of ${r.n_ref}</span><span class="sp"></span><span class="prov">${r.perturbation} · ${r.mitigation}</span></figcaption></figure>`)}</div></details>` : null}
-    <details class="disclose"><summary>Method and report</summary><div class="stack">
-      ${summary.method ? html`<p class="note" style="margin:0">${summary.method}</p>` : null}
-      <div><button class="btn sm" onClick=${download}><${Icon} name="download" size=${14} /> Download report (.md)</button></div></div></details>` : null}
+    <details class="disclose" style="margin-top:40px"><summary>Full results and method</summary><div class="stack" style="gap:24px">
+      <${RetentionMatrix} rows=${rows} columns=${columns} by=${by} />
+      ${summary.method ? html`<p class="note" style="margin:0">${summary.method} Retention = share of the model's own clean-frame detections still found (IoU ≥ 0.5); it measures robustness, not accuracy against human labels.</p>` : null}
+      <div><button class="btn sm" onClick=${download}><${Icon} name="download" size=${14} /> Download report</button></div></div></details>` : null}
   </div>`;
 }
