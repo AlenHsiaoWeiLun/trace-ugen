@@ -26,7 +26,7 @@ done without hardware/credentials · **PLANNED** designed, not built.
 | Scenarios | Metro incident investigation (TRACE replay) | TESTED | gap + timestamp tests |
 | Scenarios | Road erratic riding (lateral weaving, cause not inferred) | TESTED | TRACE replay imported as the road site; routing test |
 | Scenarios | Construction worker–vehicle proximity | IMPLEMENTED | image-space only; COCO "truck" for machinery |
-| Scenarios | Construction machinery-specific model | PLANNED | needs site data (pilot under discussion with WanZe) |
+| Scenarios | Construction machinery-specific model | PLANNED | needs site data (WanZe agreed to be the first pilot site; scope to be defined) |
 | IncidentLab | 6 perturbations × 3 levels, seeded | TESTED | `tests/test_incidentlab.py` |
 | IncidentLab | Retention metric, occlusion graded on hidden boxes | TESTED | unit tests |
 | IncidentLab | Mitigations: enhance / hires / TTA / larger model | IMPLEMENTED | `results/incidentlab_*.md` |

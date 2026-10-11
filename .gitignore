@@ -22,3 +22,6 @@ media/vestige/
 video/
 scripts/record_demo.py
 scripts/assemble_video.py
+
+# local review decisions written by the running demo
+data/reviews.jsonl
