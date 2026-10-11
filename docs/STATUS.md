@@ -54,6 +54,11 @@ done without hardware/credentials · **PLANNED** designed, not built.
 
 - Appearance association uses colour only: two bicycles of the same colour on adjacent cameras would be
   linked as *candidates*; the UI and answers say "not a confirmed identity".
+- Using YOLO11s for ingestion (the best model under stress in IncidentLab) changed box geometry enough to drop the
+  campus cross-camera colour similarity from 0.59 to 0.46, so links were rejected. Making the comparison hue-shift
+  tolerant raises same-bike similarity (0.46 → 0.66) but also different-bike similarity (0.16 → 0.43); re-picking the
+  threshold on these few demo clips would be overfitting, so the demo stays on YOLO11n. Stage II: an appearance
+  signature validated on held-out footage.
 - Proximity is image-space (body-heights) from uncalibrated cameras; no metric distance or TTC is claimed.
 - The detector is COCO-trained: construction machinery is detected as "truck"; rollers/excavators can be missed.
 - Demo timestamps are assigned to stock clips; the scenarios are reconstructions, not real incidents.

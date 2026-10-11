@@ -7,6 +7,8 @@ the processed stream is written so investigators never need the raw footage.
 """
 from __future__ import annotations
 
+import os
+
 import hashlib
 import subprocess
 from collections import defaultdict
@@ -24,6 +26,11 @@ from . import db
 
 ROOT = db.ROOT
 MEDIA = ROOT / "media" / "vestige"
+# IncidentLab measured YOLO11s keeping +29 pp more detections under occlusion and +33 pp under blur than YOLO11n
+# (results/incidentlab_bench-road_*.md). Switching ingestion to it changed box geometry enough to drop the campus
+# cross-camera colour similarity from 0.59 to 0.46 (links rejected), so the demo memory stays on YOLO11n until the
+# colour signature is made hue-shift tolerant. Set VESTIGE_MODEL=yolo11s to try it.
+DEFAULT_MODEL = os.environ.get("VESTIGE_MODEL", "yolo11n")
 GOLD = (59, 163, 224)      # BGR of #E0A33B
 IVORY = (218, 230, 236)
 
@@ -149,7 +156,7 @@ def process_source(conn, src: dict, progress=None, detector_cfg: dict | None = N
     """Run perception on one video source and write tracks/observations/evidence/events."""
     ws = db.row(conn.execute("SELECT * FROM workspaces WHERE id=?", (src["workspace_id"],)).fetchone())
     kind = ws["kind"]
-    cfg = {"weights": str(ROOT / "models/yolo11n.pt"), "imgsz": 960, "conf": 0.3, "process_fps": 10}
+    cfg = {"weights": str(ROOT / f"models/{DEFAULT_MODEL}.pt"), "imgsz": 960, "conf": 0.3, "process_fps": 10}
     cfg.update(detector_cfg or {})
     video = ROOT / src["media_path"]
     cap = cv2.VideoCapture(str(video))

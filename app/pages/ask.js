@@ -125,8 +125,7 @@ export function AskPage({ ws, setWs, go, route }) {
           : html`<${Story} sentences=${res.sentences} citations=${res.citations} active=${active} onPick=${setActive} gaps=${res.gaps} />`}
         <div class="row wrap actions">
           ${res.subject?.type === "object" ? html`<button class="btn" onClick=${() => go("memory", res.subject.id)}><${Icon} name="map" size=${15} /> See it on the map</button>` : null}
-          ${res.subject?.type === "event" ? html`<button class="btn" onClick=${() => go("investigate", res.subject.id)}>Open the event <${Icon} name="arrow" size=${15} /></button>
-            <button class="btn ghost" onClick=${() => go("lab", null, { event: res.subject.id, ws })}><${Icon} name="flask" size=${15} /> Stress-test it</button>` : null}
+          ${res.subject?.type === "event" ? html`<button class="btn" onClick=${() => go("investigate", res.subject.id)}>Open the event <${Icon} name="arrow" size=${15} /></button>` : null}
         </div>
         ${sugs.filter((x) => x !== res.question).length ? html`<div class="follow"><span class="label">Ask next</span>
           <div class="row wrap" style="gap:8px">${sugs.filter((x) => x !== res.question).slice(0, 3).map((x) => html`<button class="chip-q" onClick=${() => run(x)}>${x}</button>`)}</div></div>` : null}

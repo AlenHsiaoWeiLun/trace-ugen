@@ -202,7 +202,7 @@ export function Steps({ steps, active, onPick, compact = false }) {
       <span class="rail"><i></i></span>
       <div class="step-b">
         <div class="step-m">${st.ts ? html`<span class="mono">${hhmmss(st.ts)}${st.status === "UNKNOWN" ? " →" : ""}</span>` : null}
-          <span class=${`tag-s ${st.status}`}>${STATUS_LABEL[st.status] || st.status}</span>${st.place ? html`<span>${st.place}</span>` : null}
+          ${st.status === "OBSERVED" || st.status === "LAST_SEEN" ? null : html`<span class=${`tag-s ${st.status}`}>${STATUS_LABEL[st.status] || st.status}</span>`}${st.place ? html`<span>${st.place}</span>` : null}
 </div>
         <div class="step-t">${st.title}</div>
         ${show && st.basis ? html`<div class="basis fadein">${st.basis}</div>` : null}
@@ -227,17 +227,17 @@ export function Viewer({ c, list = [], onNav, empty = "Select a step to see its 
     const v = ref.current;
     if (!v || !c) return;
     const t = c.proxy_url ? Math.max(0, (c.t_offset_s || 0) - 1.5) : 0;
-    const seek = () => { try { v.currentTime = t; v.pause(); } catch {} };
+    const seek = () => { try { v.currentTime = t; v.play().catch(() => {}); } catch {} };
     if (v.readyState >= 1) seek(); else v.addEventListener("loadedmetadata", seek, { once: true });
   }, [c?.evidence_id || c?.id, src]);
   if (!c) return html`<div class="viewer-empty">${empty}</div>`;
   return html`<figure class="viewer fadein">
     <div class="media">
-      ${src ? html`<video ref=${ref} src=${src} muted playsinline poster=${c.url || ""} onPlay=${() => setPlaying(true)} onPause=${() => setPlaying(false)} onEnded=${() => setPlaying(false)} onClick=${() => (playing ? ref.current.pause() : play())}></video>`
+      ${src ? html`<video ref=${ref} src=${src} muted autoplay playsinline poster=${c.url || ""} onPlay=${() => setPlaying(true)} onPause=${() => setPlaying(false)} onEnded=${() => setPlaying(false)} onClick=${() => (playing ? ref.current.pause() : play())}></video>`
             : c.url ? html`<img src=${c.url} alt=${c.caption || ""} />` : html`<div class="noimg">${c.caption || c.label}</div>`}
       <div class="media-tags"><span class="glass">${(c.source || c.source_id || "").split(" · ")[0]}</span><span class="glass mono">${hhmmss(c.ts)}</span>
 </div>
-      ${src && !playing ? html`<button class="play" onClick=${play} aria-label="Play clip"><${Icon} name="play" size=${18} /> Play clip</button>` : null}
+      ${src && !playing ? html`<button class="play sm" onClick=${play} aria-label="Play"><${Icon} name="play" size=${16} /></button>` : null}
     </div>
     ${list.length > 1 && idx >= 0 ? html`<div class="vnav">
       <button class="iconbtn" disabled=${idx <= 0} onClick=${() => onNav && onNav(list[idx - 1].n)} aria-label="Previous evidence"><${Icon} name="chevl" size=${18} /></button>

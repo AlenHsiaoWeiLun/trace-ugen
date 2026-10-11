@@ -112,7 +112,7 @@ export function MemoryPage({ ws, route, go }) {
 
     ${h?.object ? html`<div>
       <h1 class="h1">${h.object.label.split(" · ").slice(-1)[0].replace(/^./, (c) => c.toUpperCase())}</h1>
-      <p class="lede" style="margin-top:12px">${lastObs ? `Last seen directly at ${place(lastObs)}` : "Never observed directly"}${lastInf ? `; a similar ${h.object.cls} was later inferred at ${place(lastInf)}` : ""}${h.gaps.length ? ". After that, no camera covers the route." : "."}</p>
+
       <div class="facts">
         <div class="fact"><span class="v">${rec ? hhmmss(rec.ts) : "—"}</span><span class="k">Recorded by you · ${rec ? place(rec) : "no check-in"}</span></div>
         <div class="fact"><span class="v">${lastObs ? hhmmss(lastObs.ts) : "—"}</span><span class="k">Last direct observation · ${lastObs ? place(lastObs) : "none"}</span></div>

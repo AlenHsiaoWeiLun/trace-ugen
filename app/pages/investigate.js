@@ -71,7 +71,7 @@ export function InvestigatePage({ ws, route, go }) {
     ${evs.loading ? html`<div class="row" style="margin-bottom:28px"><${Skel} h=${62} w="220px" /><${Skel} h=${62} w="220px" /></div>` : null}
     ${!evs.loading && !evs.data?.length ? html`<${Empty} title="No events">Nothing has been flagged on this site yet.</${Empty}>` : null}
     <div class="ev-strip">${(evs.data || []).map((e) => html`<button class=${`ev-tab ${eid === e.id ? "on" : ""}`} onClick=${() => setEid(e.id)}>
-      <b>${e.title}</b><span><i class=${`pdot ${e.priority}`}></i>${hhmmss(e.ts_start)} – ${hhmmss(e.ts_end)}</span></button>`)}</div>
+      <b>${e.title}</b><span><i class=${`pdot ${e.priority}`}></i>${hhmmss(e.ts_start)}${e.metrics?.duration_s ? ` · ${Math.round(e.metrics.duration_s)} s` : ""}</span></button>`)}</div>
 
     ${ev ? html`<div class="ev-head">
       <div><h1 class="ev-title">${ev.title}</h1>
@@ -81,12 +81,6 @@ export function InvestigatePage({ ws, route, go }) {
     <div class="ev-grid">
       <div class="stack" style="gap:28px">
         <${Viewer} c=${cite} list=${ai?.citations || []} onNav=${onCite} empty="No visual evidence for this event." />
-        <section>
-          <div class="section-t">Cameras, the minute before</div>
-          ${tl.data ? html`<${Lanes} sources=${sources} observations=${observations} gaps=${tl.data.gaps} window=${[ev.ts_start, ev.ts_end]}
-              active=${obs} onPick=${pickObs} playhead=${cite?.ts} />` : html`<${Skel} h=${150} />`}
-          ${(tl.data?.gaps || []).map((g) => html`<div class="gap" style="margin-top:14px"><b>${g.source}</b> — ${g.reason}</div>`)}
-        </section>
       </div>
 
       <aside class="ev-side">
@@ -105,7 +99,7 @@ export function InvestigatePage({ ws, route, go }) {
               <button class="btn" onClick=${() => doReview("rejected")}>False alarm</button>
               <button class="btn ghost" onClick=${() => doReview("uncertain")}>Not sure</button></div></div>`
           : html`<div class="row wrap" style="gap:8px"><button class="btn" onClick=${() => setReviewing(true)}><${Icon} name="check" size=${15} /> Review this alert</button>
-              <button class="btn ghost" onClick=${() => go("lab", null, { event: ev.id, ws })}><${Icon} name="flask" size=${15} /> Test detection</button></div>`}
+</div>`}
           <div class="note">An alert is a reason to look, not a verdict.</div>
         </div>
       </aside>

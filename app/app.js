@@ -10,8 +10,9 @@ import { SourcesPage } from "./pages/sources.js";
 import { SettingsPage } from "./pages/settings.js";
 
 // Four primary places; sources and settings live in the menu.
-const NAV = [["ask", "Ask", "ask"], ["memory", "Memory", "memory"], ["investigate", "Events", "invest"], ["lab", "Lab", "lab"]];
-const MORE = [["sources", "Sources"], ["settings", "Settings & data policy"]];
+const NAV = [["ask", "Ask", "ask"], ["memory", "Memory", "memory"], ["investigate", "Events", "invest"]];
+// Engineering and admin pages stay reachable but out of the user's way.
+const MORE = [["sources", "Cameras & sources"], ["lab", "Detection lab"], ["settings", "Settings & data policy"]];
 
 function parseHash() {
   const [path, query] = (location.hash.slice(2) || "ask").split("?");
