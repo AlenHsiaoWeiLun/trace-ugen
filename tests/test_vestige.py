@@ -204,3 +204,15 @@ def test_headline_and_steps_only_cite_stored_evidence():
         assert all(s["n"] is None or s["n"] in ns for s in a["steps"])
     last = agent.ask(c, "campus", "Where was my bike last seen?")["headline"]
     assert last.startswith("Last seen directly") and "not confirmed" in last and "unknown" in last
+
+
+def test_one_search_box_routes_to_the_right_site():
+    cases = {"What safety alerts happened today?": "construction", "What happened to my bicycle?": "campus",
+             "What happened before the platform alarm?": "metro", "Why was the 07:58 alert flagged?": "construction"}
+    for q, ws in cases.items():
+        r = client.post("/api/ask", json={"question": q})
+        assert r.status_code == 200 and r.json()["workspace"]["id"] == ws, q
+    ev = db.connect().execute("SELECT id FROM events WHERE workspace_id='metro' LIMIT 1").fetchone()[0]
+    assert client.post("/api/ask", json={"question": "Why was this flagged?", "event_id": ev}).json()["workspace"]["id"] == "metro"
+    alerts = client.get("/api/alerts").json()
+    assert alerts and all(a["status"] == "open" for a in alerts) and alerts[0]["workspace_id"] == "construction"

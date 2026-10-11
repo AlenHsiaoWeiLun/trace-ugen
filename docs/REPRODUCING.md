@@ -93,7 +93,7 @@ USB throughput, shared-model scheduling, end-to-end latency or power on this app
 ## Verification on 2026-10-11
 
 - Before cleanup, **39 tests passed**, including actual upload → ingestion → cited-answer checks and six new preflight tests.
-  The retired console and its three Q&A tests were then removed; **36 current tests passed** after cleanup.
+  The retired console and its three Q&A tests were then removed; **37 current tests passed** after cleanup and integration of the latest site-routing test.
 - A fresh temporary database was built from the available footage/weights: 5 workspaces, 16 sources,
   23 tracks, 63 observations, 7 events, 38 evidence items and 1 stored gap. This used an existing Python
   environment and local model/media files; it was not a fresh internet-only dependency installation.

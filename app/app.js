@@ -83,9 +83,9 @@ function App() {
   return html`<div class="app">
     <header class="top"><div class="top-in">
       <a class="logo" href="#/ask" aria-label="VESTIGE home"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M5 6l7 13 7-13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>VESTIGE</span></a>
-      <div class="top-r"><${SiteSwitch} ws=${ws} setWs=${setWs} sites=${sites} /><${More} page=${route.page} /></div>
+      <div class="top-r">${Page === AskPage ? null : html`<${SiteSwitch} ws=${ws} setWs=${setWs} sites=${sites} />`}<${More} page=${route.page} /></div>
     </div></header>
-    <main class="main"><${Page} ...${props} key=${(Page === AskPage ? "ask" : route.page) + ws + (Page === AskPage ? (route.q.get("q") || "") + (route.q.get("event") || route.arg || "") : "")} /></main>
+    <main class="main"><${Page} ...${props} key=${Page === AskPage ? "ask" + (route.q.get("q") || "") + (route.q.get("event") || route.arg || "") : route.page + ws} /></main>
   </div>`;
 }
 

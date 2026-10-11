@@ -65,8 +65,10 @@ investigation and human review share that page; there is no second console or se
 
 ### A question and its evidence
 
-1. `app/pages/ask.js` calls `app/lib/api.js` with a question and workspace, optionally an event ID.
-2. `POST /api/workspaces/{ws}/ask` checks access and passes the request to `agent.ask()`.
+1. `app/pages/ask.js` calls `app/lib/api.js` with a question, optionally an event ID.
+2. `POST /api/ask` checks the accessible sites and routes the question using `agent.route()`; an event ID
+   selects its owning site directly. It then calls `agent.ask()`. The explicit workspace endpoint
+   `/api/workspaces/{ws}/ask` is also available for scoped API clients.
 3. `agent.py` chooses an intent and calls the deterministic retrieval functions in `memory.py`.
    Object histories include candidate chains from `associate.py` and explicit coverage gaps.
 4. The response includes a conclusion, steps, citations and retrieval metadata, composed from returned records.
@@ -145,7 +147,7 @@ default VESTIGE demo runs on UGen300. See [the hardware plan](hailo_port.md) for
 | Object map | `app/lib/site-map.js` → `SiteMap` |
 | Timeline/citations/video interaction | `app/lib/ui.js` |
 | Routes, upload validation or background jobs | `vestige/api.py` |
-| Question intent or answer composition | `vestige/agent.py` |
+| Question intent or answer composition | `vestige/agent.py` (site routing, intent and composition) |
 | Retrieved facts and object/event histories | `vestige/memory.py` |
 | Source processing or campus/construction event rules | `vestige/ingest.py` |
 | Cross-camera candidate matching | `vestige/associate.py` |

@@ -6,7 +6,8 @@
 
 VESTIGE turns authorized video, alarms and staff reports into a searchable memory of the physical world.
 Ask “What happened to my bicycle?” and get a direct answer, a timeline and the footage behind each sighting.
-It distinguishes what a camera observed, what the system inferred and where coverage ends.
+One search box routes questions to the relevant authorized site. It distinguishes what a camera observed,
+what the system inferred and where coverage ends.
 
 **ASUS UGen AI League 2026 · Workplace AI · Battlefield Lightning · ASUS UGen300 target**
 
@@ -139,7 +140,7 @@ trace-ugen/
 │   ├── ingest.py                # Video -> tracks, observations, event rules and masked evidence
 │   ├── associate.py             # Cross-camera candidate links using topology/time/colour
 │   ├── memory.py                # Retrieval tools for objects, events, history and evidence
-│   ├── agent.py                 # Question intent -> retrieval tools -> cited answer
+│   ├── agent.py                 # Site/intent routing -> retrieval tools -> cited answer
 │   └── incidentlab.py           # Frame perturbations, mitigations, metrics and report generation
 ├── traceai/                     # Shared primitives and earlier offline pipeline
 │   ├── perception.py            # Detector backends, ByteTrack wrapper and timing

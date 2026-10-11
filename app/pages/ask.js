@@ -4,21 +4,15 @@ import { Cited, Err, html, Icon, Skel, Steps, Story, Toast, Viewer, hhmmss } fro
 import { SiteMap } from "../lib/site-map.js";
 
 // Alerts waiting for a person, shown on the home page: one click opens the answer.
-function Inbox({ ws, onOpen }) {
+function Inbox({ onOpen }) {
   const [items, setItems] = useState(null);
-  useEffect(() => {
-    api.events(ws).then(async (evs) => {
-      const open = evs.filter((e) => e.status === "open").sort((a, b) => a.ts_start.localeCompare(b.ts_start)).slice(0, 4);
-      const withImg = await Promise.all(open.map(async (e) => ({ ...e, img: e.evidence_id ? (await api.evidence(e.evidence_id, ws).catch(() => null))?.url : null })));
-      setItems(withImg);
-    }).catch(() => setItems([]));
-  }, [ws]);
+  useEffect(() => { api.alerts().then((xs) => setItems(xs.slice(0, 4))).catch(() => setItems([])); }, []);
   if (!items?.length) return null;
   return html`<section class="inbox fadein">
     <div class="section-t">Needs review <span class="dim">· ${items.length}</span></div>
     <div class="inbox-row">${items.map((e) => html`<button class="alert" onClick=${() => onOpen(e)}>
       ${e.img ? html`<img src=${e.img} alt="" loading="lazy" />` : html`<div class="alert-noimg"></div>`}
-      <div class="alert-b"><b>${e.title}</b><span><i class=${`pdot ${e.priority}`}></i>${hhmmss(e.ts_start)}${e.metrics?.duration_s ? ` · ${Math.round(e.metrics.duration_s)} s` : ""}</span></div>
+      <div class="alert-b"><b>${e.title}</b><span><i class=${`pdot ${e.priority}`}></i>${hhmmss(e.ts_start)} · ${e.place || e.site}</span></div>
     </button>`)}</div>
   </section>`;
 }
@@ -46,12 +40,12 @@ const clip = (t, n = 64) => (t.length > n ? t.slice(0, n - 1).replace(/\s+\S*$/,
 
 // Showcase: a real answer from this workspace's memory, told as a strip of moments.
 // Solid = observed on camera, dashed = inferred between cameras, hatched gap = no coverage.
-function Showcase({ ws, setWs, go }) {
-  const scene = SCENES.find((x) => x.ws === ws) || SCENES[0];
+function Showcase({ go }) {
+  const scene = SCENES[0];
   const [ans, setAns] = useState(null);
   const [i, setI] = useState(0);
   const [auto, setAuto] = useState(true);
-  useEffect(() => { api.ask(scene.ws, scene.q).then(setAns).catch(() => setAns(null)); }, [scene.ws]);
+  useEffect(() => { api.ask(scene.ws, scene.q).then(setAns).catch(() => setAns(null)); }, []);
   const moments = (ans?.steps || []).filter((st) => st.n != null || st.status === "UNKNOWN")
     .sort((a, b) => (a.ts && b.ts ? a.ts.localeCompare(b.ts) : 0))
     .filter((st, k, arr) => k === 0 || st.n == null || st.n !== arr[k - 1].n).slice(0, 5);
@@ -67,13 +61,12 @@ function Showcase({ ws, setWs, go }) {
   const frame = cite?.url || lastFrame.current;
   return html`<div class="show">
     <div class="show-top">
-      <div class="seg" role="tablist" aria-label="Demo workspace">${SCENES.map((x) => html`<button role="tab" aria-selected=${x.ws === ws}
-        class=${x.ws === ws ? "on" : ""} onClick=${() => setWs(x.ws)}>${x.name}</button>`)}</div>
-      <button class="link" aria-label=${`Explore ${scene.name} demo`} onClick=${() => go("ask", null, { ws: scene.ws, q: scene.q })}>Explore demo <${Icon} name="arrow" size=${14} /></button>
+      <span class="show-site"><span class="live"></span>${scene.name}</span>
+      <button class="link" aria-label=${`Explore ${scene.name} demo`} onClick=${() => go("ask", null, { q: scene.q })}>Explore demo <${Icon} name="arrow" size=${14} /></button>
     </div>
     <div class="show-frame" role="button" tabindex="0" aria-label=${`Investigate: ${scene.q}`}
-      onKeyDown=${(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go("ask", null, { ws: scene.ws, q: scene.q }); } }}
-      onClick=${() => go("ask", null, { ws: scene.ws, q: scene.q })}>
+      onKeyDown=${(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go("ask", null, { q: scene.q }); } }}
+      onClick=${() => go("ask", null, { q: scene.q })}>
       ${frame ? html`<img key=${frame} class="fadein-fast" src=${frame} alt=${cite?.caption || "evidence frame"} />` : html`<div class="skel" style="position:absolute;inset:0"></div>`}
       ${cur?.status === "UNKNOWN" ? html`<div class="show-unknown"><span>No camera covers what happened next.</span></div>` : null}
       ${cur ? html`<div class="show-cap"><span class=${`tag-s ${cur.status}`}>${STATE[cur.status] || cur.status}</span>
@@ -108,7 +101,7 @@ export function AskPage({ ws, setWs, go, route }) {
     if (!text) return;
     setQ(text); setBusy(true); setErr(null); setReviewed(null);
     try {
-      const r = await api.ask(ws, text, eventId);
+      const r = await api.askAny(text, eventId);
       // default to the evidence that answers the question (first citation in the conclusion)
       const m = (r.headline || "").match(/\[E(\d+)\]/);
       const visual = r.citations.find((c) => c.url || c.proxy_url || c.clip_url);
@@ -126,7 +119,10 @@ export function AskPage({ ws, setWs, go, route }) {
   const review = async (d) => {
     try { await api.review(res.subject.id, d, ""); setReviewed(d); setToast("Saved to the audit log"); } catch (e) { setToast(String(e.message)); }
   };
-  useEffect(() => { api.overview(ws).then((o) => setSugs(o.suggestions || [])).catch(() => {}); }, [ws]);
+  const [examples, setExamples] = useState([]);
+  const [bySite, setBySite] = useState({});
+  useEffect(() => { api.suggestions().then((x) => { setExamples(x.examples); setBySite(x.by_site); }).catch(() => {}); }, []);
+  useEffect(() => { setSugs(res ? bySite[res.workspace?.id] || examples : examples); }, [res, bySite, examples]);
   useEffect(() => {
     const k = (e) => {
       const el = document.activeElement;
@@ -153,12 +149,12 @@ export function AskPage({ ws, setWs, go, route }) {
           <h1 class="display">The world<br/>leaves a trace.</h1>
           <p class="lede">Ask what happened. See the footage that answers it.</p>
           ${box(true)}
-          <div class="chips">${sugs.slice(0, 2).map((s) => html`<button class="chip-q" onClick=${() => run(s)}>${s}</button>`)}</div>
+          <div class="chips">${examples.map((s) => html`<button class="chip-q" onClick=${() => run(s)}>${s}</button>`)}</div>
           <${Err} error=${err} />
         </div>
-        <div class="h-right"><${Showcase} ws=${ws} setWs=${setWs} go=${go} /></div>
+        <div class="h-right"><${Showcase} go=${go} /></div>
       </section>
-      <${Inbox} ws=${ws} onOpen=${openEvent} />
+      <${Inbox} onOpen=${openEvent} />
     </div>`;
   }
 
@@ -170,6 +166,7 @@ export function AskPage({ ws, setWs, go, route }) {
     ${busy ? html`<div class="answer-grid"><div class="stack"><${Skel} h=${44} w="70%" /><${Skel} h=${90} /><${Skel} h=${90} /><${Skel} h=${90} /></div><${Skel} h=${360} /></div>` : html`
     <div class="answer-grid fadein">
       <div class="a-head">
+        ${res.workspace ? html`<div class="where"><span class="live"></span>${res.workspace.name}</div>` : null}
         ${res.headline ? html`<p class="headline"><${Cited} text=${res.headline} citations=${res.citations} active=${active} onCite=${setActive} /></p>` : null}
         ${res.subject?.type === "event" ? html`<div class="verdict">
           ${reviewed ? html`<span class="note">Marked as ${reviewed === "confirmed" ? "a real incident" : reviewed === "rejected" ? "a false alarm" : "not sure"}.</span>`
@@ -182,7 +179,7 @@ export function AskPage({ ws, setWs, go, route }) {
         <div class="section-t">Timeline</div>
         ${res.steps?.length ? html`<${Steps} steps=${res.steps} active=${active} onPick=${setActive} onOpen=${(id, ts) => openEvent({ id, ts_start: ts })} />`
           : html`<${Story} sentences=${res.sentences} citations=${res.citations} active=${active} onPick=${setActive} gaps=${res.gaps} />`}
-        ${res.subject?.type === "object" ? html`<${ObjectMap} ws=${ws} id=${res.subject.id} />` : null}
+        ${res.subject?.type === "object" ? html`<${ObjectMap} ws=${res.workspace.id} id=${res.subject.id} />` : null}
         ${sugs.filter((x) => x !== res.question).length ? html`<div class="follow"><span class="label">Ask next</span>
           <div class="row wrap" style="gap:8px">${sugs.filter((x) => x !== res.question).slice(0, 3).map((x) => html`<button class="chip-q" onClick=${() => run(x)}>${x}</button>`)}</div></div>` : null}
       </div>

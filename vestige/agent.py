@@ -113,7 +113,38 @@ def _llm_intent(question: str) -> str | None:
         return None
 
 
-def ask(conn, workspace_id: str, question: str, event_id: str | None = None) -> dict:
+# Which place a question is about, when the user hasn't picked one. Keyword evidence first; if nothing matches,
+# every candidate workspace is asked and the answer with the most cited evidence wins.
+ROUTE_WORDS = {
+    "campus": r"\b(bikes?|bicycles?|scooters?|racks?|parking|parked|underpass|riverside|stolen|my)\b",
+    "metro": r"\b(metro|station|platform|trains?|intercom|radio|passengers?|commuters?|exit|emergency alert|alarm)\b",
+    "construction": r"\b(construction|site|workers?|trucks?|mixer|crane|excavator|pour|haul|safety|hazard|helmet|machinery)\b",
+}
+
+
+def route(conn, question: str, candidates: list[str]) -> tuple[str, str]:
+    q = question.lower()
+    kinds = {r["id"]: r["kind"] for r in conn.execute(
+        "SELECT id, kind FROM workspaces WHERE id IN (%s)" % ",".join("?" * len(candidates)), candidates)}
+    scores = {w: len(re.findall(ROUTE_WORDS.get(kinds.get(w, ""), r"$^"), q)) for w in candidates}
+    t = re.search(r"\b(\d{1,2}):(\d{2})", q)
+    if t:  # a clock time names the site that has an alert at that minute
+        hm = f"{int(t.group(1)):02d}:{t.group(2)}"
+        for w in candidates:
+            if conn.execute("SELECT 1 FROM events WHERE workspace_id=? AND substr(ts_start, 12, 5)=?", (w, hm)).fetchone():
+                scores[w] += 3
+    best = max(scores.values()) if scores else 0
+    top = [w for w in candidates if scores[w] == best]
+    if best > 0 and len(top) == 1:
+        return top[0], "keywords"
+    tried = []
+    for w in (top if best > 0 else candidates):
+        a = ask(conn, w, question, audit=False)
+        tried.append((len(a["citations"]) + (1 if a.get("headline") else 0), w))
+    return max(tried)[1], "best evidence"
+
+
+def ask(conn, workspace_id: str, question: str, event_id: str | None = None, audit: bool = True) -> dict:
     ws = db.row(conn.execute("SELECT * FROM workspaces WHERE id=?", (workspace_id,)).fetchone())
     if not ws:
         raise KeyError(workspace_id)
@@ -129,9 +160,12 @@ def ask(conn, workspace_id: str, question: str, event_id: str | None = None) -> 
     ans.intent = intent
     {"object_fate": _object_fate, "event_before": _event_before, "event_why": _event_why,
      "place": _place, "evidence": _event_before, "search": _search, "events_list": _events_list}[intent](conn, ws, ans, ents)
-    db.audit(conn, workspace_id, "user", "ask", intent, question[:200])
-    conn.commit()
-    return ans.to_json()
+    if audit:
+        db.audit(conn, workspace_id, "user", "ask", intent, question[:200])
+        conn.commit()
+    out = ans.to_json()
+    out["workspace"] = {"id": ws["id"], "name": ws["name"], "kind": ws["kind"]}
+    return out
 
 
 def _object_fate(conn, ws, ans: Answer, ents):
@@ -443,6 +477,7 @@ def _search(conn, ws, ans: Answer, ents):
     if not uniq:
         ans.sentences.append("Nothing in this workspace's memory matches that question. Try asking about an "
                              "object, an event, or a place.")
+        ans.headline = "I couldn't find that in what the cameras recorded. Try asking about an object, a place or an alert."
         return
     ans.headline = f"{len(uniq)} stored observations match your question."
     ans.sentences.append(f"{len(uniq)} matching observations:")
