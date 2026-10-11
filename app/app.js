@@ -37,7 +37,7 @@ function SiteSwitch({ ws, setWs, sites }) {
     <button class="site" onClick=${() => setOpen(!open)} aria-haspopup="listbox" aria-expanded=${open}>
       <span class="live"></span><span>${cur?.name || ws}</span><${Icon} name="chev" size=${14} /></button>
     ${open ? html`<div class="pop" role="listbox">
-      <div class="pop-h">Site</div>
+      <div class="pop-h">Workspace</div>
       ${sites.map((s) => html`<button role="option" aria-selected=${s.id === ws} class=${s.id === ws ? "on" : ""}
           onClick=${() => { setWs(s.id); setOpen(false); }}>
         <b>${s.name}</b><span>${s.description}</span></button>`)}

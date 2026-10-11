@@ -19,7 +19,7 @@ from scripts.record_demo import CDP, CHROME  # noqa: E402
 BASE = "http://127.0.0.1:8100/"
 SHOTS = [
     # name, hash, width, height, js-after-load, wait
-    ("00_home", "#/ask?ws=campus", 1600, 1000, None, 3),
+    ("00_home", "#/ask?ws=campus", 1600, 1000, None, 6),
     ("01_ask_answer", "#/ask?ws=campus&q=What%20happened%20to%20my%20bicycle%3F", 1600, 1000, None, 4),
     ("02_memory", "#/memory?ws=campus", 1600, 1000, None, 3),
     ("03_investigate_metro", "#/investigate?ws=metro", 1600, 1000, None, 4),
@@ -30,6 +30,7 @@ SHOTS = [
      "[...document.querySelectorAll('button')].find(b=>b.textContent.includes('New stress test'))?.click()", 3),
     ("06_sources", "#/sources?ws=campus", 1600, 1000, None, 3),
     ("07_settings", "#/settings?ws=campus", 1600, 1000, None, 3),
+    ("08a_mobile_home", "#/ask?ws=campus", 390, 844, None, 6),
     ("08_mobile_ask", "#/ask?ws=campus&q=What%20happened%20to%20my%20bicycle%3F", 390, 844, None, 4),
     ("09_mobile_investigate", "#/investigate?ws=construction", 390, 844, None, 4),
 ]

@@ -10,31 +10,62 @@ function evidenceSummary(cs) {
     inf && `${inf} inferred`, other && `${other} records`].filter(Boolean).join(" · ");
 }
 
-// The three demo sites, each with the question that shows it best and real processed footage as cover.
+// The three demo workspaces and the question that shows each best.
 const SCENES = [
-  { ws: "campus", name: "Campus", title: "A bicycle disappears from the rack", q: "What happened to my bicycle?", meta: "4 cameras",
-    video: "/media/vestige/campus/CAM-P3/proxy.mp4" },
-  { ws: "metro", name: "Metro", title: "An emergency alarm on the platform", q: "What happened before the emergency alert?", meta: "Cameras · alarm · radio",
-    video: "/media/vestige/metro/INC-M-0001.mp4" },
-  { ws: "construction", name: "Construction", title: "A worker steps into a truck's path", q: "Why was this construction safety event flagged?", meta: "2 cameras",
-    video: "/media/vestige/construction/CAM-S1/proxy.mp4" },
+  { ws: "campus", name: "Campus", q: "What happened to my bicycle?" },
+  { ws: "metro", name: "Metro", q: "What happened before the emergency alert?" },
+  { ws: "construction", name: "Construction", q: "Why was this construction safety event flagged?" },
 ];
+const clip = (t, n = 64) => (t.length > n ? t.slice(0, n - 1).replace(/\s+\S*$/, "") + "…" : t);
 
-function Scene({ s, current, go }) {
-  const ref = useRef();
-  return html`<button class=${`scene ${current ? "cur" : ""}`} onClick=${() => go("ask", null, { ws: s.ws, q: s.q })}
-      onMouseEnter=${() => ref.current?.play().catch(() => {})} onMouseLeave=${() => ref.current?.pause()}>
-    <video ref=${ref} src=${`${s.video}#t=2`} muted loop playsinline preload="metadata"></video>
-    ${current ? html`<span class="scene-cur">Current site</span>` : null}
-    <div class="scene-b">
-      <span class="scene-n">${s.name} demo · ${s.meta}</span>
-      <span class="scene-t">${s.title}</span>
-      <span class="scene-go">Explore ${s.name} demo <${Icon} name="arrow" size=${14} /></span>
+// Showcase: a real answer from this workspace's memory, told as a strip of moments.
+// Solid = observed on camera, dashed = inferred between cameras, hatched gap = no coverage.
+function Showcase({ ws, setWs, go }) {
+  const scene = SCENES.find((x) => x.ws === ws) || SCENES[0];
+  const [ans, setAns] = useState(null);
+  const [i, setI] = useState(0);
+  const [auto, setAuto] = useState(true);
+  useEffect(() => { api.ask(scene.ws, scene.q).then(setAns).catch(() => setAns(null)); }, [scene.ws]);
+  const moments = (ans?.steps || []).filter((st) => st.n != null || st.status === "UNKNOWN")
+    .sort((a, b) => (a.ts && b.ts ? a.ts.localeCompare(b.ts) : 0))
+    .filter((st, k, arr) => k === 0 || st.n == null || st.n !== arr[k - 1].n).slice(0, 5);
+  useEffect(() => {
+    if (!auto || moments.length < 2) return;
+    const t = setInterval(() => setI((x) => (x + 1) % moments.length), 3200);
+    return () => clearInterval(t);
+  }, [auto, moments.length]);
+  const cur = moments[Math.min(i, moments.length - 1)];
+  const cite = cur?.n != null ? ans.citations.find((c) => c.n === cur.n) : null;
+  const lastFrame = useRef(null);
+  if (cite?.url) lastFrame.current = cite.url;
+  const frame = cite?.url || lastFrame.current;
+  return html`<div class="show">
+    <div class="show-top">
+      <div class="seg" role="tablist" aria-label="Demo workspace">${SCENES.map((x) => html`<button role="tab" aria-selected=${x.ws === ws}
+        class=${x.ws === ws ? "on" : ""} onClick=${() => setWs(x.ws)}>${x.name}</button>`)}</div>
+      <span class="demo-tag">Demo · public footage</span>
     </div>
-  </button>`;
+    <div class="show-frame">
+      ${frame ? html`<img key=${frame} class="fadein-fast" src=${frame} alt=${cite?.caption || "evidence frame"} />` : html`<div class="skel" style="position:absolute;inset:0"></div>`}
+      ${cur?.status === "UNKNOWN" ? html`<div class="show-unknown"><span>No camera covers what happened next.</span></div>` : null}
+      ${cur ? html`<div class="show-cap"><span class=${`tag-s ${cur.status}`}>${STATE[cur.status] || cur.status}</span>
+        <span class="mono">${(cur.ts || "").slice(11, 19)}</span><span class="show-place">${cur.place || cite?.source?.split(" · ")[0] || ""}</span></div>` : null}
+    </div>
+    <ol class="strip" style=${`--n:${Math.max(moments.length, 1)}`}>
+      ${moments.map((m, k) => html`<li class=${`mo ${m.status} ${k === i ? "on" : ""} ${k < i ? "past" : ""}`}>
+        <button onClick=${() => { setAuto(false); setI(k); }} aria-label=${m.title}>
+          <span class="mo-line"></span><span class="mo-dot"></span>
+          <span class="mo-t mono">${m.ts ? m.ts.slice(11, 19) : ""}</span>
+          <span class="mo-d">${clip(m.title, 52)}</span>
+        </button></li>`)}
+    </ol>
+    <div class="show-foot"><span>${ans ? clip(ans.question, 60) : ""}</span>
+      <button class="link" onClick=${() => go("ask", null, { ws: scene.ws, q: scene.q })}>Open the full investigation <${Icon} name="arrow" size=${14} /></button></div>
+  </div>`;
 }
+const STATE = { RECORDED: "Recorded", OBSERVED: "Observed", LAST_SEEN: "Last seen", INFERRED: "Inferred", UNKNOWN: "Unknown" };
 
-export function AskPage({ ws, go, route }) {
+export function AskPage({ ws, setWs, go, route }) {
   const [q, setQ] = useState(route.q.get("q") || "");
   const [res, setRes] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -65,7 +96,7 @@ export function AskPage({ ws, go, route }) {
 
   const box = (big) => html`<form class=${`ask ${big ? "big" : ""}`} onSubmit=${(e) => { e.preventDefault(); run(); }}>
     <${Icon} name="ask" size=${big ? 20 : 17} />
-    <input ref=${input} value=${q} onInput=${(e) => setQ(e.target.value)} placeholder="Ask about an object, a place or an event…"
+    <input ref=${input} value=${q} onInput=${(e) => setQ(e.target.value)} placeholder="Ask what happened…"
       aria-label="Ask VESTIGE" autocomplete="off" />
     <button class="go" disabled=${busy || !q.trim()} aria-label="Ask">${busy ? html`<span class="spin"></span>` : html`<${Icon} name="arrow" size=${18} />`}</button>
   </form>`;
@@ -73,21 +104,23 @@ export function AskPage({ ws, go, route }) {
   // ---------- home ----------
   if (!res && !busy) {
     return html`<div class="home fadein">
-      <section class="hero">
-        <div class="eyebrow"><span class="live"></span>Edge AI memory for the physical world</div>
-        <h1 class="display">What happened here?</h1>
-        <p class="lede">Ask about your physical world. Get answers backed by footage.</p>
-        ${box(true)}
-        <div class="chips"><span class="chips-l">Try on ${SCENES.find((x) => x.ws === ws)?.name || ws}:</span>${sugs.map((s) => html`<button class="chip-q" onClick=${() => run(s)}>${s}</button>`)}</div>
-        <${Err} error=${err} />
+      <section class="hero2">
+        <div class="h-left">
+          <div class="eyebrow"><span class="live"></span>Edge AI for the physical world</div>
+          <h1 class="display">The world<br/>leaves a trace.</h1>
+          <p class="lede">Ask what happened to an object, a place or an event. VESTIGE answers from your cameras — and shows you the footage.</p>
+          ${box(true)}
+          <div class="chips">${sugs.slice(0, 2).map((s) => html`<button class="chip-q" onClick=${() => run(s)}>${s}</button>`)}</div>
+          <${Err} error=${err} />
+        </div>
+        <div class="h-right"><${Showcase} ws=${ws} setWs=${setWs} go=${go} /></div>
       </section>
-      <section class="scenes">${SCENES.map((s) => html`<${Scene} s=${s} current=${s.ws === ws} go=${go} />`)}</section>
       <section class="proof">
-        <div><${Icon} name="spark" size=${18} /><b>Remembers</b><span>Detections become a persistent memory of objects and events, with provenance on every row.</span></div>
-        <div><${Icon} name="ask" size=${18} /><b>Investigates</b><span>Answers are composed from memory lookups only and cite the frame behind each sighting.</span></div>
-        <div><${Icon} name="flask" size=${18} /><b>Verifies itself</b><span>IncidentLab stress-tests the detector and measures which fixes recover what it misses.</span></div>
+        <div><${Icon} name="spark" size=${18} /><b>Remembers</b><span>Objects and events, kept as a timeline you can search — what was seen, where and when.</span></div>
+        <div><${Icon} name="ask" size=${18} /><b>Shows its evidence</b><span>Every answer comes with the footage behind it, and says plainly what is certain, inferred or unknown.</span></div>
+        <div><${Icon} name="flask" size=${18} /><b>Tests its limits</b><span>Measures how detection holds up in low light, blur and occlusion — and which fixes help.</span></div>
       </section>
-      <p class="foot">Demo sites use public stock footage and staged inputs, labelled as such. No face recognition — heads are blurred in everything stored.</p>
+      <p class="foot">Demo workspaces use public stock footage and staged inputs, labelled as such. No face recognition; heads are blurred in everything stored.</p>
     </div>`;
   }
 
