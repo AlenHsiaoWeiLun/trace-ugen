@@ -1,5 +1,6 @@
 """VESTIGE command line.
 
+    python -m vestige                                     # build on first run, then serve the app on :8100
     python -m vestige build                               # run perception on the demo footage (~2 min)
     python -m vestige ask "What happened to my bicycle?"  # cited answer from World Memory
     python -m vestige alerts                              # open alerts across all sites
@@ -43,6 +44,8 @@ def show_answer(a: dict):
 
 def main():
     ap = argparse.ArgumentParser(prog="python -m vestige", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--port", type=int, default=8100, help="port for the app (default command)")
+    ap.add_argument("--rebuild", action="store_true", help="rebuild demo memory before serving")
     sub = ap.add_subparsers(dest="cmd")
     b = sub.add_parser("build", help="run perception on the demo footage and rebuild World Memory")
     q = sub.add_parser("ask", help="ask a question; the right site is chosen automatically")
@@ -90,14 +93,12 @@ def main():
                        key=lambda c: c["delta"], default=None)
             tail = f"→ {best['retention']:.0%} with {best['mitigation_label']} ({best['delta'] * 100:+.0f} pp)" if best else ""
             print(f"  {p[2]:18} L{p[1]}  {base['retention']:.0%}  {tail}")
-    else:
-        if a.cmd != "serve":
-            ap.print_help()
-            return
-        ensure_memory()
+    else:  # no command, or "serve"
+        ensure_memory(rebuild=a.rebuild)
         import uvicorn
-        print(f"VESTIGE API → http://127.0.0.1:{a.port}/api/alerts", file=sys.stderr)
-        uvicorn.run("vestige.api:app", host="127.0.0.1", port=a.port, log_level="warning")
+        port = getattr(a, "port", 8100)
+        print(f"VESTIGE → http://127.0.0.1:{port}", file=sys.stderr)
+        uvicorn.run("vestige.api:app", host="127.0.0.1", port=port, log_level="warning")
 
 
 if __name__ == "__main__":
