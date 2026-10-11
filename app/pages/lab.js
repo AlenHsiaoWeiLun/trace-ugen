@@ -65,7 +65,7 @@ function rowBest(cells, r) {
 function Chart({ cells, sel, onSel }) {
   const rows = groupedRows(cells);
   const by = new Map((cells || []).map((c) => [cellKey(c), c]));
-  return html`<div class="rchart" role="img" aria-label="Retention, baseline versus best mitigation per stress">
+  return html`<div class="rchart" role="group" aria-label="Retention, baseline versus best mitigation per stress">
     <div class="row wrap rchart-legend"><span><i class="sw base"></i>Baseline</span><span><i class="sw best"></i>Most improved in this test</span></div>
     ${rows.map((r) => {
       const b = by.get(`${r.perturbation}:${r.level}:none`);

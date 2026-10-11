@@ -222,7 +222,27 @@ def build_benchmark(conn):
     conn.commit()
 
 
+def preflight():
+    """Check all inputs before resetting an existing memory database."""
+    videos = {s["media"] for spec in (CAMPUS, CONSTRUCTION) for s in spec["sources"]}
+    videos.update(media for _, _, media, _ in BENCHMARK)
+    replay = db.ROOT / "data/run_metro.json"
+    needed = [db.ROOT / "data/videos" / name for name in sorted(videos)] + [replay]
+    if replay.exists():
+        run = json.loads(replay.read_text())
+        for inc in run["incidents"]:
+            needed.extend(db.ROOT / inc[k].lstrip("/") for k in ("keyframe", "clip") if inc.get(k))
+            needed.extend(db.ROOT / s["thumb"].lstrip("/") for s in inc["signals"] if s.get("thumb"))
+    missing = [str(p.relative_to(db.ROOT)) for p in needed if not p.is_file() or not p.stat().st_size]
+    if missing:
+        raise FileNotFoundError("Demo inputs missing: " + ", ".join(missing)
+                                + ". Run bash scripts/download_media.sh for footage; restore tracked replay assets with git.")
+    if not shutil.which("ffmpeg"):
+        raise RuntimeError("ffmpeg is required to create playable evidence clips. Install it and add it to PATH.")
+
+
 def build(log=print):
+    preflight()
     conn = db.reset()
     for ws in WORKSPACES:
         _workspace(conn, ws)

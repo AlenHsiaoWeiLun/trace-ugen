@@ -1,4 +1,6 @@
 __pycache__/
+.venv/
+data/videos/*.part
 *.pyc
 .DS_Store
 data/videos/

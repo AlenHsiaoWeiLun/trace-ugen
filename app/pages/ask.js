@@ -62,9 +62,11 @@ function Showcase({ go }) {
   return html`<div class="show">
     <div class="show-top">
       <span class="show-site"><span class="live"></span>${scene.name}</span>
-      <button class="link" onClick=${() => go("ask", null, { q: scene.q })}>“${scene.q}” <${Icon} name="arrow" size=${14} /></button>
+      <button class="link" aria-label=${`Investigate: ${scene.q}`} onClick=${() => go("ask", null, { q: scene.q })}>Explore demo <${Icon} name="arrow" size=${14} /></button>
     </div>
-    <div class="show-frame" role="button" tabindex="0" onClick=${() => go("ask", null, { q: scene.q })}>
+    <div class="show-frame" role="button" tabindex="0" aria-label=${`Investigate: ${scene.q}`}
+      onKeyDown=${(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go("ask", null, { q: scene.q }); } }}
+      onClick=${() => go("ask", null, { q: scene.q })}>
       ${frame ? html`<img key=${frame} class="fadein-fast" src=${frame} alt=${cite?.caption || "evidence frame"} />` : html`<div class="skel" style="position:absolute;inset:0"></div>`}
       ${cur?.status === "UNKNOWN" ? html`<div class="show-unknown"><span>No camera covers what happened next.</span></div>` : null}
       ${cur ? html`<div class="show-cap"><span class=${`tag-s ${cur.status}`}>${STATE[cur.status] || cur.status}</span>
@@ -122,7 +124,12 @@ export function AskPage({ ws, setWs, go, route }) {
   useEffect(() => { api.suggestions().then((x) => { setExamples(x.examples); setBySite(x.by_site); }).catch(() => {}); }, []);
   useEffect(() => { setSugs(res ? bySite[res.workspace?.id] || examples : examples); }, [res, bySite, examples]);
   useEffect(() => {
-    const k = (e) => { if (e.key === "/" && document.activeElement !== input.current) { e.preventDefault(); input.current?.focus(); } };
+    const k = (e) => {
+      const el = document.activeElement;
+      if (e.key === "/" && !el?.matches("input, textarea, select, [contenteditable='true']")) {
+        e.preventDefault(); input.current?.focus();
+      }
+    };
     addEventListener("keydown", k);
     return () => removeEventListener("keydown", k);
   }, []);

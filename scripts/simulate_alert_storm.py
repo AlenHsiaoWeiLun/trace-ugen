@@ -17,8 +17,11 @@ import argparse
 import json
 import random
 import statistics
+import sys
 from datetime import datetime, timedelta
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from traceai.fusion import FusionEngine, ZoneGraph, pairwise_f1
 from traceai.schema import Signal
