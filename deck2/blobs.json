@@ -14,5 +14,19 @@
 "26431190b75bbd3a2a418f0e7a02a3e8": "gen/crop_bike.jpg",
 "588fc90ff8f97c186373652d875919de": "gen/crop_gone.jpg",
 "9b63b43bd9a4e07e6fd67fdb64e9bafc": "gen/gate_cctv.web.jpg",
-"7747016c4606ec98d1655e667c5052fb": "charts/incidentlab2.png"
+"7747016c4606ec98d1655e667c5052fb": "charts/incidentlab2.png",
+"12bcd7360b0843f5deb32a8bed374684": "shots/00_home.png",
+"18dbf78c0608c1c34e0b8b6d2f2c9597": "shots/02_answer_alert_why.png",
+"78826a938c0dd11c4b88d4c887090a34": "shots/03_answer_bicycle.png",
+"41ae1137d74325e86d8bb03efb10cb08": "shots/04_answer_bicycle_map.png",
+"9d12bb7ba38a94361c79c8cb011ca6c1": "shots/05_answer_metro.png",
+"c365fa036c0e7e6b12cf275d95f2d851": "shots/05b_answer_road.png",
+"02d2cec4b169f705cb79a2066baf49d9": "shots/06_detection_lab.png",
+"4f7460c276d6f100c76d44d72b273426": "shots/01_answer_construction_alerts.png",
+"5c477b9403f416568712710557e426e4": "charts/incidentlab_v2.png",
+"489a3123a98e46b3e0afe7550fb696db": "assets/founder.jpg",
+"24cd9f689bf5a5f6612b69ce39d92a26": "shots/crop_bicycle.png",
+"2b0e63db893d11164dc68e6375ed4fff": "shots/crop_construction.png",
+"aaf11a79b0aeffd9bea57686b366acc2": "shots/crop_road.png",
+"a9432e90da2fea712857ee24014135f0": "shots/crop_metro.png"
 }

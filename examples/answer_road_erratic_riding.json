@@ -59,7 +59,7 @@
         "road"
       ],
       "results": 1,
-      "ms": 0.04
+      "ms": 0.01
     },
     {
       "tool": "get_evidence",
@@ -67,7 +67,7 @@
         "E-INC-R-0001"
       ],
       "results": 0,
-      "ms": 0.1
+      "ms": 0.04
     }
   ],
   "workspace": {

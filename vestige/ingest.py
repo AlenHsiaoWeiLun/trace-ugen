@@ -458,7 +458,7 @@ def _rules_construction(conn, src, kept, per_frame, fps, W, H, ts, evidence, mod
         evt = f"EV-{src['id']}-prox-{pid}-{vid}"
         db.insert(conn, "events", {
             "id": evt, "workspace_id": src["workspace_id"], "kind": "worker_vehicle_proximity",
-            "title": f"Worker in {vcls} hazard zone", "ts_start": ts(hs[0][0] / fps), "ts_end": ts(hs[-1][0] / fps),
+            "title": f"Worker–{vcls} overlap", "ts_start": ts(hs[0][0] / fps), "ts_end": ts(hs[-1][0] / fps),
             "priority": "high" if g_min < 0.1 else "medium", "summary": "", "provenance": src["provenance"],
             "model": model, "metrics": {"min_gap_body_heights": round(g_min, 3), "duration_s": round(dur, 1),
                                         "vehicle_class": vcls},

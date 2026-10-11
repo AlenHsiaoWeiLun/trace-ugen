@@ -221,5 +221,5 @@ def test_one_search_box_routes_to_the_right_site():
 
 def test_road_alert_does_not_guess_the_cause():
     a = client.post("/api/ask", json={"question": "Why was the 08:12 alert flagged?"}).json()
-    assert a["workspace"]["id"] == "road" and "does not judge why" in a["headline"]
+    assert a["workspace"]["id"] == "road" and "not inferred" in a["headline"]
     assert not any(w in a["headline"].lower() for w in ("drunk", "intoxicated"))

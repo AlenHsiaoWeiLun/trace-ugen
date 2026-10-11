@@ -7,13 +7,13 @@
     "type": "events",
     "label": "3 alerts"
   },
-  "headline": "3 times a worker was inside a truck's hazard zone — the longest for 15 s at 07:58:10 [E1]. All 3 still need review.",
+  "headline": "3 worker–truck overlap alerts — the longest lasted 15 s, at 07:58:10 [E1]. All 3 still need review.",
   "steps": [
     {
       "ts": "2026-10-08T07:58:10",
       "status": "OBSERVED",
       "place": "Pour area",
-      "title": "Worker in truck hazard zone · 15 s",
+      "title": "Worker–truck overlap · 15 s",
       "basis": "High priority · needs review.",
       "n": 1,
       "event_id": "EV-CAM-S1-prox-1-3"
@@ -22,7 +22,7 @@
       "ts": "2026-10-08T07:58:14",
       "status": "OBSERVED",
       "place": "Pour area",
-      "title": "Worker in truck hazard zone · 3 s",
+      "title": "Worker–truck overlap · 3 s",
       "basis": "High priority · needs review.",
       "n": 2,
       "event_id": "EV-CAM-S1-prox-18-5"
@@ -31,17 +31,17 @@
       "ts": "2026-10-08T08:03:40",
       "status": "OBSERVED",
       "place": "Haul road",
-      "title": "Worker in truck hazard zone · 2 s",
+      "title": "Worker–truck overlap · 2 s",
       "basis": "High priority · needs review.",
       "n": 3,
       "event_id": "EV-CAM-S2-prox-3-2"
     }
   ],
-  "answer": "07:58:10 — Worker in truck hazard zone (high) [E1] 07:58:14 — Worker in truck hazard zone (high) [E2] 08:03:40 — Worker in truck hazard zone (high) [E3]",
+  "answer": "07:58:10 — Worker–truck overlap (high) [E1] 07:58:14 — Worker–truck overlap (high) [E2] 08:03:40 — Worker–truck overlap (high) [E3]",
   "sentences": [
-    "07:58:10 — Worker in truck hazard zone (high) [E1]",
-    "07:58:14 — Worker in truck hazard zone (high) [E2]",
-    "08:03:40 — Worker in truck hazard zone (high) [E3]"
+    "07:58:10 — Worker–truck overlap (high) [E1]",
+    "07:58:14 — Worker–truck overlap (high) [E2]",
+    "08:03:40 — Worker–truck overlap (high) [E3]"
   ],
   "citations": [
     {
@@ -49,7 +49,7 @@
       "evidence_id": "E-CAM-S1-008",
       "status": "OBSERVED",
       "ts": "2026-10-08T07:58:10",
-      "label": "Worker in truck hazard zone",
+      "label": "Worker–truck overlap",
       "kind": "frame",
       "url": "/media/vestige/construction/CAM-S1/E-CAM-S1-008.jpg",
       "source": "CAM-S1 · Pour area",
@@ -64,7 +64,7 @@
       "evidence_id": "E-CAM-S1-009",
       "status": "OBSERVED",
       "ts": "2026-10-08T07:58:14",
-      "label": "Worker in truck hazard zone",
+      "label": "Worker–truck overlap",
       "kind": "frame",
       "url": "/media/vestige/construction/CAM-S1/E-CAM-S1-009.jpg",
       "source": "CAM-S1 · Pour area",
@@ -79,7 +79,7 @@
       "evidence_id": "E-CAM-S2-006",
       "status": "OBSERVED",
       "ts": "2026-10-08T08:03:40",
-      "label": "Worker in truck hazard zone",
+      "label": "Worker–truck overlap",
       "kind": "frame",
       "url": "/media/vestige/construction/CAM-S2/E-CAM-S2-006.jpg",
       "source": "CAM-S2 · Haul road",
@@ -96,7 +96,7 @@
       "status": "OBSERVED",
       "source": "Pour area",
       "kind": "worker_vehicle_proximity",
-      "detail": "Worker in truck hazard zone",
+      "detail": "Worker–truck overlap",
       "evidence_id": "E-CAM-S1-008",
       "event_id": "EV-CAM-S1-prox-1-3"
     },
@@ -105,7 +105,7 @@
       "status": "OBSERVED",
       "source": "Pour area",
       "kind": "worker_vehicle_proximity",
-      "detail": "Worker in truck hazard zone",
+      "detail": "Worker–truck overlap",
       "evidence_id": "E-CAM-S1-009",
       "event_id": "EV-CAM-S1-prox-18-5"
     },
@@ -114,7 +114,7 @@
       "status": "OBSERVED",
       "source": "Haul road",
       "kind": "worker_vehicle_proximity",
-      "detail": "Worker in truck hazard zone",
+      "detail": "Worker–truck overlap",
       "evidence_id": "E-CAM-S2-006",
       "event_id": "EV-CAM-S2-prox-3-2"
     }
@@ -127,7 +127,7 @@
         "construction"
       ],
       "results": 3,
-      "ms": 0.07
+      "ms": 0.06
     },
     {
       "tool": "get_evidence",
@@ -135,7 +135,7 @@
         "E-CAM-S1-008"
       ],
       "results": 0,
-      "ms": 0.11
+      "ms": 0.08
     },
     {
       "tool": "get_evidence",
@@ -143,7 +143,7 @@
         "E-CAM-S1-009"
       ],
       "results": 0,
-      "ms": 0.05
+      "ms": 0.04
     },
     {
       "tool": "get_evidence",
@@ -151,7 +151,12 @@
         "E-CAM-S2-006"
       ],
       "results": 0,
-      "ms": 0.04
+      "ms": 0.03
     }
-  ]
+  ],
+  "workspace": {
+    "id": "construction",
+    "name": "Construction site",
+    "kind": "construction"
+  }
 }

@@ -306,8 +306,8 @@ def _events_list(conn, ws, ans: Answer, ents):
                         f"{(longest.get('metrics') or {}).get('swings', '?')} sideways swings in {ld} s at {hhmm(longest['ts_start'])} {lc}. "
                         "The cause is not inferred." + review)
     elif all(e["kind"] == "worker_vehicle_proximity" for e in evs):
-        ans.headline = (f"{len(evs)} time{'s' if len(evs) != 1 else ''} a worker was inside a truck's hazard zone"
-                        + (f" — the longest for {ld:.0f} s at {hhmm(longest['ts_start'])} {lc}." if ld else f" {lc}.") + review)
+        ans.headline = (f"{len(evs)} worker–truck overlap alert{'s' if len(evs) != 1 else ''}"
+                        + (f" — the longest lasted {ld:.0f} s, at {hhmm(longest['ts_start'])} {lc}." if ld else f" {lc}.") + review)
     else:
         ans.headline = f"{len(evs)} alert{'s' if len(evs) != 1 else ''} so far; the first at {hhmm(evs[0]['ts_start'])}.{review}"
 
@@ -424,7 +424,7 @@ def _event_why(conn, ws, ans: Answer, ents):
             ans.sentences.append(f"The on-device VLM was asked: \"{vlm['question']}\" and answered \"{vlm['answer']}\".")
     elif ev["kind"] == "lateral_weaving":
         ans.headline = (f"Flagged because a motorcycle swung sideways {m.get('swings', '?')} times in {m.get('duration_s', '?')} s "
-                        f"{c}. VESTIGE does not judge why — impairment, distraction or avoiding something look the same.")
+                        f"{c}. The cause is not inferred.")
         ans.sentences.append(ans.headline)
     else:
         ans.sentences.append(f"{ev['title']}: {ev['kind'].replace('_', ' ')} {c}.")
