@@ -5,14 +5,9 @@ data/videos/*.part
 .DS_Store
 data/videos/
 data/photos/
-data/reviews.jsonl
 models/
-deck/_build.html
-deck/preview/
-video/build/
 *.tmp.avi
 .claude/
-video/*.mp4
 deck2/gen/*.png
 deck2/build/
 deck2/assets/alert_storm_old.png

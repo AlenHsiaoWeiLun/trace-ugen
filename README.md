@@ -6,7 +6,8 @@
 
 VESTIGE turns authorized video, alarms and staff reports into a searchable memory of the physical world.
 Ask “What happened to my bicycle?” and get a direct answer, a timeline and the footage behind each sighting.
-It distinguishes what a camera observed, what the system inferred and where coverage ends.
+One search box routes questions to the relevant authorized site. It distinguishes what a camera observed,
+what the system inferred and where coverage ends.
 
 **ASUS UGen AI League 2026 · Workplace AI · Battlefield Lightning · ASUS UGen300 target**
 
@@ -32,10 +33,7 @@ The three workspaces below are reproducible
 | **Construction** | “What safety alerts happened today?” → **Why was it flagged?** | See the conclusion, frame and image-space rule behind a worker–vehicle alert. Record a human decision beside the answer. |
 | **Campus** | “What happened to my bicycle?” | A recorded check-in, two direct sightings, candidate links across cameras, a map and an explicit end to coverage. Click a citation or timeline row to open its evidence. |
 | **Metro** | “What happened before the emergency alert?” or select an alert under **Needs review** | Review the camera, scripted alarm and radio signals behind a fused incident. A staged recording outage remains a gap. |
-| **⋯ → Detection lab** | **New test** → **Benchmark** → Taipei Bridge scooters | Compare clean-frame detection retention under blur, low light, noise or occlusion. Run a test, inspect the frame comparison and download its report. |
-
-All of these use **one search box**: VESTIGE works out which site a question is about (keywords, the clock time
-of an alert, or whichever site has cited evidence) and labels the answer with that site.
+| **More → Detection lab** | **New test** → **Benchmark** → Taipei Bridge scooters | Compare clean-frame detection retention under blur, low light, noise or occlusion. Run a test, inspect the frame comparison and download its report. |
 
 ![An answer with a timeline and playable evidence](docs/screenshots/02_answer_alert_why.png)
 
@@ -116,8 +114,7 @@ Feature-by-feature evidence: [implementation status](docs/STATUS.md). API: [refe
 ## Repository structure
 
 Start with **`app/` for the current interface** and **`vestige/` for the application backend**.
-`traceai/` provides shared perception/evidence code and the earlier replay pipeline;
-`web/` is its old console, not the UI served by `python -m vestige`.
+`traceai/` provides shared perception/evidence code and the reproducible offline fusion pipeline.
 
 ```text
 trace-ugen/
@@ -127,14 +124,13 @@ trace-ugen/
 │   ├── styles.css               # Design system and responsive layouts
 │   ├── pages/
 │   │   ├── ask.js               # Main flow: questions, alerts, answers, evidence and human review
-│   │   ├── memory.js            # Shared SiteMap; retained standalone object-memory page
-│   │   ├── investigate.js       # Retained standalone event page (not in the current router)
 │   │   ├── lab.js               # Detection stress-test configuration and results
 │   │   ├── sources.js           # Camera/source listing and authorized video uploads
 │   │   └── settings.js          # Demo data policy, coverage and audit views
 │   ├── lib/
 │   │   ├── api.js               # HTTP client and background-job polling
-│   │   └── ui.js                # Shared timeline, citation, video and UI components
+│   │   ├── ui.js                # Shared timeline, citation, video and UI components
+│   │   └── site-map.js          # Object-route map embedded in the answer
 │   └── vendor/                  # Vendored Preact, hooks and HTM modules
 ├── vestige/                     # Current application backend
 │   ├── __main__.py              # python -m vestige: first-run build, then start the server
@@ -144,7 +140,7 @@ trace-ugen/
 │   ├── ingest.py                # Video -> tracks, observations, event rules and masked evidence
 │   ├── associate.py             # Cross-camera candidate links using topology/time/colour
 │   ├── memory.py                # Retrieval tools for objects, events, history and evidence
-│   ├── agent.py                 # Question intent -> retrieval tools -> cited answer
+│   ├── agent.py                 # Site/intent routing -> retrieval tools -> cited answer
 │   └── incidentlab.py           # Frame perturbations, mitigations, metrics and report generation
 ├── traceai/                     # Shared primitives and earlier offline pipeline
 │   ├── perception.py            # Detector backends, ByteTrack wrapper and timing
@@ -155,10 +151,7 @@ trace-ugen/
 │   ├── speech.py                # Local radio transcription -> staff-report signals
 │   ├── summarize.py             # Incident summaries and optional local VLM wrapper
 │   ├── verify.py                # Optional VLM second opinion on fused incidents
-│   ├── hailo.py                 # Planned Hailo speech/VLM adapters; hardware validation pending
-│   ├── ask.py                   # Earlier event-log question handler
-│   └── server.py                # Earlier console API, serving web/ rather than app/
-├── web/                         # Earlier console HTML/CSS/JS and mock responses
+│   └── hailo.py                 # Planned Hailo speech/VLM adapters; hardware validation pending
 ├── configs/                     # Earlier metro/road pipeline settings and response SOP
 ├── scripts/                     # Reproduction and presentation utilities
 │   ├── download_media.sh        # Download the attributed demo footage
@@ -167,11 +160,8 @@ trace-ugen/
 │   ├── incidentlab_pilot.py     # Earlier standalone detector-robustness pilot
 │   ├── screenshots.py          # Capture product screenshots
 │   ├── demo_gif.py              # Assemble the README walkthrough GIF
-│   ├── make_charts.py           # Generate experiment charts
-│   ├── build_deck.py            # Build the earlier proposal deck
-│   ├── record_demo.py           # Record demo footage
-│   ├── assemble_video.py        # Assemble the narrated demo video
-│   └── screenshot_console.py   # Capture the earlier console
+│   ├── browser_capture.py      # Shared CDP client for screenshots and GIF capture
+│   └── make_charts.py           # Generate experiment charts into deck2/assets/
 ├── tests/                       # Retrieval, API, upload, preflight, lab, rules and fusion checks
 ├── data/                        # Committed replay JSON/audio plus local runtime data
 │   ├── run_metro.json           # Committed metro replay imported by scenarios.py
@@ -190,10 +180,9 @@ trace-ugen/
 ├── docs/                        # Architecture, API, status, reproduction and submission guides
 │   ├── ARCHITECTURE.md          # Module dependencies, execution flows and storage boundaries
 │   ├── architecture.png        # Target hardware deployment diagram
+│   ├── trace-proposal-draft.pdf # Earlier English proposal PDF, retained for reference
 │   └── screenshots/            # Product captures used in the README and proposal
-├── deck/                        # Earlier English PDF, source HTML, charts and assets
 ├── deck2/                       # Newer VESTIGE slide sources and assets
-├── video/                       # Narration and draft YouTube upload metadata
 ├── requirements.txt             # Python application and test dependencies
 ├── ATTRIBUTION.md               # Footage, image and other third-party asset sources
 ├── LICENSE                      # Project-authored code license
@@ -243,16 +232,6 @@ real-world safety performance. No UGen300 throughput, power or live-site adoptio
 - **This is a local prototype.** The demo allow-list checks workspace scope but is not production authentication.
   Upload authorization is a user declaration, and automatic retention is not enforced yet.
 
-## Stage II roadmap
-
-1. **Run on the UGen300:** YOLO11 HEF, Whisper and Qwen2-VL on the Hailo-10H; measure FPS, latency and power and
-   replace every vendor-published number with a measured one.
-2. **Live cameras** (RTSP) with multi-camera time sync on the edge box.
-3. **Construction pilot:** early collaboration talks with WanZe Construction (萬澤建設); scope and terms are not
-   yet defined. Goal: machinery-aware proximity alerts and a site-specific IncidentLab benchmark.
-4. **Appearance signature validated on held-out footage**, so the more robust YOLO11s can also drive cross-camera
-   links (see the trial in [STATUS](docs/STATUS.md)).
-
 ## Stage I submission
 
 [Current requirements and readiness checklist](docs/STAGE_I.md), checked against the organizer's published
@@ -261,14 +240,14 @@ rules on **11 October 2026**. Stage I permits laptop validation; Stage II requir
 | Material | Repository status |
 |---|---|
 | Code, setup, architecture and measured results | Available here |
-| English deck | [Existing TRACE draft: 20 main pages + 2 appendices](deck/b13902049_CN_league.pdf). It predates the VESTIGE product UI. Latest VESTIGE slide sources are in [deck2/](deck2/); a final matching PDF still needs to be exported and checked. |
+| English deck | [Existing TRACE draft: 20 main pages + 2 appendices](docs/trace-proposal-draft.pdf). It predates the VESTIGE product UI. Latest VESTIGE slide sources are in [deck2/](deck2/); a final matching PDF still needs to be exported and checked. |
 | English demo video, YouTube unlisted | **Pending — no verified submission URL in this repository** |
 
 The README and screenshots support review; they do not replace the required deck and video.
 
 ## Project and credits
 
-Built by **Wei-Lun Hsiao · B13902049 · Computer Science, National Taiwan University**.
+Built by **Wei-Lun Hsiao · Computer Science, National Taiwan University**.
 
 Development used Claude Code and OpenAI Codex. Public footage, hardware renders and generated deck imagery
 have separate provenance: [media attribution](ATTRIBUTION.md). Project-authored code is provided under
