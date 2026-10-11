@@ -255,6 +255,56 @@ def ask(ws: str, body: Question):
     return out
 
 
+# Sites a user sees as one product (benchmarks are engineering-only).
+SITES = ["construction", "campus", "metro"]
+
+
+@app.post("/api/ask")
+def ask_anywhere(body: Question):
+    """One search box for every site the user may access: the event's own site, or the site the question is about."""
+    q = body.question.strip()
+    if not q:
+        raise HTTPException(400, "empty question")
+    c = conn()
+    sites = [w for w in SITES if w in ALLOWED[USER]]
+    if body.event_id:
+        e = c.execute("SELECT workspace_id FROM events WHERE id=?", (body.event_id,)).fetchone()
+        if not e:
+            raise HTTPException(404, "event not found")
+        guard(e[0])
+        ws, how = e[0], "event"
+    else:
+        ws, how = agent.route(c, q, sites)
+    t = time.perf_counter()
+    out = agent.ask(c, ws, q, body.event_id)
+    out["latency_ms"] = round(1000 * (time.perf_counter() - t), 1)
+    out["routed_by"] = how
+    return out
+
+
+@app.get("/api/alerts")
+def alerts():
+    """Open alerts across every site, oldest first, with their evidence frame and place."""
+    c = conn()
+    out = []
+    for w in [w for w in SITES if w in ALLOWED[USER]]:
+        name = db.row(c.execute("SELECT name FROM workspaces WHERE id=?", (w,)).fetchone())
+        for e in memory.search_events(c, w):
+            if e["status"] != "open":
+                continue
+            ev = memory.get_evidence(c, e["evidence_id"]) if e.get("evidence_id") else None
+            out.append({**e, "site": name["name"] if name else w, "img": (ev or {}).get("url"),
+                        "place": ((ev or {}).get("source") or {}).get("name", "").split(" · ")[-1]})
+    return sorted(out, key=lambda e: (SITES.index(e["workspace_id"]), e["ts_start"]))
+
+
+@app.get("/api/suggestions")
+def suggestions():
+    return {"examples": ["What safety alerts happened today?", "What happened to my bicycle?",
+                         "What happened before the platform alarm?"],
+            "by_site": {w: SUGGESTIONS.get(w, []) for w in SITES}}
+
+
 class CheckIn(BaseModel):
     object_id: str | None = None
     label: str = "my bicycle"

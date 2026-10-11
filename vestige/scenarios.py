@@ -22,9 +22,9 @@ PEXELS = "Pexels License"
 WORKSPACES = [
     {"id": "campus", "name": "Campus", "kind": "campus",
      "description": "Bicycle parking and paths — stitched from public footage (Pexels)."},
-    {"id": "metro", "name": "Metro demo", "kind": "metro",
+    {"id": "metro", "name": "Metro station", "kind": "metro",
      "description": "Virtual station replay from the TRACE engine (stock clips, scripted alarm and radio)."},
-    {"id": "construction", "name": "Construction", "kind": "construction",
+    {"id": "construction", "name": "Construction site", "kind": "construction",
      "description": "Construction-site footage (Pexels). Not a WanZe site."},
 ]
 
