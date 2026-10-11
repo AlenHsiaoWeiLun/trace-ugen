@@ -18,7 +18,7 @@ It distinguishes what a camera observed, what the system inferred and where cove
 
 An operator reviewing an incident often has to search separate camera recordings, reconcile alarms and
 remember what each source showed. VESTIGE puts that work into one flow: **remember → investigate → verify**.
-Its TRACE engine stores observations with their source and evidence, retrieves them to answer questions,
+VESTIGE stores observations with their source and evidence, retrieves them to answer questions,
 and tests how perception holds up when footage gets darker, blurred or partially occluded.
 
 The intended users are site operators and security teams. The three workspaces below are reproducible
@@ -83,7 +83,7 @@ See [reproduction and troubleshooting](docs/REPRODUCING.md) for exact scope and 
 
 ```mermaid
 flowchart LR
-    S[Authorized video · alarms · reports] --> P[TRACE perception and fusion]
+    S[Authorized video · alarms · reports] --> P[Perception and fusion]
     P --> M[(World Memory · SQLite)]
     M --> A[Planner → retrieval tools → cited answer]
     A --> U[Ask · Memory · Events]
@@ -162,7 +162,6 @@ The README and screenshots support review; they do not replace the required deck
 ## Project and credits
 
 Built by **Wei-Lun Hsiao · Computer Science, National Taiwan University**.
-VESTIGE is an Archean project (provisional venture brand); **TRACE** is its underlying engine.
 
 `vestige/` contains memory, ingestion, association, the planner, IncidentLab and API;
 `traceai/` contains the earlier perception/fusion pipeline and hardware backends;
