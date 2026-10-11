@@ -314,7 +314,7 @@ def suggestions():
             sites.append(r)
     return {"examples": ["What happened to my bicycle?", "How did the 19 December incident unfold?",
                          "What safety alerts happened today?"], "sites": sites,
-            "by_site": {w: SUGGESTIONS.get(w, []) for w in SITES}}
+            "by_site": {r["id"]: SUGGESTIONS.get(r["kind"], []) for r in sites}}
 
 
 class CheckIn(BaseModel):
