@@ -1,0 +1,69 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<!-- Source for docs/architecture.png (rendered with headless Chrome at 1600x900). -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body { width: 1600px; height: 900px; background: #09090b; color: #f3f1ec; font: 400 17px/1.45 Inter, sans-serif; padding: 56px 64px; }
+  h1 { font: 400 46px/1 "Instrument Serif", serif; letter-spacing: -.01em; }
+  .sub { color: #9b988f; margin-top: 10px; font-size: 17px; }
+  .row { display: grid; grid-template-columns: 250px 1fr 280px; gap: 28px; margin-top: 44px; align-items: stretch; }
+  .col-t { font: 500 13px Inter; color: #9b988f; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 12px; }
+  .box { border: 1px solid rgba(255,255,255,.12); border-radius: 14px; padding: 16px 18px; background: #131316; }
+  .box + .box { margin-top: 12px; }
+  .box b { display: block; font-weight: 600; }
+  .box span { color: #9b988f; font-size: 14.5px; }
+  .device { border: 1.5px solid rgba(233,176,84,.55); border-radius: 20px; padding: 22px; position: relative; }
+  .device > .col-t { color: #e9b054; }
+  .split { display: grid; grid-template-columns: 1fr 1.25fr; gap: 18px; }
+  .npu { border: 1px solid rgba(233,176,84,.5); background: rgba(233,176,84,.07); }
+  .lane-t { font: 600 15px Inter; margin-bottom: 10px; }
+  .lane-t i { font-style: normal; font-weight: 400; color: #9b988f; font-size: 13.5px; }
+  .mono { font-family: "IBM Plex Mono", monospace; font-size: 13.5px; color: #b9b6af; }
+  .arrow { position: absolute; top: 50%; color: #e9b054; font-size: 26px; }
+  .foot { position: absolute; left: 64px; right: 64px; bottom: 44px; display: flex; gap: 36px; color: #9b988f; font-size: 14.5px; border-top: 1px solid rgba(255,255,255,.08); padding-top: 18px; }
+  .foot b { color: #f3f1ec; font-weight: 500; }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 8px; vertical-align: 0; }
+</style></head>
+<body>
+  <h1>VESTIGE on ASUS UGen300</h1>
+  <p class="sub">Perception runs on the Hailo-10H NPU; memory, reasoning and the app run on the host. Nothing leaves the site.</p>
+  <div class="row">
+    <div>
+      <div class="col-t">Authorized sources</div>
+      <div class="box"><b>Cameras</b><span>video files today (RTSP planned)</span></div>
+      <div class="box"><b>Alarms &amp; sensors</b><span>intercom, door, PLC events</span></div>
+      <div class="box"><b>Staff radio</b><span>audio clips</span></div>
+      <div class="box"><b>Your records</b><span>check-ins, reports</span></div>
+    </div>
+    <div class="device">
+      <div class="col-t">Edge box — UGen300 + host</div>
+      <div class="split">
+        <div>
+          <div class="lane-t">Hailo-10H NPU <i>· continuous + on event</i></div>
+          <div class="box npu"><b>Object detection</b><span class="mono">YOLO11n / YOLO11s HEF · every frame</span></div>
+          <div class="box npu"><b>Speech to text</b><span class="mono">Whisper · on radio activity</span></div>
+          <div class="box npu"><b>Second-opinion check</b><span class="mono">Qwen2-VL-2B · per incident</span></div>
+        </div>
+        <div>
+          <div class="lane-t">Host CPU <i>· same box</i></div>
+          <div class="box"><b>Track &amp; link</b><span>ByteTrack, tracklet stitching, colour signature, cross-camera association</span></div>
+          <div class="box"><b>World Memory</b><span>objects · events · evidence · gaps, with provenance (SQLite)</span></div>
+          <div class="box"><b>Investigation agent</b><span>tool planner → cited answer; never writes facts itself</span></div>
+          <div class="box"><b>IncidentLab</b><span>stress tests the detector, compares mitigations</span></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="col-t">What people use</div>
+      <div class="box"><b>Ask</b><span>“What happened to my bicycle?”</span></div>
+      <div class="box"><b>Memory</b><span>an object's timeline and map</span></div>
+      <div class="box"><b>Events</b><span>video, lead-up, human review</span></div>
+      <div class="box"><b>Lab</b><span>where detection breaks</span></div>
+    </div>
+  </div>
+  <div class="foot">
+    <span><span class="dot" style="background:rgba(233,176,84,.6)"></span><b>NPU</b> — port written against HailoRT 5 (<span class="mono">traceai/hailo.py</span>), not yet run on a UGen300 (Stage II)</span>
+    <span><span class="dot" style="background:#2a2a2f"></span><b>Host</b> — runs today; Stage I measurements are on an Apple M4 Pro laptop</span>
+  </div>
+</body></html>

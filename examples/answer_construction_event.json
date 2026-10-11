@@ -1,0 +1,142 @@
+{
+  "question": "Why was this construction safety event flagged?",
+  "workspace_id": "construction",
+  "intent": "event_why",
+  "planner": "deterministic",
+  "subject": {
+    "type": "event",
+    "id": "EV-CAM-S1-prox-1-3",
+    "label": "Worker in truck hazard zone"
+  },
+  "headline": "Flagged because a worker overlapped the box of a truck for 15.0 s [E1]. Measured in the image, not as a real distance.",
+  "steps": [
+    {
+      "ts": "2026-10-08T07:58:10",
+      "status": "OBSERVED",
+      "place": "CAM-S1",
+      "title": "Worker overlaps a truck for 15 s",
+      "basis": "Worker #1 and truck #3 · measured in the image (uncalibrated camera).",
+      "n": 1
+    },
+    {
+      "ts": "2026-10-08T07:58:14",
+      "status": "OBSERVED",
+      "place": "CAM-S1",
+      "title": "Worker overlaps a truck for 3 s",
+      "basis": "Worker #18 and truck #5 · measured in the image (uncalibrated camera).",
+      "n": 2
+    }
+  ],
+  "answer": "It was flagged because a worker overlapped the box of a truck for 15.0 s [E1]. The rule fires below 0.35 body-heights for at least 1 s. This is image-space proximity from an uncalibrated camera, not a measured distance or a collision prediction. Stress-test the event in IncidentLab to see how reliable the detections behind it are. \"Worker in truck hazard zone\" (high priority) spans 07:58:10–07:58:25. In the 60 s before it and during it, the memory holds: 07:58:10 — CAM-S1 (observed): worker #1 overlapping truck #3 for 15.0 s (image-space, uncalibrated) [E1] 07:58:14 — CAM-S1 (observed): worker #18 overlapping truck #5 for 3.1 s (image-space, uncalibrated) [E2]",
+  "sentences": [
+    "It was flagged because a worker overlapped the box of a truck for 15.0 s [E1]. The rule fires below 0.35 body-heights for at least 1 s.",
+    "This is image-space proximity from an uncalibrated camera, not a measured distance or a collision prediction. Stress-test the event in IncidentLab to see how reliable the detections behind it are.",
+    "\"Worker in truck hazard zone\" (high priority) spans 07:58:10–07:58:25. In the 60 s before it and during it, the memory holds:",
+    "07:58:10 — CAM-S1 (observed): worker #1 overlapping truck #3 for 15.0 s (image-space, uncalibrated) [E1]",
+    "07:58:14 — CAM-S1 (observed): worker #18 overlapping truck #5 for 3.1 s (image-space, uncalibrated) [E2]"
+  ],
+  "citations": [
+    {
+      "n": 1,
+      "evidence_id": "E-CAM-S1-008",
+      "status": "OBSERVED",
+      "ts": "2026-10-08T07:58:10",
+      "label": "Worker in truck hazard zone",
+      "kind": "frame",
+      "url": "/media/vestige/construction/CAM-S1/E-CAM-S1-008.jpg",
+      "source": "CAM-S1 · Pour area",
+      "source_id": "CAM-S1",
+      "t_offset_s": 0.0,
+      "proxy_url": "/media/vestige/construction/CAM-S1/proxy.mp4",
+      "caption": "person #1 overlapping truck #3 in the image",
+      "provenance": "public-footage"
+    },
+    {
+      "n": 2,
+      "evidence_id": "E-CAM-S1-009",
+      "status": "OBSERVED",
+      "ts": "2026-10-08T07:58:14",
+      "label": "proximity",
+      "kind": "frame",
+      "url": "/media/vestige/construction/CAM-S1/E-CAM-S1-009.jpg",
+      "source": "CAM-S1 · Pour area",
+      "source_id": "CAM-S1",
+      "t_offset_s": 4.6,
+      "proxy_url": "/media/vestige/construction/CAM-S1/proxy.mp4",
+      "caption": "person #18 overlapping truck #5 in the image",
+      "provenance": "public-footage"
+    }
+  ],
+  "timeline": [
+    {
+      "ts": "2026-10-08T07:58:10",
+      "status": "OBSERVED",
+      "source": "CAM-S1 · Pour area",
+      "kind": "proximity",
+      "detail": "worker #1 overlapping truck #3 for 15.0 s (image-space, uncalibrated)",
+      "evidence_id": "E-CAM-S1-008",
+      "role": "trigger"
+    },
+    {
+      "ts": "2026-10-08T07:58:14",
+      "status": "OBSERVED",
+      "source": "CAM-S1 · Pour area",
+      "kind": "proximity",
+      "detail": "worker #18 overlapping truck #5 for 3.1 s (image-space, uncalibrated)",
+      "evidence_id": "E-CAM-S1-009",
+      "role": "context"
+    }
+  ],
+  "gaps": [],
+  "tool_calls": [
+    {
+      "tool": "search_events",
+      "args": [
+        "construction"
+      ],
+      "results": 3,
+      "ms": 0.02
+    },
+    {
+      "tool": "get_evidence",
+      "args": [
+        "E-CAM-S1-008"
+      ],
+      "results": 0,
+      "ms": 0.04
+    },
+    {
+      "tool": "search_events",
+      "args": [
+        "construction"
+      ],
+      "results": 3,
+      "ms": 0.02
+    },
+    {
+      "tool": "get_event_timeline",
+      "args": [
+        "EV-CAM-S1-prox-1-3",
+        60.0
+      ],
+      "results": 16,
+      "ms": 0.11
+    },
+    {
+      "tool": "get_evidence",
+      "args": [
+        "E-CAM-S1-008"
+      ],
+      "results": 0,
+      "ms": 0.03
+    },
+    {
+      "tool": "get_evidence",
+      "args": [
+        "E-CAM-S1-009"
+      ],
+      "results": 0,
+      "ms": 0.03
+    }
+  ]
+}

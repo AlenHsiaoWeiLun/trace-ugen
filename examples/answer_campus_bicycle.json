@@ -1,0 +1,435 @@
+{
+  "question": "What happened to my bicycle?",
+  "workspace_id": "campus",
+  "intent": "object_fate",
+  "planner": "deterministic",
+  "subject": {
+    "type": "object",
+    "id": "B-17",
+    "label": "B-17 · my bicycle"
+  },
+  "headline": "It left Parking P3 at 13:40:55, moved by an unidentified person [E2]. A similar bicycle was later seen at Underpass gate at 13:43:05 [E4] — identity not confirmed. Where it is now is unknown.",
+  "steps": [
+    {
+      "ts": "2026-10-07T08:52:00",
+      "status": "RECORDED",
+      "place": "Parking P3",
+      "title": "You parked it here",
+      "basis": "Owner check-in — your statement, not a camera observation (staged demo record).",
+      "n": null
+    },
+    {
+      "ts": "2026-10-07T13:40:50",
+      "status": "OBSERVED",
+      "place": "Parking P3",
+      "title": "Still in its parked position",
+      "basis": "CAM-P3: bicycle #1 enters view · colour orange.",
+      "n": 1
+    },
+    {
+      "ts": "2026-10-07T13:40:55",
+      "status": "OBSERVED",
+      "place": "Parking P3",
+      "title": "Moved from its parked position by an unidentified person",
+      "basis": "CAM-P3: bicycle #1 leaves its parked position; handled by person #2 (pseudonymous). Movement is not theft — a person handling a bike can be the owner, staff or someone else.",
+      "n": 2
+    },
+    {
+      "ts": "2026-10-07T13:41:40",
+      "status": "INFERRED",
+      "place": "Riverside path",
+      "title": "Similar red bicycle appears",
+      "basis": "CAM-P3 → CAM-W1 adjacent · 39 s travel (allowed 15–240 s) · colour similarity 0.59 (threshold 0.55). Not a confirmed identity.",
+      "n": 3
+    },
+    {
+      "ts": "2026-10-07T13:43:05",
+      "status": "INFERRED",
+      "place": "Underpass gate",
+      "title": "Similar red bicycle appears",
+      "basis": "CAM-W1 → CAM-G2 adjacent · 81 s travel (allowed 15–240 s) · colour similarity 0.59 (threshold 0.55). Not a confirmed identity.",
+      "n": 4
+    },
+    {
+      "ts": null,
+      "status": "REJECTED",
+      "place": "",
+      "title": "2 other bicycles checked — not linked",
+      "basis": "CAM-W1-2: colour orange vs red (0.356); CAM-W1-3: colour orange vs red (0.374)",
+      "n": null
+    },
+    {
+      "ts": "2026-10-07T13:43:22",
+      "status": "UNKNOWN",
+      "place": "",
+      "title": "No camera coverage after this point",
+      "basis": "No authorized camera covers the route beyond CAM-G2 · Underpass gate.",
+      "n": null
+    }
+  ],
+  "answer": "You recorded your red road bike at Parking P3 at 08:52:00 (owner check-in, staged demo record). CAM-P3 observed it in place at 13:40:50 [E1]. At 13:40:55 it left its parked position, handled by an unidentified person (track #2) [E2]. A visually similar red bicycle was observed on Riverside path at 13:41:40 [E3] — inferred from adjacent cameras, 39 s travel time and colour similarity 0.59; not a confirmed identity. A visually similar red bicycle was observed on Underpass gate at 13:43:05 [E4] — inferred from adjacent cameras, 81 s travel time and colour similarity 0.59; not a confirmed identity. 2 other bicycle sighting(s) nearby were checked and not linked (colour or timing did not match). No authorized camera covers the route beyond CAM-G2 · Underpass gate — what happened after that is unknown.",
+  "sentences": [
+    "You recorded your red road bike at Parking P3 at 08:52:00 (owner check-in, staged demo record).",
+    "CAM-P3 observed it in place at 13:40:50 [E1].",
+    "At 13:40:55 it left its parked position, handled by an unidentified person (track #2) [E2].",
+    "A visually similar red bicycle was observed on Riverside path at 13:41:40 [E3] — inferred from adjacent cameras, 39 s travel time and colour similarity 0.59; not a confirmed identity.",
+    "A visually similar red bicycle was observed on Underpass gate at 13:43:05 [E4] — inferred from adjacent cameras, 81 s travel time and colour similarity 0.59; not a confirmed identity.",
+    "2 other bicycle sighting(s) nearby were checked and not linked (colour or timing did not match).",
+    "No authorized camera covers the route beyond CAM-G2 · Underpass gate — what happened after that is unknown."
+  ],
+  "citations": [
+    {
+      "n": 1,
+      "evidence_id": "E-CAM-P3-001",
+      "status": "OBSERVED",
+      "ts": "2026-10-07T13:40:50",
+      "label": "seen at its position",
+      "kind": "frame",
+      "url": "/media/vestige/campus/CAM-P3/E-CAM-P3-001.jpg",
+      "source": "CAM-P3 · Parking P3",
+      "source_id": "CAM-P3",
+      "t_offset_s": 5.41,
+      "proxy_url": "/media/vestige/campus/CAM-P3/proxy.mp4",
+      "caption": "bicycle #1 seen on CAM-P3 · Parking P3",
+      "provenance": "public-footage"
+    },
+    {
+      "n": 2,
+      "evidence_id": "E-CAM-P3-004",
+      "status": "OBSERVED",
+      "ts": "2026-10-07T13:40:55",
+      "label": "left its position",
+      "kind": "frame",
+      "url": "/media/vestige/campus/CAM-P3/E-CAM-P3-004.jpg",
+      "source": "CAM-P3 · Parking P3",
+      "source_id": "CAM-P3",
+      "t_offset_s": 5.31,
+      "proxy_url": "/media/vestige/campus/CAM-P3/proxy.mp4",
+      "caption": "bicycle #1 leaves its parked position — person #2",
+      "provenance": "public-footage"
+    },
+    {
+      "n": 3,
+      "evidence_id": "E-CAM-W1-003",
+      "status": "INFERRED",
+      "ts": "2026-10-07T13:41:40",
+      "label": "similar bicycle on CAM-W1",
+      "kind": "frame",
+      "url": "/media/vestige/campus/CAM-W1/E-CAM-W1-003.jpg",
+      "source": "CAM-W1 · Riverside path",
+      "source_id": "CAM-W1",
+      "t_offset_s": 2.1,
+      "proxy_url": "/media/vestige/campus/CAM-W1/proxy.mp4",
+      "caption": "bicycle #3 seen on CAM-W1 · Riverside path",
+      "provenance": "public-footage"
+    },
+    {
+      "n": 4,
+      "evidence_id": "E-CAM-G2-002",
+      "status": "INFERRED",
+      "ts": "2026-10-07T13:43:05",
+      "label": "similar bicycle on CAM-G2",
+      "kind": "frame",
+      "url": "/media/vestige/campus/CAM-G2/E-CAM-G2-002.jpg",
+      "source": "CAM-G2 · Underpass gate",
+      "source_id": "CAM-G2",
+      "t_offset_s": 4.9,
+      "proxy_url": "/media/vestige/campus/CAM-G2/proxy.mp4",
+      "caption": "bicycle #2 seen on CAM-G2 · Underpass gate",
+      "provenance": "public-footage"
+    }
+  ],
+  "timeline": [
+    {
+      "ts": "2026-10-07T08:52:00",
+      "status": "RECORDED",
+      "source": "CAM-P3 · Parking P3",
+      "kind": "checkin",
+      "detail": "Owner check-in: parked at Parking P3 (user-recorded, staged for the demo)",
+      "evidence_id": null,
+      "via": null
+    },
+    {
+      "ts": "2026-10-07T13:40:50",
+      "status": "OBSERVED",
+      "source": "CAM-P3 · Parking P3",
+      "kind": "seen",
+      "detail": "bicycle #1 enters view · colour orange",
+      "evidence_id": "E-CAM-P3-001",
+      "via": null
+    },
+    {
+      "ts": "2026-10-07T13:40:55",
+      "status": "OBSERVED",
+      "source": "CAM-P3 · Parking P3",
+      "kind": "moved",
+      "detail": "bicycle #1 leaves its parked position; handled by person #2 (pseudonymous)",
+      "evidence_id": "E-CAM-P3-004",
+      "via": null
+    },
+    {
+      "ts": "2026-10-07T13:40:57",
+      "status": "OBSERVED",
+      "source": "CAM-P3 · Parking P3",
+      "kind": "seen",
+      "detail": "bicycle #7 enters view · colour orange",
+      "evidence_id": "E-CAM-P3-003",
+      "via": null
+    },
+    {
+      "ts": "2026-10-07T13:40:57",
+      "status": "OBSERVED",
+      "source": "CAM-P3 · Parking P3",
+      "kind": "moved",
+      "detail": "bicycle #7 leaves its parked position; handled by person #2 (pseudonymous)",
+      "evidence_id": "E-CAM-P3-004",
+      "via": null
+    },
+    {
+      "ts": "2026-10-07T13:40:57",
+      "status": "LAST_SEEN",
+      "source": "CAM-P3 · Parking P3",
+      "kind": "seen",
+      "detail": "bicycle #1 last in view · colour orange",
+      "evidence_id": "E-CAM-P3-001",
+      "via": null
+    },
+    {
+      "ts": "2026-10-07T13:41:01",
+      "status": "LAST_SEEN",
+      "source": "CAM-P3 · Parking P3",
+      "kind": "seen",
+      "detail": "bicycle #7 last in view · colour orange",
+      "evidence_id": "E-CAM-P3-003",
+      "via": null
+    },
+    {
+      "ts": "2026-10-07T13:41:40",
+      "status": "INFERRED",
+      "source": "CAM-W1 · Riverside path",
+      "kind": "seen",
+      "detail": "bicycle #3 enters view · colour red",
+      "evidence_id": "E-CAM-W1-003",
+      "via": {
+        "relation_id": "R-T-CAM-P3-7->T-CAM-W1-3",
+        "topology": "CAM-P3 → CAM-W1 adjacent",
+        "travel_s": 39.0,
+        "window_s": [
+          15.0,
+          240.0
+        ],
+        "colour_similarity": 0.587,
+        "threshold": 0.55,
+        "colours": [
+          "orange",
+          "red"
+        ],
+        "reasons": [],
+        "identity": "not established — appearance and timing only"
+      }
+    },
+    {
+      "ts": "2026-10-07T13:41:44",
+      "status": "INFERRED",
+      "source": "CAM-W1 · Riverside path",
+      "kind": "seen",
+      "detail": "bicycle #3 last in view · colour red",
+      "evidence_id": "E-CAM-W1-003",
+      "via": {
+        "relation_id": "R-T-CAM-P3-7->T-CAM-W1-3",
+        "topology": "CAM-P3 → CAM-W1 adjacent",
+        "travel_s": 39.0,
+        "window_s": [
+          15.0,
+          240.0
+        ],
+        "colour_similarity": 0.587,
+        "threshold": 0.55,
+        "colours": [
+          "orange",
+          "red"
+        ],
+        "reasons": [],
+        "identity": "not established — appearance and timing only"
+      }
+    },
+    {
+      "ts": "2026-10-07T13:41:44",
+      "status": "INFERRED",
+      "source": "CAM-W1 · Riverside path",
+      "kind": "in_motion",
+      "detail": "bicycle #3 moves with a person; handled by person #1 (pseudonymous)",
+      "evidence_id": "E-CAM-W1-004",
+      "via": {
+        "relation_id": "R-T-CAM-P3-7->T-CAM-W1-3",
+        "topology": "CAM-P3 → CAM-W1 adjacent",
+        "travel_s": 39.0,
+        "window_s": [
+          15.0,
+          240.0
+        ],
+        "colour_similarity": 0.587,
+        "threshold": 0.55,
+        "colours": [
+          "orange",
+          "red"
+        ],
+        "reasons": [],
+        "identity": "not established — appearance and timing only"
+      }
+    },
+    {
+      "ts": "2026-10-07T13:43:05",
+      "status": "INFERRED",
+      "source": "CAM-G2 · Underpass gate",
+      "kind": "seen",
+      "detail": "bicycle #2 enters view · colour red",
+      "evidence_id": "E-CAM-G2-002",
+      "via": {
+        "relation_id": "R-T-CAM-W1-3->T-CAM-G2-2",
+        "topology": "CAM-W1 → CAM-G2 adjacent",
+        "travel_s": 81.0,
+        "window_s": [
+          15.0,
+          240.0
+        ],
+        "colour_similarity": 0.592,
+        "threshold": 0.55,
+        "colours": [
+          "red",
+          "red"
+        ],
+        "reasons": [],
+        "identity": "not established — appearance and timing only"
+      }
+    },
+    {
+      "ts": "2026-10-07T13:43:05",
+      "status": "INFERRED",
+      "source": "CAM-G2 · Underpass gate",
+      "kind": "in_motion",
+      "detail": "bicycle #2 moves with a person; handled by person #1 (pseudonymous)",
+      "evidence_id": "E-CAM-G2-003",
+      "via": {
+        "relation_id": "R-T-CAM-W1-3->T-CAM-G2-2",
+        "topology": "CAM-W1 → CAM-G2 adjacent",
+        "travel_s": 81.0,
+        "window_s": [
+          15.0,
+          240.0
+        ],
+        "colour_similarity": 0.592,
+        "threshold": 0.55,
+        "colours": [
+          "red",
+          "red"
+        ],
+        "reasons": [],
+        "identity": "not established — appearance and timing only"
+      }
+    },
+    {
+      "ts": "2026-10-07T13:43:22",
+      "status": "INFERRED",
+      "source": "CAM-G2 · Underpass gate",
+      "kind": "seen",
+      "detail": "bicycle #2 last in view · colour red",
+      "evidence_id": "E-CAM-G2-002",
+      "via": {
+        "relation_id": "R-T-CAM-W1-3->T-CAM-G2-2",
+        "topology": "CAM-W1 → CAM-G2 adjacent",
+        "travel_s": 81.0,
+        "window_s": [
+          15.0,
+          240.0
+        ],
+        "colour_similarity": 0.592,
+        "threshold": 0.55,
+        "colours": [
+          "red",
+          "red"
+        ],
+        "reasons": [],
+        "identity": "not established — appearance and timing only"
+      }
+    }
+  ],
+  "gaps": [
+    {
+      "id": "GAP-after-CAM-G2",
+      "source_id": null,
+      "source": "route",
+      "ts_start": "2026-10-07T13:43:22",
+      "ts_end": null,
+      "reason": "No authorized camera covers the route beyond CAM-G2 · Underpass gate",
+      "provenance": "derived"
+    }
+  ],
+  "tool_calls": [
+    {
+      "tool": "search_objects",
+      "args": [
+        "campus",
+        "me"
+      ],
+      "results": 1,
+      "ms": 0.06
+    },
+    {
+      "tool": "get_object_history",
+      "args": [
+        "B-17"
+      ],
+      "results": 13,
+      "ms": 0.35
+    },
+    {
+      "tool": "get_evidence",
+      "args": [
+        "E-CAM-P3-001"
+      ],
+      "results": 0,
+      "ms": 0.08
+    },
+    {
+      "tool": "get_evidence",
+      "args": [
+        "E-CAM-P3-004"
+      ],
+      "results": 0,
+      "ms": 0.04
+    },
+    {
+      "tool": "get_evidence",
+      "args": [
+        "E-CAM-W1-003"
+      ],
+      "results": 0,
+      "ms": 0.04
+    },
+    {
+      "tool": "get_evidence",
+      "args": [
+        "E-CAM-G2-002"
+      ],
+      "results": 0,
+      "ms": 0.03
+    },
+    {
+      "tool": "get_evidence",
+      "args": [
+        "E-CAM-G2-002"
+      ],
+      "results": 0,
+      "ms": 0.03
+    },
+    {
+      "tool": "get_evidence",
+      "args": [
+        "E-CAM-P3-004"
+      ],
+      "results": 0,
+      "ms": 0.03
+    }
+  ]
+}

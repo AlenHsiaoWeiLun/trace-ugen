@@ -1,127 +1,107 @@
-# VESTIGE — The World Leaves a Trace
+# VESTIGE — The world leaves a trace
 
-**An AI memory and investigation platform for the physical world.**
+**Ask what happened to an object, a place or an event — and get an answer backed by the footage.**
+VESTIGE is an edge AI memory for the physical world: it turns authorized cameras, alarms and staff reports into a
+searchable record of objects and events, answers questions with the evidence attached, and says plainly what is
+observed, what is inferred and what is unknown.
+
 ASUS UGen AI League 2026 · Battlefield Lightning (ASUS UGen300 · Hailo-10H) · Workplace AI
 Wei-Lun Hsiao · B13902049 · National Taiwan University · *VESTIGE — an Archean project (provisional)*
 
-VESTIGE turns authorized camera footage, alarms and staff reports into a **persistent memory of objects
-and events**, answers questions such as *"What happened to my bicycle?"* with a timeline in which **every
-camera sighting cites a stored frame** (user records and coverage gaps are labelled as such, never dressed up
-as sightings), and **stress-tests its own perception** in IncidentLab. The underlying
-engine is **TRACE** (perception, fusion, evidence).
+![VESTIGE demo](docs/demo.gif)
 
-| | |
-|---|---|
-| Run it | `python -m vestige.api` → http://127.0.0.1:8100 |
-| Status of every feature | [`docs/STATUS.md`](docs/STATUS.md) |
-| Screenshots | [`docs/screenshots/`](docs/screenshots) |
-| Hailo port | [`docs/hailo_port.md`](docs/hailo_port.md) |
-| Stage I deck sources | `deck2/` |
+## Status — what works today
 
-## Three capabilities, one engine
-
-```mermaid
-flowchart LR
-  S[Authorized sources<br/>cameras · check-ins · alarms · radio] --> P[Perception<br/>YOLO11 + ByteTrack + stitching<br/>UGen300 target]
-  P --> O[Observations<br/>with provenance]
-  O --> M[(World Memory<br/>SQLite: objects · tracks · observations<br/>events · relations · evidence · gaps)]
-  M --> A[Investigation agent<br/>planner → tools → cited answer]
-  A --> U[Ask · Memory · Investigations UI]
-  M --> L[IncidentLab<br/>perturb → re-run model → grade]
-  L -->|failure reports, mitigations| P
-```
-
-- **REMEMBER** — detections become stored observations with an explicit evidence state:
-  `RECORDED` (a user or system record), `OBSERVED` / `LAST_SEEN` (camera evidence), `INFERRED`
-  (cross-camera link), `UNKNOWN` (explicit gap). States are never merged.
-- **INVESTIGATE** — a deterministic tool planner calls `search_objects`, `get_object_history`,
-  `search_events`, `get_event_timeline`, `get_evidence`, `get_source_coverage`; the answer is composed only
-  from their results and cites `[E#]` evidence that opens the stored frame / processed video at that moment.
-  Optional local LLM (`VESTIGE_LLM=qwen`) may only choose an intent label; it never writes facts.
-- **VERIFY (IncidentLab)** — pick an event, a benchmark set or a camera; apply low light, blur, noise,
-  low resolution, partial occlusion or scale; re-run the real detector; report **Detection Retention Rate**
-  (share of the model's clean-frame detections it still finds — *not* ground-truth recall) and compare
-  test-time **mitigations**: corruption-aware enhancement, higher resolution, test-time augmentation,
-  a larger model.
-
-## Results (measured on this repository, Apple M4 Pro laptop)
-
-**IncidentLab on dense Taipei Bridge scooter traffic** (`bench-road`, 24 frames, 98 reference detections,
-level-2 perturbations; [`results/incidentlab_bench-road_X-dae2cec5.md`](results)):
-
-| Perturbation | Baseline YOLO11n | Best mitigation | Retention | Gain | Cost |
-|---|---:|---|---:|---:|---|
-| Partial occlusion | 33 % | Larger model (YOLO11s) | 62 % | **+29 pp** | 75 vs 46 ms/frame; more new detections |
-| Motion blur | 56 % | Larger model (YOLO11s) | 89 % | **+33 pp** | 75 vs 50 ms/frame |
-| Sensor noise | 56 % | Test-time augmentation | 92 % | **+36 pp** | 111 vs 47 ms/frame |
-| Low light | 90 % | Larger model | 98 % | +8 pp | — |
-| Low light | 90 % | Naive enhancement (CLAHE) | 79 % | **−11 pp** | enhancement can hurt |
-
-Station crowds (`bench-station`) are already robust (91–96 % baseline); mitigations add 1–4 pp.
-On the Hailo-10H the same trade-off is YOLOv11n 302 FPS vs YOLOv11s 142 FPS (published, PCIe) — both fit
-8 cameras × 15 fps. *Hardware numbers are Hailo's; we have not measured a UGen300 yet.*
-
-**Engineering improvements found by testing our own pipeline**
-- *Tracklet stitching* (`vestige/ingest.py::stitch`) — ByteTrack split the red bicycle into 4 tracklets on
-  CAM-G2; stitching merges same-class tracklets across short gaps (2 tracks after). Without it no
-  cross-camera chain formed.
-- *Track-level colour signature* — averaging hue histograms over the whole track instead of one frame made
-  the same bicycle's similarity stable (0.57–0.59) and kept a different (silver) bicycle at 0.11–0.17.
-- *Overlay-free VLM input* — Qwen2-VL answered the "train at platform?" check correctly only on the clean,
-  privacy-masked frame; drawn boxes broke it.
-
-**TRACE fusion (synthetic alert storm, 20 seeds)** — 409 alarms/h → 9.4 high-priority cards, 99 % incident
-recall, 3.1 false high cards/h; per-sensor de-duplication alone removes 9 %. `scripts/simulate_alert_storm.py`
-
-**Latency** — World Memory investigation query: 1.6–3 ms; YOLO11n @ 960 px: ~47 ms/frame (MPS);
-ingestion of a 12 s 1080p clip incl. masked proxy video: ~9 s.
-
-## Demo scenarios (`python -m vestige.scenarios` rebuilds everything from footage)
-
-| Workspace | Footage | What VESTIGE does |
+| Part | Status | Notes |
 |---|---|---|
-| **Campus** | 4 Pexels clips stitched into a site with topology P3/P5 → W1 → G2 | B-17 check-in (RECORDED, staged) → seen at P3 → *left its parked position, handled by person #2* (OBSERVED) → similar red bicycle on W1 and G2 (INFERRED: adjacency + 39 s / 81 s travel + colour 0.59) → *no camera beyond G2* (UNKNOWN). A silver bicycle leaving P5 is checked and **not linked**. |
-| **Metro demo** | TRACE replay (stock clips + scripted intercom alarm + Whisper-transcribed radio) | Fused incident; timeline of the 60 s before the alarm; CAM-05 "live only, no replay" window shown as an evidence gap (staged). |
-| **Construction** | 2 Pexels site clips | Worker–truck image-space proximity events (operators inside cabs excluded), "why was this flagged" with the exact rule, IncidentLab stress test of the event. Not a WanZe site. |
+| Detection + tracking on video (YOLO11 + ByteTrack + tracklet stitching) | ✅ Done, tested | runs on a laptop today |
+| World Memory: objects, events, evidence, coverage gaps, provenance on every row | ✅ Done, tested | SQLite |
+| Cross-camera links (camera adjacency + travel time + colour) | ✅ Done, tested | stored as *inferred*, never as identity |
+| Ask: cited answers ("What happened to my bicycle?") | ✅ Done, tested | deterministic tool planner; optional local LLM picks intent only |
+| Events: lead-up timeline, video at the moment, human review + audit log | ✅ Done, tested | |
+| IncidentLab: stress tests (low light, blur, noise, low-res, occlusion, scale) + mitigations | ✅ Done, measured | results below |
+| Three demo workspaces: campus bicycle, metro incident, construction safety | ✅ Done | public footage + staged inputs, labelled |
+| Upload authorized footage → background processing → ask | ✅ Done, tested | file sources |
+| Running the models on the UGen300 (Hailo-10H) | ⏳ Stage II | HailoRT 5 port written (`traceai/hailo.py`), not yet run on hardware |
+| Live RTSP cameras, multi-user roles, retention enforcement | ⏳ Stage II | |
+| Construction-specific machinery model | ⏳ Stage II | needs site data from a pilot |
 
-Example questions: *What happened to my bicycle?* · *Where was my bike last seen?* · *Show me everything near
-the underpass gate* · *What happened before the emergency alert?* · *Why was this construction safety event flagged?*
+Every feature with its evidence: [`docs/STATUS.md`](docs/STATUS.md) · 33 automated tests (`python -m pytest -q tests`).
 
-## Install & run
+## Quickstart
 
 ```bash
-pip install -r requirements.txt            # Python 3.11+, ffmpeg on PATH
-scripts/download_media.sh                  # openly licensed footage (not redistributed)
-python -m vestige.scenarios                # builds data/vestige.db with real perception (~2 min)
-python -m vestige.api --port 8100          # app + API
-python -m pytest -q tests                  # 33 tests (tests run on a copy of the database)
-python scripts/screenshots.py docs/screenshots
+pip install -r requirements.txt     # Python 3.11+, ffmpeg on PATH
+scripts/download_media.sh           # openly licensed demo footage (not redistributed here)
+python -m vestige                   # first run builds the memory (~2 min), then http://127.0.0.1:8100
 ```
 
-Configuration: `VESTIGE_LLM=qwen` enables the optional local intent classifier (needs `models/qwen2-vl-2b`).
-Detector backend: `detector_cfg={"backend": "hailo", "hef": ".../yolov8s.hef"}` in `vestige/ingest.py`
-uses `traceai/hailo.py` (HailoRT 5, shared VDevice) — written against Hailo's official examples; **not yet
-validated on hardware**.
+No time to run it? [`examples/`](examples) has real outputs: cited answers for each scenario
+(`answer_*.json`) and an IncidentLab summary. Screenshots: [`docs/screenshots/`](docs/screenshots).
 
-## Data model
+## Does the technology actually help? (measured)
 
-`workspaces · zones · sources (provenance, license, recording_available) · topology (travel windows) ·
-objects · tracks (path, colour signature) · observations (status, provenance, evidence) · events ·
-event_links · relations (moved_by / same_object_candidate with basis, INFERRED or REJECTED) · evidence
-(sha256, frame, offset) · gaps · experiments · experiment_results · jobs · audit` — see `vestige/db.py`.
+**IncidentLab on dense Taipei Bridge scooter traffic** — 24 frames, 98 reference detections, level-2 stress
+([full report](results/incidentlab_bench-road_X-dae2cec5.md)):
 
-## Trust & privacy
+| Stress | Baseline YOLO11n | Most improved in this test | Retention | Gain |
+|---|---:|---|---:|---:|
+| Partial occlusion | 33 % | Larger model (YOLO11s) | 62 % | **+29 pp** |
+| Motion blur | 56 % | Larger model (YOLO11s) | 89 % | **+33 pp** |
+| Sensor noise | 56 % | Test-time augmentation | 92 % | **+36 pp** |
+| Low light | 90 % | Simple brightening (CLAHE) | 79 % | **−11 pp** — enhancement can hurt |
 
-Authorized sources only (upload requires an explicit authorization flag) · workspace isolation (403 across
-workspaces) · no face recognition; people are pseudonymous tracks and heads are blurred in every stored
-frame and in the processed proxy video · staged and synthetic data are labelled at row level · missing
-footage is shown as a gap, never filled · movement ≠ theft, proximity ≠ intent, similar appearance ≠
-identity · every review and question is written to the audit log.
+*Retention* = share of the model's own clean-frame detections it still finds (IoU ≥ 0.5). It measures robustness,
+not accuracy against human labels. On the Hailo-10H the same trade-off is YOLOv11n 302 FPS vs YOLOv11s 142 FPS
+(Hailo-published, PCIe) — both fit 8 cameras × 15 fps; *we have not measured a UGen300 yet.*
+
+**Found by testing our own pipeline:** tracklet stitching (ByteTrack split the red bicycle into 4 tracks on one
+camera; without stitching no cross-camera chain formed) · track-level colour signature (same bike 0.57–0.59,
+a different bike 0.11–0.17) · the VLM check is correct only on clean, masked frames — drawn boxes broke it.
+**TRACE fusion** (synthetic alert storm, 20 seeds): 409 alarms/h → 9.4 high-priority cards, 99 % incident recall.
+**Latency:** investigation query 1.6–3 ms; YOLO11n ~47 ms/frame at 960 px (laptop GPU).
+
+## Architecture
+
+![Architecture](docs/architecture.png)
+
+| Runs on | What |
+|---|---|
+| **Hailo-10H NPU** (UGen300) | object detection every frame (YOLO11 HEF) · speech-to-text on radio activity (Whisper) · second-opinion check per incident (Qwen2-VL-2B) |
+| **Host CPU** (same box) | tracking + stitching, colour signature, cross-camera association, World Memory, investigation agent, IncidentLab, API + app |
+
+Code: `vestige/` (memory, ingestion, association, agent, IncidentLab, API) · `app/` (web app, no build step) ·
+`traceai/` (TRACE engine: perception, alarm/radio/camera fusion, Hailo backends) · `tests/` · `scripts/`.
+Hailo details: [`docs/hailo_port.md`](docs/hailo_port.md) · API: [`docs/api.md`](docs/api.md).
+
+## Privacy and trust
+
+- **No face recognition.** People are anonymous tracks; heads are blurred in every stored frame and processed video.
+- **Video stays on site.** Everything runs on the edge box; nothing is sent to a cloud service.
+- **Authorized sources only** — uploads require an explicit authorization; workspaces are isolated (tested).
+- **Gaps stay gaps.** Missing footage is shown as unknown, never filled in.
+- **Movement is not theft, proximity is not intent, similar appearance is not identity** — the answers say so.
+- Every question and review is written to an audit log.
+
+## Stage II roadmap
+
+1. **Port to the UGen300**: run the YOLO11 HEF, Whisper and Qwen2-VL on the Hailo-10H; measure FPS, latency and power
+   on hardware and replace every published number with a measured one.
+2. **Live cameras** (RTSP) and multi-camera time sync on the edge box.
+3. **Construction pilot**: early collaboration talks with WanZe Construction (萬澤建設) — scope and terms not yet
+   defined. Goal: machinery-aware proximity events and a site-specific IncidentLab benchmark.
+4. First user study: time-to-answer with and without VESTIGE.
 
 ## Honesty notes
 
-Footage is public stock video re-timed into demo sites; the owner check-in, the metro alarm and radio
-call and the CAM-05 outage are staged inputs. IncidentLab reports robustness against the model's own
-clean-frame output, not human labels. Hailo performance figures are published by Hailo. Development was
-assisted by AI tools (Claude Code, OpenAI Codex); images in the deck marked as AI-generated were made with
-an OpenAI image model. Media credits: `ATTRIBUTION.md`. License: MIT.
+Footage is public stock video re-timed into demo sites; the bicycle owner's check-in, the metro alarm and radio call
+and the CAM-05 outage are staged inputs, labelled at row level. These are reconstructions, not real incidents, and
+we have no access to NTU, Taipei Metro or real CCTV. IncidentLab compares against the model's own clean-frame output,
+not human labels. Hailo performance figures are Hailo's. Built with help from AI tools (Claude Code, OpenAI Codex).
+Media credits: [`ATTRIBUTION.md`](ATTRIBUTION.md) · License: MIT.
+
+## Links
+
+- Stage I deck: `b13902049_CN_league.pdf` (submitted with the entry)
+- Demo video (YouTube, unlisted): *added at submission*
+- Contact: Wei-Lun Hsiao · B13902049 · CSIE, National Taiwan University

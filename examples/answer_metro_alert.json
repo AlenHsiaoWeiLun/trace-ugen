@@ -1,0 +1,299 @@
+{
+  "question": "Why was this alert flagged?",
+  "workspace_id": "metro",
+  "intent": "event_why",
+  "planner": "deterministic",
+  "subject": {
+    "type": "event",
+    "id": "EV-INC-M-0001",
+    "label": "Alarm corroborated by staff report"
+  },
+  "headline": "Flagged because 5 separate signals pointed to the same place and time [E1].",
+  "steps": [
+    {
+      "ts": "2026-10-10T17:36:07",
+      "status": "RECORDED",
+      "place": "DET-B2",
+      "title": "Platform emergency intercom pressed",
+      "basis": "",
+      "n": 2
+    },
+    {
+      "ts": "2026-10-10T17:36:07",
+      "status": "OBSERVED",
+      "place": "CAM-03",
+      "title": "14 people on camera",
+      "basis": "Counted when DET-B2 fired.",
+      "n": 3
+    },
+    {
+      "ts": "2026-10-10T17:36:07",
+      "status": "OBSERVED",
+      "place": "CAM-05",
+      "title": "12 people on camera",
+      "basis": "Counted when DET-B2 fired.",
+      "n": 4
+    },
+    {
+      "ts": "2026-10-10T17:36:15",
+      "status": "RECORDED",
+      "place": "RADIO-1",
+      "title": "Staff radio call",
+      "basis": "\"Control, this is platform 2. A group of people are running toward exit C, someone may be injured. Requesting backup.\"",
+      "n": 5
+    },
+    {
+      "ts": "2026-10-10T17:36:15",
+      "status": "OBSERVED",
+      "place": "CAM-05",
+      "title": "13 people on camera",
+      "basis": "Counted when RADIO-1 fired.",
+      "n": 6
+    },
+    {
+      "ts": "2026-10-10T17:36:10",
+      "status": "UNKNOWN",
+      "place": "CAM-05",
+      "title": "No recording for this window",
+      "basis": "Recording host unavailable — live view only, no replay (staged to mirror a real failure mode).",
+      "n": null
+    }
+  ],
+  "answer": "TRACE fused 5 signals into this incident (score 0.794) [E1]. \"Alarm corroborated by staff report\" (high priority) spans 17:36:07–17:36:15. In the 60 s before it and during it, the memory holds: 17:36:07 — DET-B2 (recorded): platform emergency intercom pressed [E2] 17:36:07 — CAM-03 (observed): 14 people visible when DET-B2 fired [E3] 17:36:07 — CAM-05 (observed): 12 people visible when DET-B2 fired [E4] 17:36:15 — RADIO-1 (recorded): \"Control, this is platform 2. A group of people are running toward exit C, someone may be injured. Requesting backup.\" [E5] 17:36:15 — CAM-05 (observed): 13 people visible when RADIO-1 fired [E6] Evidence gap: CAM-05 · zone C — Recording host unavailable — live view only, no replay (staged to mirror a real failure mode).",
+  "sentences": [
+    "TRACE fused 5 signals into this incident (score 0.794) [E1].",
+    "\"Alarm corroborated by staff report\" (high priority) spans 17:36:07–17:36:15. In the 60 s before it and during it, the memory holds:",
+    "17:36:07 — DET-B2 (recorded): platform emergency intercom pressed [E2]",
+    "17:36:07 — CAM-03 (observed): 14 people visible when DET-B2 fired [E3]",
+    "17:36:07 — CAM-05 (observed): 12 people visible when DET-B2 fired [E4]",
+    "17:36:15 — RADIO-1 (recorded): \"Control, this is platform 2. A group of people are running toward exit C, someone may be injured. Requesting backup.\" [E5]",
+    "17:36:15 — CAM-05 (observed): 13 people visible when RADIO-1 fired [E6]",
+    "Evidence gap: CAM-05 · zone C — Recording host unavailable — live view only, no replay (staged to mirror a real failure mode)."
+  ],
+  "citations": [
+    {
+      "n": 1,
+      "evidence_id": "E-INC-M-0001",
+      "status": "OBSERVED",
+      "ts": "2026-10-10T17:36:07",
+      "label": "Alarm corroborated by staff report",
+      "kind": "frame",
+      "url": "/media/vestige/metro/INC-M-0001.jpg",
+      "source": "CAM-03 · zone B",
+      "source_id": "CAM-03",
+      "t_offset_s": null,
+      "proxy_url": null,
+      "caption": "Alarm corroborated by staff report",
+      "provenance": "public-footage"
+    },
+    {
+      "n": 2,
+      "evidence_id": "E-SIG-M0002",
+      "status": "RECORDED",
+      "ts": "2026-10-10T17:36:07",
+      "label": "detector_alarm",
+      "kind": "record",
+      "url": null,
+      "source": "DET-B2 · zone B",
+      "source_id": "DET-B2",
+      "t_offset_s": null,
+      "proxy_url": null,
+      "caption": "platform emergency intercom pressed",
+      "provenance": "staged"
+    },
+    {
+      "n": 3,
+      "evidence_id": "E-SIG-M0004",
+      "status": "OBSERVED",
+      "ts": "2026-10-10T17:36:07",
+      "label": "scene_check",
+      "kind": "frame",
+      "url": "/media/vestige/metro/SIG-M0004.jpg",
+      "source": "CAM-03 · zone B",
+      "source_id": "CAM-03",
+      "t_offset_s": null,
+      "proxy_url": null,
+      "caption": "14 people visible when DET-B2 fired",
+      "provenance": "public-footage"
+    },
+    {
+      "n": 4,
+      "evidence_id": "E-SIG-M0005",
+      "status": "OBSERVED",
+      "ts": "2026-10-10T17:36:07",
+      "label": "scene_check",
+      "kind": "frame",
+      "url": "/media/vestige/metro/SIG-M0005.jpg",
+      "source": "CAM-05 · zone C",
+      "source_id": "CAM-05",
+      "t_offset_s": null,
+      "proxy_url": null,
+      "caption": "12 people visible when DET-B2 fired",
+      "provenance": "public-footage"
+    },
+    {
+      "n": 5,
+      "evidence_id": "E-SIG-M0003",
+      "status": "RECORDED",
+      "ts": "2026-10-10T17:36:15",
+      "label": "staff_report",
+      "kind": "transcript",
+      "url": null,
+      "source": "RADIO-1 · zone C",
+      "source_id": "RADIO-1",
+      "t_offset_s": null,
+      "proxy_url": null,
+      "caption": "Control, this is platform 2. A group of people are running toward exit C, someone may be injured. Requesting backup.",
+      "provenance": "staged"
+    },
+    {
+      "n": 6,
+      "evidence_id": "E-SIG-M0006",
+      "status": "OBSERVED",
+      "ts": "2026-10-10T17:36:15",
+      "label": "scene_check",
+      "kind": "frame",
+      "url": "/media/vestige/metro/SIG-M0006.jpg",
+      "source": "CAM-05 · zone C",
+      "source_id": "CAM-05",
+      "t_offset_s": null,
+      "proxy_url": null,
+      "caption": "13 people visible when RADIO-1 fired",
+      "provenance": "public-footage"
+    }
+  ],
+  "timeline": [
+    {
+      "ts": "2026-10-10T17:36:07",
+      "status": "RECORDED",
+      "source": "DET-B2 · zone B",
+      "kind": "detector_alarm",
+      "detail": "platform emergency intercom pressed",
+      "evidence_id": "E-SIG-M0002",
+      "role": "signal"
+    },
+    {
+      "ts": "2026-10-10T17:36:07",
+      "status": "OBSERVED",
+      "source": "CAM-03 · zone B",
+      "kind": "scene_check",
+      "detail": "14 people visible when DET-B2 fired",
+      "evidence_id": "E-SIG-M0004",
+      "role": "signal"
+    },
+    {
+      "ts": "2026-10-10T17:36:07",
+      "status": "OBSERVED",
+      "source": "CAM-05 · zone C",
+      "kind": "scene_check",
+      "detail": "12 people visible when DET-B2 fired",
+      "evidence_id": "E-SIG-M0005",
+      "role": "signal"
+    },
+    {
+      "ts": "2026-10-10T17:36:15",
+      "status": "RECORDED",
+      "source": "RADIO-1 · zone C",
+      "kind": "staff_report",
+      "detail": "\"Control, this is platform 2. A group of people are running toward exit C, someone may be injured. Requesting backup.\"",
+      "evidence_id": "E-SIG-M0003",
+      "role": "signal"
+    },
+    {
+      "ts": "2026-10-10T17:36:15",
+      "status": "OBSERVED",
+      "source": "CAM-05 · zone C",
+      "kind": "scene_check",
+      "detail": "13 people visible when RADIO-1 fired",
+      "evidence_id": "E-SIG-M0006",
+      "role": "signal"
+    }
+  ],
+  "gaps": [
+    {
+      "id": "GAP-CAM05",
+      "workspace_id": "metro",
+      "source_id": "CAM-05",
+      "ts_start": "2026-10-10T17:36:10",
+      "ts_end": "2026-10-10T17:40:00",
+      "reason": "Recording host unavailable — live view only, no replay (staged to mirror a real failure mode)",
+      "provenance": "staged",
+      "source": "CAM-05 · zone C"
+    }
+  ],
+  "tool_calls": [
+    {
+      "tool": "search_events",
+      "args": [
+        "metro"
+      ],
+      "results": 2,
+      "ms": 0.04
+    },
+    {
+      "tool": "get_evidence",
+      "args": [
+        "E-INC-M-0001"
+      ],
+      "results": 0,
+      "ms": 0.05
+    },
+    {
+      "tool": "search_events",
+      "args": [
+        "metro"
+      ],
+      "results": 2,
+      "ms": 0.02
+    },
+    {
+      "tool": "get_event_timeline",
+      "args": [
+        "EV-INC-M-0001",
+        60.0
+      ],
+      "results": 5,
+      "ms": 0.14
+    },
+    {
+      "tool": "get_evidence",
+      "args": [
+        "E-SIG-M0002"
+      ],
+      "results": 0,
+      "ms": 0.03
+    },
+    {
+      "tool": "get_evidence",
+      "args": [
+        "E-SIG-M0004"
+      ],
+      "results": 0,
+      "ms": 0.02
+    },
+    {
+      "tool": "get_evidence",
+      "args": [
+        "E-SIG-M0005"
+      ],
+      "results": 0,
+      "ms": 0.02
+    },
+    {
+      "tool": "get_evidence",
+      "args": [
+        "E-SIG-M0003"
+      ],
+      "results": 0,
+      "ms": 0.02
+    },
+    {
+      "tool": "get_evidence",
+      "args": [
+        "E-SIG-M0006"
+      ],
+      "results": 0,
+      "ms": 0.02
+    }
+  ]
+}
