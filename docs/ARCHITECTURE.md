@@ -1,7 +1,7 @@
 # VESTIGE software architecture
 
 This describes the implemented application in this repository. The [hardware deployment diagram](architecture.png)
-shows the UGen300 target; Hailo hardware execution remains unvalidated. The annotated directory tree is in
+shows the UGen300 target; Hailo hardware execution remains unvalidated. The directory overview is in
 [the README](../README.md#repository-structure).
 
 ## Current runtime
