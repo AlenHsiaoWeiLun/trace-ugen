@@ -16,7 +16,6 @@ Published performance is for Hailo-10H/PCIe. USB UGen300 performance is **not ve
 | Object detection | YOLOv8s HEF, NMS on chip | Hailo Model Zoo v5.x for HAILO10H | HEF-defined RGB letterbox | Every processed frame | 166 FPS on PCIe |
 | Radio ASR | Whisper-Base | Hailo GenAI Model Zoo | 16 kHz mono audio | On voice activity / radio clip | 25.3 tok/s |
 | Incident VLM | Qwen2-VL-2B-Instruct | Hailo GenAI Model Zoo | 336x336 RGB keyframe | Per fused incident | 7.0 tok/s, TTFT 1.02 s |
-| Event-log Q&A | Qwen2.5-1.5B-Instruct | Hailo GenAI Model Zoo | Text event log | On operator question | 7.35 tok/s, TTFT 0.37 s |
 
 ## Code mapping to HailoRT
 
@@ -42,7 +41,9 @@ GenAI is implemented in `traceai/hailo.py`:
 
 For VLM, `HailoVLMCaptioner.caption()` converts the privacy-masked, overlay-free keyframe BGR to RGB, letterboxes it to `336x336`, and sends one image plus one targeted prompt. `traceai/verify.py` calls VLM only after fusion; it may downgrade camera-only incidents but cannot override alarms or radio.
 
-The VESTIGE agent (`vestige/agent.py`) composes answers only from memory lookups. Planned Hailo path: Qwen2.5-1.5B-Instruct through the same VDevice; current code accepts injected `.chat()`/`.model_id`.
+The current question path is `vestige/agent.py` → `vestige/memory.py`: a deterministic tool planner
+composes answers from stored facts. Optional local Qwen2-VL only selects an intent; it does not write
+answer facts. A Hailo-backed intent classifier is not implemented or measured.
 
 ## Scheduling budget
 

@@ -1,7 +1,7 @@
 # VESTIGE API
 
 Server: `python -m vestige` → `http://127.0.0.1:8100`. Interactive OpenAPI: `/docs`.
-This documents `vestige/api.py`; [api.md](api.md) belongs to the older TRACE console.
+This documents the current server in `vestige/api.py`.
 
 The current service uses one demo identity and a workspace allow-list. It is not a production login system.
 Timestamps in the demo are assigned local ISO strings. Evidence and scope checks reject unauthorized
@@ -16,7 +16,9 @@ cross-workspace IDs; the generated OpenAPI describes request fields in full.
 | Events | `GET /api/workspaces/{ws}/events` |
 | Event lead-up | `GET /api/events/{eid}/timeline?before_s=60` |
 | Evidence | `GET /api/evidence/{eid}?ws={ws}` |
-| Ask | `POST /api/workspaces/{ws}/ask` |
+| Ask across authorized sites | `POST /api/ask` |
+| Ask within a workspace | `POST /api/workspaces/{ws}/ask` |
+| Combined alert inbox / example questions | `GET /api/alerts`, `GET /api/suggestions` |
 | Human review | `POST /api/events/{eid}/review` |
 | Upload | `POST /api/workspaces/{ws}/sources` (multipart) |
 | Background job | `GET /api/jobs/{jid}` |

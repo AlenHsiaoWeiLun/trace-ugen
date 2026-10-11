@@ -1,7 +1,7 @@
 # VESTIGE software architecture
 
 This describes the implemented application in this repository. The [hardware deployment diagram](architecture.png)
-shows the UGen300 target; Hailo hardware execution remains unvalidated. The annotated directory tree is in
+shows the UGen300 target; Hailo hardware execution remains unvalidated. The directory overview is in
 [the README](../README.md#repository-structure).
 
 ## Current runtime
@@ -15,7 +15,7 @@ flowchart TB
     subgraph Browser[Browser - app/]
         Shell[app.js - shell and routing] --> Ask[pages/ask.js - questions and alert review]
         Shell --> Admin[pages/sources.js, lab.js, settings.js]
-        Ask --> Map[pages/memory.js - SiteMap component]
+        Ask --> Map[lib/site-map.js - object route map]
         Ask --> UI[lib/ui.js - citations, timeline, video]
         Ask --> Client[lib/api.js - HTTP and job polling]
         Admin --> Client
@@ -45,9 +45,8 @@ flowchart TB
     API -->|scope-checked /media| Files
 ```
 
-`memory.js` still includes an older standalone page, but `ask.js` now imports its `SiteMap` directly.
-The retained `investigate.js` page is not registered by the current `app.js` router; event investigation
-and review now happen in `ask.js`. Their APIs remain available.
+`ask.js` imports the shared `SiteMap` from `app/lib/site-map.js`. Questions, object history, event
+investigation and human review share that page; there is no second console or separate memory/event page.
 
 ## Execution flows
 
@@ -66,8 +65,10 @@ and review now happen in `ask.js`. Their APIs remain available.
 
 ### A question and its evidence
 
-1. `app/pages/ask.js` calls `app/lib/api.js` with a question and workspace, optionally an event ID.
-2. `POST /api/workspaces/{ws}/ask` checks access and passes the request to `agent.ask()`.
+1. `app/pages/ask.js` calls `app/lib/api.js` with a question, optionally an event ID.
+2. `POST /api/ask` checks the accessible sites and routes the question using `agent.route()`; an event ID
+   selects its owning site directly. It then calls `agent.ask()`. The explicit workspace endpoint
+   `/api/workspaces/{ws}/ask` is also available for scoped API clients.
 3. `agent.py` chooses an intent and calls the deterministic retrieval functions in `memory.py`.
    Object histories include candidate chains from `associate.py` and explicit coverage gaps.
 4. The response includes a conclusion, steps, citations and retrieval metadata, composed from returned records.
@@ -143,10 +144,10 @@ default VESTIGE demo runs on UGen300. See [the hardware plan](hailo_port.md) for
 | Change | Start here |
 |---|---|
 | Main user flow, alert inbox or review controls | `app/pages/ask.js` |
-| Object map | `app/pages/memory.js` → `SiteMap` |
+| Object map | `app/lib/site-map.js` → `SiteMap` |
 | Timeline/citations/video interaction | `app/lib/ui.js` |
 | Routes, upload validation or background jobs | `vestige/api.py` |
-| Question intent or answer composition | `vestige/agent.py` |
+| Question intent or answer composition | `vestige/agent.py` (site routing, intent and composition) |
 | Retrieved facts and object/event histories | `vestige/memory.py` |
 | Source processing or campus/construction event rules | `vestige/ingest.py` |
 | Cross-camera candidate matching | `vestige/associate.py` |

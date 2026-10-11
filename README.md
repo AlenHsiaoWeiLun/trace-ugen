@@ -6,7 +6,8 @@
 
 VESTIGE turns authorized video, alarms and staff reports into a searchable memory of the physical world.
 Ask “What happened to my bicycle?” and get a direct answer, a timeline and the footage behind each sighting.
-It distinguishes what a camera observed, what the system inferred and where coverage ends.
+One search box routes questions to the relevant authorized site. It distinguishes what a camera observed,
+what the system inferred and where coverage ends.
 
 **ASUS UGen AI League 2026 · Workplace AI · Battlefield Lightning · ASUS UGen300 target**
 
@@ -33,10 +34,7 @@ The three workspaces below are reproducible
 | **Taipei Bridge road** | “Any erratic riding on the bridge?” | A motorcycle that swings sideways 3 times in 3 s, the clip and the rule — VESTIGE flags the riding pattern and does not guess the cause (impairment, distraction or avoidance). |
 | **Campus** | “What happened to my bicycle?” | A recorded check-in, two direct sightings, candidate links across cameras, a map and an explicit end to coverage. Click a citation or timeline row to open its evidence. |
 | **Metro** | “What happened before the emergency alert?” or select an alert under **Needs review** | Review the camera, scripted alarm and radio signals behind a fused incident. A staged recording outage remains a gap. |
-| **⋯ → Detection lab** | **New test** → **Benchmark** → Taipei Bridge scooters | Compare clean-frame detection retention under blur, low light, noise or occlusion. Run a test, inspect the frame comparison and download its report. |
-
-All of these use **one search box**: VESTIGE works out which site a question is about (keywords, the clock time
-of an alert, or whichever site has cited evidence) and labels the answer with that site.
+| **More → Detection lab** | **New test** → **Benchmark** → Taipei Bridge scooters | Compare clean-frame detection retention under blur, low light, noise or occlusion. Run a test, inspect the frame comparison and download its report. |
 
 ![An answer with a timeline and playable evidence](docs/screenshots/02_answer_alert_why.png)
 
@@ -137,8 +135,7 @@ trace-ugen/
 ├── results/          # benchmark and IncidentLab reports
 ├── examples/         # sample cited answers (JSON) for readers who don't run the code
 ├── docs/             # architecture, status, reproduction, Hailo port, Stage I checklist
-├── deck2/            # proposal slide sources
-└── video/            # demo narration
+└── deck2/            # proposal slide sources
 ```
 
 ## What we measured
@@ -178,16 +175,6 @@ real-world safety performance. No UGen300 throughput, power or live-site adoptio
 - **This is a local prototype.** The demo allow-list checks workspace scope but is not production authentication.
   Upload authorization is a user declaration, and automatic retention is not enforced yet.
 
-## Stage II roadmap
-
-1. **Run on the UGen300:** YOLO11 HEF, Whisper and Qwen2-VL on the Hailo-10H; measure FPS, latency and power and
-   replace every vendor-published number with a measured one.
-2. **Live cameras** (RTSP) with multi-camera time sync on the edge box.
-3. **Construction pilot:** early collaboration talks with WanZe Construction (萬澤建設); scope and terms are not
-   yet defined. Goal: machinery-aware proximity alerts and a site-specific IncidentLab benchmark.
-4. **Appearance signature validated on held-out footage**, so the more robust YOLO11s can also drive cross-camera
-   links (see the trial in [STATUS](docs/STATUS.md)).
-
 ## Stage I submission
 
 [Current requirements and readiness checklist](docs/STAGE_I.md), checked against the organizer's published
@@ -203,7 +190,7 @@ The README and screenshots support review; they do not replace the required deck
 
 ## Project and credits
 
-Built by **Wei-Lun Hsiao · B13902049 · Computer Science, National Taiwan University**.
+Built by **Wei-Lun Hsiao · Computer Science, National Taiwan University**.
 
 Development used Claude Code and OpenAI Codex. Public footage, hardware renders and generated deck imagery
 have separate provenance: [media attribution](ATTRIBUTION.md). Project-authored code is provided under
