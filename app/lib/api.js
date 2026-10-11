@@ -24,7 +24,7 @@ export const api = {
   coverage: (ws) => req(`/api/workspaces/${ws}/coverage`),
   audit: (ws) => req(`/api/workspaces/${ws}/audit`),
   ask: (ws, question, event_id = null) => req(`/api/workspaces/${ws}/ask`, { method: "POST", body: JSON.stringify({ question, event_id }) }),
-  askAny: (question, event_id = null) => req("/api/ask", { method: "POST", body: JSON.stringify({ question, event_id }) }),
+  askAny: (question, event_id = null, context = null) => req("/api/ask", { method: "POST", body: JSON.stringify({ question, event_id, context }) }),
   alerts: () => req("/api/alerts"),
   suggestions: () => req("/api/suggestions"),
   zones: (ws) => req(`/api/workspaces/${ws}/zones`),

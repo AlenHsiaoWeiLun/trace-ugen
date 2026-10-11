@@ -258,6 +258,52 @@ def import_road(conn, log=print):
     log(f"  road: {len(run['incidents'])} incidents imported")
 
 
+def import_case(conn, log=print):
+    """The 19 Dec 2025 Taipei Main / Zhongshan case: a retrospective built only from published records.
+
+    Every fact is an official record (or a labelled secondary report) with its source, page and a short quote.
+    No original CCTV was obtained, so nothing is stored as a camera observation.
+    """
+    case = json.loads((db.ROOT / "data/case_1219.json").read_text())
+    w = case["workspace"]
+    _workspace(conn, w)
+    src = {s["id"]: s for s in case["sources"]}
+    for s in case["sources"]:
+        db.insert(conn, "sources", {"id": f"DOC-{s['id']}", "workspace_id": w["id"], "name": f"{s['id']} · {s['publisher']}",
+                                    "kind": "document", "status": "processed", "recording_available": 0,
+                                    "provenance": "news-report" if s["kind"] == "news_report" else "official-record",
+                                    "license": "public document, short quotation", "notes": s["title"]})
+    for p in case["places"]:
+        db.insert(conn, "zones", {"id": f"C-{p['id']}", "workspace_id": w["id"], "name": p["name"], "kind": "place",
+                                  "x": p["x"], "y": p["y"], "w": 0.08, "h": 0.08})
+
+    def evidence(eid, item, ts):
+        s = src[item["source"]]
+        db.insert(conn, "evidence", {
+            "id": eid, "workspace_id": w["id"], "source_id": f"DOC-{s['id']}", "kind": "document", "ts": ts,
+            "provenance": "news-report" if s["kind"] == "news_report" else "official-record", "caption": item["text"],
+            "created_ts": db.now(),
+            "meta": {"source": s["id"], "title": s["title"], "title_zh": s["title_zh"], "publisher": s["publisher"],
+                     "date": s["date"], "date_note": s["date_note"], "locator": item["locator"], "url": s["url"],
+                     "excerpt": item["excerpt"], "record_type": s["kind"], "precision": item.get("precision", "n/a")}})
+
+    for t in case["timeline"]:
+        eid = f"E-1219-{t['id']}"
+        evidence(eid, t, t["ts"])
+        db.insert(conn, "observations", {
+            "id": f"O-1219-{t['id']}", "workspace_id": w["id"], "source_id": f"DOC-{t['source']}", "ts": t["ts"],
+            "kind": src[t["source"]]["kind"], "status": "OFFICIAL", "zone_id": f"C-{t['place']}", "evidence_id": eid,
+            "model": "published record", "provenance": "official-record", "detail": t["text"]})
+    for c in case["coverage"]:
+        evidence(f"E-1219-{c['id']}", c, None)
+    db.insert(conn, "gaps", {"id": "GAP-1219-CCTV", "workspace_id": w["id"], "source_id": None,
+                             "ts_start": "2025-12-19T16:58:00", "ts_end": "2025-12-19T18:51:00",
+                             "reason": "Original CCTV was not provided to VESTIGE; this case makes no visual claims",
+                             "provenance": "derived"})
+    conn.commit()
+    log(f"  case-1219: {len(case['timeline'])} official records, {len(case['coverage'])} coverage statements")
+
+
 BENCHMARK = [  # public clips used only as IncidentLab test sets, not as scenario evidence
     ("BENCH-ROAD-1", "Taipei Bridge scooters 06", "bridge_06.webm", "CC BY-SA 4.0 (Tze Chiang Hao, Wikimedia)"),
     ("BENCH-ROAD-2", "Taipei Bridge scooters 07", "bridge_07.webm", "CC BY-SA 4.0 (Tze Chiang Hao, Wikimedia)"),
@@ -285,6 +331,8 @@ def preflight():
     videos = {s["media"] for spec in (CAMPUS, CONSTRUCTION) for s in spec["sources"]}
     videos.update(media for _, _, media, _ in BENCHMARK)
     replays = [db.ROOT / "data/run_metro.json", db.ROOT / "data/run_road.json"]
+    if not (db.ROOT / "data/case_1219.json").exists():
+        raise FileNotFoundError("Demo inputs missing: data/case_1219.json. Restore tracked case data with git.")
     needed = [db.ROOT / "data/videos" / name for name in sorted(videos)] + replays
     for replay in [r for r in replays if r.exists()]:
         run = json.loads(replay.read_text())
@@ -308,6 +356,7 @@ def build(log=print):
     log("construction"); build_construction(conn, log)
     log("metro"); import_metro(conn, log)
     log("road"); import_road(conn, log)
+    log("case"); import_case(conn, log)
     build_benchmark(conn)
     db.audit(conn, None, "system", "demo build", "all workspaces")
     conn.commit()

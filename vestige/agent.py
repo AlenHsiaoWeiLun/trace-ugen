@@ -18,7 +18,7 @@ from datetime import datetime
 
 from . import db, memory
 
-INTENTS = ("object_fate", "events_list", "event_before", "event_why", "place", "evidence", "search")
+INTENTS = ("case_reconstruct", "case_sources", "case_coverage", "object_fate", "events_list", "event_before", "event_why", "place", "evidence", "search")
 
 OBJECT_WORDS = r"\b(bike|bicycle|backpack|bag|equipment|tool|object|b-\d+)\b"
 PLACE_WORDS = r"\b(near|at|around|in)\s+(?P<place>[a-z0-9 ]{3,30})"
@@ -36,6 +36,7 @@ class Answer:
         self.planner = "deterministic"
         self.subject = None
         self.headline = ""  # direct answer to the question asked, composed from the same tool results
+        self.lanes = None  # optional parallel record lanes (case studies: reconstruction vs operations log)
         self.steps: list[dict] = []  # short structured timeline for the UI; `basis` holds the reasoning detail
 
     def step(self, ts, status, place, title, basis="", cite_tag=""):
@@ -54,12 +55,13 @@ class Answer:
                                "source": (evidence.get("source") or {}).get("name"),
                                "source_id": evidence["source_id"], "t_offset_s": evidence.get("t_offset_s"),
                                "proxy_url": evidence.get("proxy_url"), "caption": evidence.get("caption"),
-                               "provenance": evidence.get("provenance")})
+                               "provenance": evidence.get("provenance"), "meta": evidence.get("meta")})
         return f"[E{n}]"
 
     def to_json(self) -> dict:
         return {"question": self.question, "workspace_id": self.workspace_id, "intent": self.intent,
                 "planner": self.planner, "subject": self.subject, "headline": self.headline, "steps": self.steps,
+                "lanes": self.lanes,
                 "answer": " ".join(self.sentences),
                 "sentences": self.sentences, "citations": self.citations, "timeline": self.timeline,
                 "gaps": self.gaps, "tool_calls": self.tool_calls}
@@ -80,6 +82,12 @@ def hhmm(ts: str | None) -> str:
 
 def plan(question: str, workspace_kind: str) -> tuple[str, dict]:
     q = question.lower()
+    if workspace_kind == "case":  # retrospective case studies answer from published records only
+        if re.search(r"\b(cameras?|cctv|footage|recordings?|recorders?|replay|nvr|missing|gaps?|see|saw|model)\b", q):
+            return "case_coverage", {}
+        if re.search(r"\b(which|what) (records?|sources?|documents?)\b|\bsupport|\bsources?\b|\bcite", q):
+            return "case_sources", {}
+        return "case_reconstruct", {}
     if re.search(r"\b(evidence|show me (the )?proof|source)\b", q) and not re.search(OBJECT_WORDS, q):
         return "evidence", {}
     if re.search(r"\b(which|what|any|how many|list|all)\b.*\b(alerts?|events?|incidents?|warnings?)\b", q) and not re.search(r"\b(why|before)\b", q):
@@ -122,10 +130,11 @@ ROUTE_WORDS = {
     "road": r"\b(road|bridge|traffic|driv\w*|riders?|motorcycles?|scooters?|weav\w*|swerv\w*|drunk|impaired|lanes?|erratic)\b",
     "metro": r"\b(metro|station|platform|trains?|intercom|radio|passengers?|commuters?|exit|emergency alert|alarm)\b",
     "construction": r"\b(construction|site|workers?|trucks?|mixer|crane|excavator|pour|haul|safety|hazard|helmet|machinery)\b",
+    "case": r"(taipei main|zhongshan|eslite|nanxi|december|\b1219\b|12/19|19 dec|reconstruct|unfold|records support|which records|every camera|route missing)",
 }
 
 
-def route(conn, question: str, candidates: list[str]) -> tuple[str, str]:
+def route(conn, question: str, candidates: list[str], prefer: str | None = None) -> tuple[str, str]:
     q = question.lower()
     kinds = {r["id"]: r["kind"] for r in conn.execute(
         "SELECT id, kind FROM workspaces WHERE id IN (%s)" % ",".join("?" * len(candidates)), candidates)}
@@ -140,6 +149,8 @@ def route(conn, question: str, candidates: list[str]) -> tuple[str, str]:
     top = [w for w in candidates if scores[w] == best]
     if best > 0 and len(top) == 1:
         return top[0], "keywords"
+    if prefer in candidates and (best == 0 or prefer in top):  # a follow-up stays with the answer it follows
+        return prefer, "context"
     tried = []
     for w in (top if best > 0 else candidates):
         a = ask(conn, w, question, audit=False)
@@ -162,7 +173,8 @@ def ask(conn, workspace_id: str, question: str, event_id: str | None = None, aud
             intent, ans.planner = llm, "qwen (intent only)"
     ans.intent = intent
     {"object_fate": _object_fate, "event_before": _event_before, "event_why": _event_why,
-     "place": _place, "evidence": _event_before, "search": _search, "events_list": _events_list}[intent](conn, ws, ans, ents)
+     "place": _place, "evidence": _event_before, "search": _search, "events_list": _events_list,
+     "case_reconstruct": _case_reconstruct, "case_sources": _case_sources, "case_coverage": _case_coverage}[intent](conn, ws, ans, ents)
     if audit:
         db.audit(conn, workspace_id, "user", "ask", intent, question[:200])
         conn.commit()
@@ -270,6 +282,84 @@ def _object_fate(conn, ws, ans: Answer, ents):
     else:
         last = direct[-1] if direct else last_inf
         ans.headline = f"Last seen at {place(last)} at {hhmm(last['ts'])}.{tail if direct else ''}{unknown}"
+
+
+def _case_records(conn, ws, ans: Answer):
+    obs = _call(ans, "search_observations", memory.search_observations, conn, ws["id"], "")
+    obs = sorted([o for o in obs if o["status"] == "OFFICIAL"], key=lambda o: (o["ts"], o["id"]))
+    zones = {z["id"]: z["name"] for z in db.rows(conn.execute("SELECT id, name FROM zones WHERE workspace_id=?", (ws["id"],)))}
+    out = []
+    for o in obs:
+        e = _call(ans, "get_evidence", memory.get_evidence, conn, o["evidence_id"])
+        out.append((o, e, zones.get(o["zone_id"], "")))
+    return out
+
+
+def _doc_step(ans: Answer, o, e, place):
+    m = e.get("meta") or {}
+    c = ans.cite(e, "OFFICIAL", o["ts"], o["detail"])
+    ans.step(o["ts"], "OFFICIAL", place, o["detail"], f"{m.get('publisher')} · {m.get('locator')} — “{m.get('excerpt')}”", c)
+    ans.steps[-1].update({"precision": m.get("precision"), "source": m.get("source"), "record_type": m.get("record_type")})
+    return c
+
+
+def _case_reconstruct(conn, ws, ans: Answer, ents):
+    ans.subject = {"type": "case", "id": ws["id"], "label": ws["name"]}
+    recs = _case_records(conn, ws, ans)
+    by = {o["id"].split("-")[-1]: (o, e, p) for o, e, p in recs}
+    cites = {k: _doc_step(ans, *by[k]) for k in sorted(by)}
+    ans.gaps = db.rows(conn.execute("SELECT * FROM gaps WHERE workspace_id=?", (ws["id"],)))
+    ans.headline = (f"In the prosecutors' reconstruction, the incident moved from B1 below Exit M7 at Taipei Main Station, from about "
+                    f"17:22 {cites['T02']}, to the crossing outside Zhongshan Station at about 18:38 {cites['T09']}. "
+                    f"Taipei Metro's log records the response: a fire alarm at 17:24 {cites['T03']}, and trains passing Taipei Main "
+                    f"without stopping from 17:32 to 17:42 {cites['T05']}.")
+    ans.sentences.append(ans.headline)
+    ans.sentences.append("Every statement comes from a published record; original CCTV was not provided, so nothing here is a model observation.")
+
+
+def _case_sources(conn, ws, ans: Answer, ents):
+    ans.subject = {"type": "case", "id": ws["id"], "label": ws["name"]}
+    recs = _case_records(conn, ws, ans)
+    lanes = {"official_reconstruction": [], "ops": []}
+    for o, e, p in recs:
+        c = _doc_step(ans, o, e, p)
+        m = e.get("meta") or {}
+        lane = "official_reconstruction" if m.get("record_type") == "official_reconstruction" else "ops"
+        lanes[lane].append({"ts": o["ts"], "text": o["detail"], "n": int(c[2:-1]), "precision": m.get("precision"),
+                            "source": m.get("source"), "place": p})
+    ans.lanes = [{"name": "Prosecutors' reconstruction", "meta": "S1 · Taipei District Prosecutors Office · published 15 Jan 2026",
+                  "items": lanes["official_reconstruction"]},
+                 {"name": "Taipei Metro operations record", "meta": "S2 log dated 19 Dec 2025 · S3 statement of 22 Dec 2025",
+                  "items": lanes["ops"]}]
+    first = lanes["official_reconstruction"][1] if len(lanes["official_reconstruction"]) > 1 else None
+    alarm = next((i for i in lanes["ops"] if i["ts"].endswith("17:24:00")), None)
+    ans.headline = ("Two kinds of record, kept separate: the prosecutors' reconstruction, published on 15 January 2026, times the incident"
+                    + (f" [E{first['n']}]" if first else "") + "; Taipei Metro's operations record times the response"
+                    + (f" [E{alarm['n']}]" if alarm else "") + ". About 17:22 and 17:24 describe different actions, so they are not merged.")
+    ans.sentences.append(ans.headline)
+
+
+def _case_coverage(conn, ws, ans: Answer, ents):
+    ans.subject = {"type": "case", "id": ws["id"], "label": ws["name"]}
+    ev = {k: _call(ans, "get_evidence", memory.get_evidence, conn, f"E-1219-{k}") for k in ("C1", "C2", "C3", "C4")}
+    c1 = ans.cite(ev["C1"], "OFFICIAL", None, ev["C1"]["caption"])
+    c2 = ans.cite(ev["C2"], "OFFICIAL", None, ev["C2"]["caption"])
+    for k, status, title in [("C1", "OFFICIAL", "One B2 recorder showed live images but could not replay"),
+                             ("C2", "OFFICIAL", "Three other B2 recorders covered the route without a break"),
+                             ("C3", "OFFICIAL", "41 fire detectors triggered across zones")]:
+        m = ev[k]["meta"]
+        ans.step(None, status, "Taipei Main", title, f"{m['publisher']} · {m['date']} · {m['locator']} — “{m['excerpt']}”",
+                 ans.cite(ev[k], status, None, title))
+    gap = db.row(conn.execute("SELECT * FROM gaps WHERE workspace_id=?", (ws["id"],)).fetchone())
+    ans.gaps = [gap] if gap else []
+    ans.step(None, "UNKNOWN", "VESTIGE", "Original CCTV not provided — no visual claims about this case", gap["reason"] + "." if gap else "")
+    m = ev["C4"]["meta"]
+    ans.step(None, "NEWS", "Investigation", "Investigators reviewed more than 3,000 cameras",
+             f"{m['publisher']} · {m['date']} — “{m['excerpt']}”", ans.cite(ev["C4"], "NEWS", None, "secondary report"))
+    ans.headline = (f"No. Taipei Metro says no camera failed: one recorder on the route at B2 could show live images but not replay them "
+                    f"{c1}, and the other three B2 recorders covered the route without a break {c2}. VESTIGE was not given the original "
+                    "footage, so it makes no visual claims about this case.")
+    ans.sentences.append(ans.headline)
 
 
 def _events_list(conn, ws, ans: Answer, ents):

@@ -653,3 +653,31 @@ table.t tr.sel td { background: rgba(255,255,255,.04); }
 .site-n { display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 500; color: var(--text); }
 .site-q { font-size: 13.5px; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 760px) { .site-row { grid-template-columns: 1fr 16px; } .site-q { grid-column: 1; } .site-row svg { grid-row: 1 / 3; grid-column: 2; } }
+
+/* ---------- documents as evidence (case studies) ---------- */
+.step.OFFICIAL .rail i { background: var(--bg); border: 2px solid var(--ivory); border-radius: 3px; }
+.step.NEWS .rail i { background: var(--bg); border: 1.5px solid var(--dim); border-radius: 3px; }
+.tag-s.OFFICIAL { color: var(--ivory); background: rgba(236,230,218,.08); border: 1px solid rgba(236,230,218,.25); }
+.tag-s.NEWS { color: var(--text-2); border: 1px solid var(--line-2); background: transparent; }
+.case-tag { margin-left: 10px; padding: 2px 8px; border-radius: 6px; font-size: 12px; color: var(--gold); background: var(--gold-soft); }
+.viewer.doc .doc-card { border-radius: 16px; border: 1px solid var(--line-2); background: #121214; padding: 26px 28px; display: flex; flex-direction: column; gap: 10px; min-height: 320px; }
+.doc-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 12.5px; color: var(--dim); }
+.doc-pub { font-size: 13px; color: var(--dim); margin-top: 6px; }
+.doc-title { font: 400 26px/1.15 var(--serif); color: var(--text); }
+.doc-date { font: 12.5px var(--mono); color: var(--dim); }
+.doc-quote { margin: 12px 0 0; padding: 14px 18px; border-left: 2px solid var(--gold); background: rgba(233,176,84,.06); border-radius: 0 10px 10px 0;
+  font: 400 18px/1.65 "Noto Serif TC", "Songti TC", serif; color: var(--text); }
+.doc-en { font-size: 14px; color: var(--text-2); line-height: 1.5; }
+.doc-link { margin-top: auto; font-size: 13px; color: var(--gold); }
+.rlanes { display: flex; flex-direction: column; gap: 16px; margin-bottom: 28px; }
+.rl-h { display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; }
+.rl-h b { font-size: 13.5px; font-weight: 500; }
+.rl-h span { font-size: 12px; color: var(--dim); }
+.rl-track { position: relative; height: 72px; border-top: 1px solid var(--line-2); }
+.rl-node { position: absolute; top: -8px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 0; border: 0; background: none; color: var(--text-2); cursor: pointer; }
+.rl-node i { width: 14px; height: 14px; border-radius: 3px; background: var(--bg); border: 2px solid var(--ivory); }
+.rl-node.approx i { border-style: dashed; }
+.rl-node span { font-size: 11px; }
+.rl-node:hover span, .rl-node.on span { color: var(--text); }
+.rl-node.on i { background: var(--gold); border-color: var(--gold); box-shadow: 0 0 0 4px var(--gold-soft); }

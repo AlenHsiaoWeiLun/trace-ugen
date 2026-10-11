@@ -9,7 +9,7 @@ export const html = htm.bind(h);
 export const hhmmss = (ts) => (ts ? ts.slice(11, 19) : "—");
 export const day = (ts) => (ts ? new Date(ts).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "");
 export const STATUS_LABEL = { RECORDED: "Recorded", OBSERVED: "Observed", LAST_SEEN: "Last seen", INFERRED: "Inferred",
-  UNKNOWN: "Unknown", REJECTED: "Not linked" };
+  UNKNOWN: "Unknown", REJECTED: "Not linked", OFFICIAL: "Official record", NEWS: "News report" };
 
 const ICONS = {
   ask: "M11 19a8 8 0 1 1 5.3-14 8 8 0 0 1-5.3 14zm10 2-4.3-4.3",
@@ -199,7 +199,7 @@ export function Steps({ steps, active, onPick, onOpen, compact = false }) {
         onClick=${() => { if (st.n != null) onPick && onPick(st.n); }}>
       <span class="rail"><i></i></span>
       <div class="step-b">
-        <div class="step-m">${st.ts ? html`<span class="mono">${hhmmss(st.ts)}${st.status === "UNKNOWN" ? " →" : ""}</span>` : null}
+        <div class="step-m">${st.ts ? html`<span class="mono">${st.precision === "approx" ? "about " : ""}${st.precision ? hhmmss(st.ts).slice(0, 5) : hhmmss(st.ts)}${st.status === "UNKNOWN" ? " →" : ""}</span>` : null}
           ${st.status === "OBSERVED" || st.status === "LAST_SEEN" ? null : html`<span class=${`tag-s ${st.status}`}>${STATUS_LABEL[st.status] || st.status}</span>`}${st.place ? html`<span>${st.place}</span>` : null}
 </div>
         ${st.n != null ? html`<button class="step-select" onClick=${(e) => { e.stopPropagation(); onPick && onPick(st.n); }}
@@ -237,6 +237,25 @@ export function Viewer({ c, list = [], onNav, empty = "Select a step to see its 
     return () => v.removeEventListener("loadedmetadata", seek);
   }, [c?.evidence_id || c?.id, src]);
   if (!c) return html`<div class="viewer-empty">${empty}</div>`;
+  if (c.kind === "document" && c.meta) {
+    const m = c.meta;
+    return html`<figure class="viewer doc fadein" key=${c.evidence_id}>
+      <div class="doc-card">
+        <div class="doc-top"><span class=${`tag-s ${c.status}`}>${STATUS_LABEL[c.status] || c.status}</span><span class="mono">${m.source} · ${m.locator}</span></div>
+        <div class="doc-pub">${m.publisher}</div>
+        <div class="doc-title">${m.title}</div>
+        <div class="doc-date">${m.date_note ? `${m.date} · ${m.date_note}` : m.date}</div>
+        <blockquote class="doc-quote" lang="zh-Hant">“${m.excerpt}”</blockquote>
+        <div class="doc-en">${c.caption || c.label}</div>
+        <a class="doc-link" href=${m.url} target="_blank" rel="noopener">Open the original document ↗</a>
+      </div>
+      ${list.length > 1 && idx >= 0 ? html`<div class="vnav">
+        <button class="iconbtn" disabled=${idx <= 0} onClick=${() => onNav && onNav(list[idx - 1].n)} aria-label="Previous evidence"><${Icon} name="chevl" size=${18} /></button>
+        <span class="mono">E${c.n} <span class="dim">/ ${list.length}</span></span>
+        <button class="iconbtn" disabled=${idx >= list.length - 1} onClick=${() => onNav && onNav(list[idx + 1].n)} aria-label="Next evidence"><${Icon} name="chevr" size=${18} /></button>
+      </div>` : null}
+    </figure>`;
+  }
   return html`<figure class="viewer fadein">
     <div class="media">
       ${src ? html`<video ref=${ref} src=${src} muted autoplay playsinline controls=${started} poster=${c.url || ""} aria-label=${c.caption || "Evidence clip"}
@@ -254,4 +273,24 @@ export function Viewer({ c, list = [], onNav, empty = "Select a step to see its 
     </div>` : null}
 
   </figure>`;
+}
+
+// Parallel record lanes: two kinds of record on one time axis, never merged into one sequence.
+export function RecordLanes({ lanes, active, onPick }) {
+  const all = lanes.flatMap((l) => l.items).map((i) => new Date(i.ts).getTime());
+  const t0 = Math.min(...all), t1 = Math.max(...all), pad = (t1 - t0) * 0.04 || 60000;
+  const x = (ts) => `${((new Date(ts).getTime() - t0 + pad) / (t1 - t0 + 2 * pad)) * 100}%`;
+  const ticks = [];
+  for (let h = new Date(t0); h <= new Date(t1); h = new Date(h.getTime() + 30 * 60000)) ticks.push(h);
+  return html`<div class="rlanes">
+    ${lanes.map((l) => html`<div class="rl">
+      <div class="rl-h"><b>${l.name}</b><span>${l.meta}</span></div>
+      <div class="rl-track">${(() => { let prev = -1, row = 0; return l.items.map((i) => {
+        const pos = ((new Date(i.ts).getTime() - t0 + pad) / (t1 - t0 + 2 * pad)) * 100;
+        row = prev >= 0 && pos - prev < 6 ? (row + 1) % 3 : 0; prev = pos;
+        return html`<button class=${`rl-node ${active === i.n ? "on" : ""} ${i.precision === "approx" ? "approx" : ""}`}
+          style=${`left:${pos}%`} onClick=${() => onPick(i.n)} title=${i.text}>
+        <i></i><span class="mono" style=${`margin-top:${row * 15}px`}>${i.precision === "approx" ? "~" : ""}${hhmmss(i.ts).slice(0, 5)}</span></button>`; }); })()}</div>
+    </div>`)}
+  </div>`;
 }

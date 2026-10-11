@@ -223,3 +223,15 @@ def test_road_alert_does_not_guess_the_cause():
     a = client.post("/api/ask", json={"question": "Why was the 08:12 alert flagged?"}).json()
     assert a["workspace"]["id"] == "road" and "not inferred" in a["headline"]
     assert not any(w in a["headline"].lower() for w in ("drunk", "intoxicated"))
+
+
+def test_case_answers_cite_published_records_only():
+    for q, intent in [("How did the 19 December incident unfold?", "case_reconstruct"),
+                      ("Which records support this sequence?", "case_sources"),
+                      ("Was the route missing from every camera?", "case_coverage")]:
+        a = client.post("/api/ask", json={"question": q, "context": "case-1219"}).json()
+        assert a["workspace"]["id"] == "case-1219" and a["intent"] == intent, q
+        assert a["citations"] and all(c["kind"] == "document" and c["meta"]["url"].startswith("https://") for c in a["citations"])
+        assert not any(c["status"] in ("OBSERVED", "INFERRED") for c in a["citations"])
+    cov = client.post("/api/ask", json={"question": "Was the route missing from every camera?", "context": "case-1219"}).json()
+    assert cov["headline"].startswith("No.") and "not given the original" in cov["headline"]

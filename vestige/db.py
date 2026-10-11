@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS tracks (
   n_frames INTEGER, object_id TEXT, appearance TEXT, path TEXT, model TEXT);
 CREATE TABLE IF NOT EXISTS evidence (
   id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, source_id TEXT, kind TEXT, path TEXT, ts TEXT,
-  frame_idx INTEGER, t_offset_s REAL, bbox TEXT, sha256 TEXT, provenance TEXT, caption TEXT, created_ts TEXT);
+  frame_idx INTEGER, t_offset_s REAL, bbox TEXT, sha256 TEXT, provenance TEXT, caption TEXT, created_ts TEXT, meta TEXT);
 CREATE TABLE IF NOT EXISTS observations (
   id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, source_id TEXT, ts TEXT, kind TEXT, status TEXT,
   object_id TEXT, track_id TEXT, zone_id TEXT, bbox TEXT, frame_idx INTEGER, evidence_id TEXT,
@@ -75,7 +75,7 @@ CREATE INDEX IF NOT EXISTS obs_obj ON observations(object_id);
 CREATE INDEX IF NOT EXISTS ev_ws ON events(workspace_id, ts_start);
 """
 
-JSON_COLS = {"appearance", "path", "bbox", "basis", "config", "summary", "params", "details", "metrics"}
+JSON_COLS = {"appearance", "path", "bbox", "basis", "config", "summary", "params", "details", "metrics", "meta"}
 
 _local = threading.local()
 
@@ -97,6 +97,10 @@ def connect(path: Path | str | None = None) -> sqlite3.Connection:
         c.execute("PRAGMA journal_mode=WAL")
         c.execute("PRAGMA foreign_keys=ON")
         c.executescript(SCHEMA)
+        try:  # databases built before document evidence existed
+            c.execute("ALTER TABLE evidence ADD COLUMN meta TEXT")
+        except sqlite3.OperationalError:
+            pass
         conns[key] = c
     return conns[key]
 

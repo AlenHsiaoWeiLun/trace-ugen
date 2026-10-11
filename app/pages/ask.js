@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { api } from "../lib/api.js";
-import { Cited, Err, html, Icon, Skel, Steps, Story, Toast, Viewer, hhmmss } from "../lib/ui.js";
+import { Cited, Err, html, Icon, RecordLanes, Skel, Steps, Story, Toast, Viewer, hhmmss } from "../lib/ui.js";
 import { SiteMap } from "../lib/site-map.js";
 
 // Alerts waiting for a person, shown on the home page: one click opens the answer.
@@ -101,7 +101,7 @@ export function AskPage({ ws, setWs, go, route }) {
     if (!text) return;
     setQ(text); setBusy(true); setErr(null); setReviewed(null);
     try {
-      const r = await api.askAny(text, eventId);
+      const r = await api.askAny(text, eventId, res?.workspace?.id || null);
       // default to the evidence that answers the question (first citation in the conclusion)
       const m = (r.headline || "").match(/\[E(\d+)\]/);
       const visual = r.citations.find((c) => c.url || c.proxy_url || c.clip_url);
@@ -171,7 +171,7 @@ export function AskPage({ ws, setWs, go, route }) {
     ${busy ? html`<div class="answer-grid"><div class="stack"><${Skel} h=${44} w="70%" /><${Skel} h=${90} /><${Skel} h=${90} /><${Skel} h=${90} /></div><${Skel} h=${360} /></div>` : html`
     <div class="answer-grid fadein">
       <div class="a-head">
-        ${res.workspace ? html`<div class="where"><span class="live"></span>${res.workspace.name}</div>` : null}
+        ${res.workspace ? html`<div class="where"><span class="live"></span>${res.workspace.name}${res.workspace.kind === "case" ? html`<span class="case-tag">Retrospective case · published records only</span>` : null}</div>` : null}
         ${res.headline ? html`<p class="headline"><${Cited} text=${res.headline} citations=${res.citations} active=${active} onCite=${setActive} /></p>` : null}
         ${res.subject?.type === "event" ? html`<div class="verdict">
           ${reviewed ? html`<span class="note">Marked as ${reviewed === "confirmed" ? "a real incident" : reviewed === "rejected" ? "a false alarm" : "not sure"}.</span>`
@@ -181,6 +181,7 @@ export function AskPage({ ws, setWs, go, route }) {
               <button class="btn sm ghost" onClick=${() => review("uncertain")}>Not sure</button>`}</div>` : null}
       </div>
       <div class="a-steps">
+        ${res.lanes ? html`<div class="section-t">Two records, one time axis</div><${RecordLanes} lanes=${res.lanes} active=${active} onPick=${setActive} />` : null}
         <div class="section-t">Timeline</div>
         ${res.steps?.length ? html`<${Steps} steps=${res.steps} active=${active} onPick=${setActive} onOpen=${(id, ts) => openEvent({ id, ts_start: ts })} />`
           : html`<${Story} sentences=${res.sentences} citations=${res.citations} active=${active} onPick=${setActive} gaps=${res.gaps} />`}

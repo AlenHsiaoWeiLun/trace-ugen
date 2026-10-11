@@ -19,6 +19,7 @@ def demo_inputs(tmp_path, monkeypatch):
         {"keyframe": "/media/metro/frame.jpg", "signals": []}
     ]}))
     (tmp_path / "data/run_road.json").write_text(json.dumps({"incidents": []}))
+    (tmp_path / "data/case_1219.json").write_text("{}")
     frame = tmp_path / "media/metro/frame.jpg"
     frame.parent.mkdir(parents=True)
     frame.write_bytes(b"fixture frame")

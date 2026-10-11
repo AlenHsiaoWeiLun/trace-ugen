@@ -25,7 +25,7 @@ from .ingest import process_source
 
 ROOT = db.ROOT
 APP = ROOT / "app"
-ALLOWED = {"demo": {"campus", "metro", "construction", "road", "bench-road", "bench-station"}}
+ALLOWED = {"demo": {"campus", "metro", "construction", "road", "case-1219", "bench-road", "bench-station"}}
 USER = "demo"
 
 app = FastAPI(title="VESTIGE")
@@ -121,6 +121,8 @@ SUGGESTIONS = {
     "metro": ["What happened before the emergency alert?", "Why was this incident flagged?", "Show me the evidence"],
     "construction": ["What safety alerts happened today?", "Why was the 07:58 alert flagged?",
                      "Show me everything at the pour area"],
+    "case": ["How did the 19 December incident unfold?", "Which records support this sequence?",
+             "Was the route missing from every camera?"],
     "road": ["Any erratic riding on the bridge?", "Why was the 08:12 alert flagged?", "What happened before it?"],
 }
 
@@ -237,6 +239,7 @@ def audit_log(ws: str, limit: int = 50):
 class Question(BaseModel):
     question: str
     event_id: str | None = None
+    context: str | None = None  # the site of the answer this question follows up on
 
 
 @app.post("/api/workspaces/{ws}/ask")
@@ -257,7 +260,7 @@ def ask(ws: str, body: Question):
 
 
 # Sites a user sees as one product (benchmarks are engineering-only).
-SITES = ["construction", "road", "campus", "metro"]
+SITES = ["case-1219", "construction", "road", "campus", "metro"]
 
 
 @app.post("/api/ask")
@@ -275,7 +278,7 @@ def ask_anywhere(body: Question):
         guard(e[0])
         ws, how = e[0], "event"
     else:
-        ws, how = agent.route(c, q, sites)
+        ws, how = agent.route(c, q, sites, prefer=body.context)
     t = time.perf_counter()
     out = agent.ask(c, ws, q, body.event_id)
     out["latency_ms"] = round(1000 * (time.perf_counter() - t), 1)
@@ -309,8 +312,8 @@ def suggestions():
             r["cameras"] = c.execute("SELECT COUNT(*) FROM sources WHERE workspace_id=? AND kind='camera'", (w,)).fetchone()[0]
             r["example"] = (SUGGESTIONS.get(r["kind"]) or [""])[0]
             sites.append(r)
-    return {"examples": ["What safety alerts happened today?", "Any erratic riding on the bridge?",
-                         "What happened to my bicycle?"], "sites": sites,
+    return {"examples": ["What happened to my bicycle?", "How did the 19 December incident unfold?",
+                         "What safety alerts happened today?"], "sites": sites,
             "by_site": {w: SUGGESTIONS.get(w, []) for w in SITES}}
 
 
