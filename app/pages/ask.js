@@ -69,9 +69,11 @@ function Showcase({ ws, setWs, go }) {
     <div class="show-top">
       <div class="seg" role="tablist" aria-label="Demo workspace">${SCENES.map((x) => html`<button role="tab" aria-selected=${x.ws === ws}
         class=${x.ws === ws ? "on" : ""} onClick=${() => setWs(x.ws)}>${x.name}</button>`)}</div>
-      <button class="link" onClick=${() => go("ask", null, { ws: scene.ws, q: scene.q })}>“${scene.q}” <${Icon} name="arrow" size=${14} /></button>
+      <button class="link" aria-label=${`Explore ${scene.name} demo`} onClick=${() => go("ask", null, { ws: scene.ws, q: scene.q })}>Explore demo <${Icon} name="arrow" size=${14} /></button>
     </div>
-    <div class="show-frame" role="button" tabindex="0" onClick=${() => go("ask", null, { ws: scene.ws, q: scene.q })}>
+    <div class="show-frame" role="button" tabindex="0" aria-label=${`Investigate: ${scene.q}`}
+      onKeyDown=${(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go("ask", null, { ws: scene.ws, q: scene.q }); } }}
+      onClick=${() => go("ask", null, { ws: scene.ws, q: scene.q })}>
       ${frame ? html`<img key=${frame} class="fadein-fast" src=${frame} alt=${cite?.caption || "evidence frame"} />` : html`<div class="skel" style="position:absolute;inset:0"></div>`}
       ${cur?.status === "UNKNOWN" ? html`<div class="show-unknown"><span>No camera covers what happened next.</span></div>` : null}
       ${cur ? html`<div class="show-cap"><span class=${`tag-s ${cur.status}`}>${STATE[cur.status] || cur.status}</span>
@@ -126,7 +128,12 @@ export function AskPage({ ws, setWs, go, route }) {
   };
   useEffect(() => { api.overview(ws).then((o) => setSugs(o.suggestions || [])).catch(() => {}); }, [ws]);
   useEffect(() => {
-    const k = (e) => { if (e.key === "/" && document.activeElement !== input.current) { e.preventDefault(); input.current?.focus(); } };
+    const k = (e) => {
+      const el = document.activeElement;
+      if (e.key === "/" && !el?.matches("input, textarea, select, [contenteditable='true']")) {
+        e.preventDefault(); input.current?.focus();
+      }
+    };
     addEventListener("keydown", k);
     return () => removeEventListener("keydown", k);
   }, []);

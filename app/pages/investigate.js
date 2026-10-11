@@ -58,7 +58,7 @@ export function InvestigatePage({ ws, route, go }) {
     if (c) setCite(c);
   };
   const doReview = async (d) => {
-    try { await api.review(eid, d, note); setToast(`Saved: ${d === "confirmed" ? "real incident" : d === "rejected" ? "false alarm" : "not sure"}`); setNote(""); setReviewing(false); setReload(reload + 1); }
+    try { await api.review(eid, d, note); setToast(`Saved: ${d === "confirmed" ? "alert confirmed" : d === "rejected" ? "false alarm" : "uncertain"}`); setNote(""); setReviewing(false); setReload(reload + 1); }
     catch (e) { setToast(String(e.message)); }
   };
 
@@ -95,7 +95,7 @@ export function InvestigatePage({ ws, route, go }) {
         <div class="review">
           ${reviewing ? html`<div class="stack fadein" style="gap:10px">
             <textarea class="input" placeholder="Note (optional)" value=${note} onInput=${(e) => setNote(e.target.value)} aria-label="Review note"></textarea>
-            <div class="row wrap" style="gap:8px"><button class="btn gold" onClick=${() => doReview("confirmed")}><${Icon} name="check" size=${15} /> Real incident</button>
+            <div class="row wrap" style="gap:8px"><button class="btn gold" onClick=${() => doReview("confirmed")}><${Icon} name="check" size=${15} /> Confirm alert</button>
               <button class="btn" onClick=${() => doReview("rejected")}>False alarm</button>
               <button class="btn ghost" onClick=${() => doReview("uncertain")}>Not sure</button></div></div>`
           : html`<div class="row wrap" style="gap:8px"><button class="btn" onClick=${() => setReviewing(true)}><${Icon} name="check" size=${15} /> Review this alert</button>

@@ -190,22 +190,24 @@ export function Story({ sentences, citations, active, onPick, gaps = [] }) {
 }
 
 // Steps: the agent's structured timeline. Meta line = time · state · place; title is short; the reasoning
-// ("basis") opens only for the selected step.
+// ("basis") is available on demand; selecting a frame does not expand technical detail.
 export function Steps({ steps, active, onPick, onOpen, compact = false }) {
   const sorted = [...steps].sort((a, b) => (a.ts && b.ts ? a.ts.localeCompare(b.ts) : 0));
-  const [open, setOpen] = useState(null);
   return html`<ol class=${`story ${compact ? "compact" : ""}`}>${sorted.map((st, i) => {
     const on = st.n != null && st.n === active;
-    const show = on || open === i;
     return html`<li class=${`step ${st.status} ${on ? "on" : ""} has`} key=${i} style=${`--i:${i}`}
-        onClick=${() => { if (st.n != null) onPick && onPick(st.n); setOpen(open === i ? null : i); }}>
+        onClick=${() => { if (st.n != null) onPick && onPick(st.n); }}>
       <span class="rail"><i></i></span>
       <div class="step-b">
         <div class="step-m">${st.ts ? html`<span class="mono">${hhmmss(st.ts)}${st.status === "UNKNOWN" ? " →" : ""}</span>` : null}
           ${st.status === "OBSERVED" || st.status === "LAST_SEEN" ? null : html`<span class=${`tag-s ${st.status}`}>${STATUS_LABEL[st.status] || st.status}</span>`}${st.place ? html`<span>${st.place}</span>` : null}
 </div>
-        <div class="step-t">${st.title}</div>
-        ${show && st.basis ? html`<div class="basis fadein">${st.basis}</div>` : null}
+        ${st.n != null ? html`<button class="step-select" onClick=${(e) => { e.stopPropagation(); onPick && onPick(st.n); }}
+          aria-pressed=${on} aria-label=${`${st.title} — evidence E${st.n}`}>${st.title}</button>
+          ${on && st.basis ? html`<details class="step-detail" onClick=${(e) => e.stopPropagation()}><summary>Evidence details</summary>
+            <div class="basis">${st.basis}</div></details>` : null}`
+          : st.basis ? html`<details class="step-record" onClick=${(e) => e.stopPropagation()}><summary>${st.title}</summary>
+            <div class="basis">${st.basis}</div></details>` : html`<div class="step-t">${st.title}</div>`}
         ${st.event_id && onOpen ? html`<button class="link step-open" onClick=${(e) => { e.stopPropagation(); onOpen(st.event_id, st.ts); }}>Why was it flagged? <${Icon} name="arrow" size=${13} /></button>` : null}
       </div>
     </li>`;
@@ -215,30 +217,35 @@ export function Steps({ steps, active, onPick, onOpen, compact = false }) {
 // Evidence viewer: processed video at the cited moment when available, else the stored frame.
 export function Viewer({ c, list = [], onNav, empty = "Select a step to see its evidence." }) {
   const ref = useRef();
-  const [playing, setPlaying] = useState(false);
+  const [started, setStarted] = useState(false);
   const idx = c ? list.findIndex((x) => x.n === c.n) : -1;
   const play = () => {
     const v = ref.current;
     if (!v) return;
     v.currentTime = c.proxy_url ? Math.max(0, (c.t_offset_s || 0) - 1.5) : 0;
-    v.play().catch(() => {});
+    setStarted(true);
+    v.play().catch(() => setStarted(false));
   };
   const src = c?.proxy_url || c?.clip_url;
   useEffect(() => {
+    setStarted(false);
     const v = ref.current;
     if (!v || !c) return;
     const t = c.proxy_url ? Math.max(0, (c.t_offset_s || 0) - 1.5) : 0;
-    const seek = () => { try { v.currentTime = t; v.play().catch(() => {}); } catch {} };
+    const seek = () => { try { v.currentTime = t; setStarted(true); v.play().catch(() => setStarted(false)); } catch {} };
     if (v.readyState >= 1) seek(); else v.addEventListener("loadedmetadata", seek, { once: true });
+    return () => v.removeEventListener("loadedmetadata", seek);
   }, [c?.evidence_id || c?.id, src]);
   if (!c) return html`<div class="viewer-empty">${empty}</div>`;
   return html`<figure class="viewer fadein">
     <div class="media">
-      ${src ? html`<video ref=${ref} src=${src} muted autoplay playsinline poster=${c.url || ""} onPlay=${() => setPlaying(true)} onPause=${() => setPlaying(false)} onEnded=${() => setPlaying(false)} onClick=${() => (playing ? ref.current.pause() : play())}></video>`
+      ${src ? html`<video ref=${ref} src=${src} muted autoplay playsinline controls=${started} poster=${c.url || ""} aria-label=${c.caption || "Evidence clip"}
+        onPlay=${() => setStarted(true)}></video>`
             : c.url ? html`<img src=${c.url} alt=${c.caption || ""} />` : html`<div class="noimg">${c.caption || c.label}</div>`}
-      <div class="media-tags"><span class="glass">${(c.source || c.source_id || "").split(" · ")[0]}</span><span class="glass mono">${hhmmss(c.ts)}</span>
+      <div class="media-tags"><span class=${`glass tag-s ${c.status}`}>${STATUS_LABEL[c.status] || c.status}</span>
+        <span class="glass">${(c.source || c.source_id || "").split(" · ")[0]}</span><span class="glass mono">${hhmmss(c.ts)}</span>
 </div>
-      ${src && !playing ? html`<button class="play sm" onClick=${play} aria-label="Play"><${Icon} name="play" size=${16} /></button>` : null}
+      ${src && !started ? html`<button class="play sm" onClick=${play} aria-label="Play clip"><${Icon} name="play" size=${16} /></button>` : null}
     </div>
     ${list.length > 1 && idx >= 0 ? html`<div class="vnav">
       <button class="iconbtn" disabled=${idx <= 0} onClick=${() => onNav && onNav(list[idx - 1].n)} aria-label="Previous evidence"><${Icon} name="chevl" size=${18} /></button>
